@@ -48,7 +48,11 @@ namespace kxf
 	}
 	String SystemProcessInfo::GetCommandLine() const
 	{
-		return Format("\"{}\" {}", m_ExecutablePath.GetFullPath(), m_Parameters);
+		if (!m_Parameters.IsEmpty())
+		{
+			return Format("\"{}\" {}", m_ExecutablePath.GetFullPath(), m_Parameters);
+		}
+		return m_ExecutablePath.GetFullPath();
 	}
 	std::unique_ptr<ISystemProcess> SystemProcessInfo::Spawn(EvtHandlerDelegate evtHandler, FlagSet<CreateSystemProcessFlag> flags)
 	{

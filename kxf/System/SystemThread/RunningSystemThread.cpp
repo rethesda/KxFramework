@@ -105,16 +105,16 @@ namespace kxf
 		return ::ResumeThread(m_Handle) != std::numeric_limits<DWORD>::max();
 	}
 
-	size_t RunningSystemThread::EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const
+	CallbackResult<size_t> RunningSystemThread::EnumWindows(CallbackFunction<SystemWindow> func) const
 	{
 		if (!IsNull())
 		{
 			return System::Private::EnumWindows([&](void* hwnd, uint32_t pid, uint32_t tid)
 			{
-				return std::invoke(func, hwnd);
+				return func.Invoke(hwnd).GetLastCommand();
 			}, GetOwningProcess().GetID(), GetID());
 		}
-		return 0;
+		return {};
 	}
 
 	// RunningSystemThread

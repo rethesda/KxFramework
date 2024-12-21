@@ -54,9 +54,9 @@ namespace kxf
 			String GetExecutableParameters() const override;
 			SHWindowCommand GetShowWindowCommand() const override;
 
-			size_t EnumEnvironemntVariables(std::function<CallbackCommand(const String&, const String&)> func) const override;
-			size_t EnumThreads(std::function<CallbackCommand(SystemThread)> func) const override;
-			size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const override;
+			CallbackResult<size_t> EnumEnvironemntVariables(CallbackFunction<const String&, const String&> func) const override;
+			CallbackResult<size_t> EnumThreads(CallbackFunction<SystemThread> func) const override;
+			CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const override;
 
 			// RunningSystemProcess
 			bool Open(uint32_t pid, FlagSet<SystemProcessAccess> access, bool inheritHandle = false);

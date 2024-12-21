@@ -136,6 +136,6 @@ namespace kxf
 			virtual bool Suspend() = 0;
 			virtual bool Resume() = 0;
 
-			virtual size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const = 0;
+			virtual CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const = 0;
 	};
 }

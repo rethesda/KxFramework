@@ -42,8 +42,8 @@ namespace kxf
 			virtual String GetExecutableParameters() const = 0;
 			virtual SHWindowCommand GetShowWindowCommand() const = 0;
 
-			virtual size_t EnumEnvironemntVariables(std::function<CallbackCommand(const String&, const String&)> func) const = 0;
-			virtual size_t EnumThreads(std::function<CallbackCommand(SystemThread)> func) const = 0;
-			virtual size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const = 0;
+			virtual CallbackResult<size_t> EnumEnvironemntVariables(CallbackFunction<const String&, const String&> func) const = 0;
+			virtual CallbackResult<size_t> EnumThreads(CallbackFunction<SystemThread> func) const = 0;
+			virtual CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const = 0;
 	};
 }

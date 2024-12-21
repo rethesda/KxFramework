@@ -1,13 +1,13 @@
 #pragma once
 #include "../Common.h"
-#include "kxf/Core/String.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/Localization/Locale.h"
 
 namespace kxf::System::Private
 {
 	String FormatMessage(const void* source, uint32_t messageID, FlagSet<uint32_t> flags = {}, const Locale& locale = {}) noexcept;
-	size_t EnumWindows(std::function<CallbackCommand(void*, uint32_t, uint32_t)> func, std::optional<uint32_t> pid = {}, std::optional<uint32_t> tid = {});
-	size_t EnumThreads(std::function<CallbackCommand(uint32_t, uint32_t)> func, std::optional<uint32_t> pid = {}, std::optional<uint32_t> tid = {});
+	CallbackResult<size_t> EnumWindows(CallbackFunction<void*, uint32_t, uint32_t> func, std::optional<uint32_t> pid = {}, std::optional<uint32_t> tid = {});
+	CallbackResult<size_t> EnumThreads(CallbackFunction<uint32_t, uint32_t> func, std::optional<uint32_t> pid = {}, std::optional<uint32_t> tid = {});
 
 	String ResourceTypeToName(size_t id);
 	String ResourceTypeToName(const wchar_t* id);
