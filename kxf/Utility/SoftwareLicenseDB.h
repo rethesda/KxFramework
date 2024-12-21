@@ -11,7 +11,6 @@ namespace kxf
 		ZLib,
 		GNU_GPLv3,
 		GNU_LGPLv3,
-
 		BSD2_Clause,
 		BSD3_Clause
 	};
@@ -27,6 +26,7 @@ namespace kxf
 		public:
 			String GetName(SoftwareLicenseType licenseType) const;
 			String GetText(SoftwareLicenseType licenseType, const String& copyright = {}) const;
+
 			bool RequiresCopyrightString(SoftwareLicenseType licenseType) const;
 	};
 }
