@@ -2,6 +2,7 @@
 #include "LibCURLUtility.h"
 #include "LibCURL.h"
 #include "kxf/Utility/ScopeGuard.h"
+#include "kxf/wxWidgets/RTTI.h"
 
 namespace
 {
@@ -312,7 +313,7 @@ namespace kxf::CURL::Private
 
 namespace kxf::CURL::Private
 {
-	class InitializationModule final: public wxModule
+	class InitializationModule final: public wxWidgets::RTTI_DynamicObject<InitializationModule, wxModule, L"kxf::CURL::Private::InitializationModule">
 	{
 		public:
 			bool OnInit() override
@@ -327,10 +328,6 @@ namespace kxf::CURL::Private
 					::curl_global_cleanup();
 				}
 			}
-
-		private:
-			wxDECLARE_DYNAMIC_CLASS(InitializationModule);
 	};
 }
 
-wxIMPLEMENT_DYNAMIC_CLASS(kxf::CURL::Private::InitializationModule, wxModule);

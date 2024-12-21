@@ -3,8 +3,9 @@
 #include "kxf/Log/ScopedLogger.h"
 #include "kxf/FileSystem/FSPath.h"
 #include "kxf/Utility/Common.h"
+#include "kxf/wxWidgets/RTTI.h"
+
 #include <Windows.h>
-#include <wx/module.h>
 #include "kxf/Win32/UndefMacros.h"
 
 #define DECLARE_LIBRARY(name)	\
@@ -375,7 +376,7 @@ namespace kxf::NativeAPI
 
 namespace kxf::NativeAPI::Private
 {
-	class InitializationModule final: public wxModule
+	class InitializationModule final: public wxWidgets::RTTI_DynamicObject<InitializationModule, wxModule, L"kxf::NativeAPI::Private::InitializationModule">
 	{
 		private:
 			NativeAPILoader& m_Loader = NativeAPILoader::GetInstance();
@@ -404,10 +405,6 @@ namespace kxf::NativeAPI::Private
 
 				KXF_SCOPEDLOG.SetSuccess();
 			}
-
-		private:
-			wxDECLARE_DYNAMIC_CLASS(InitializationModule);
 	};
 }
 
-wxIMPLEMENT_DYNAMIC_CLASS(kxf::NativeAPI::Private::InitializationModule, wxModule);
