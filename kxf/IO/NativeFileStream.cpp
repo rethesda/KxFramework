@@ -4,6 +4,9 @@
 #include "kxf/FileSystem/Private/NativeFSUtility.h"
 #include "kxf/Utility/ScopeGuard.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace
 {
 	using namespace kxf;
@@ -51,12 +54,13 @@ namespace
 		{
 			return size.QuadPart;
 		}
-		return wxInvalidOffset;
+		return -1;
 	}
 	int64_t GetOffsetByHandle(HANDLE handle) noexcept
 	{
 		LARGE_INTEGER offset = {};
 		::SetFilePointerEx(handle, offset, &offset, FILE_CURRENT);
+
 		return offset.QuadPart;
 	}
 }
@@ -192,7 +196,7 @@ namespace kxf
 		if (buffer)
 		{
 			DWORD lastRead = 0;
-			if (::ReadFile(m_Handle, buffer, size, &lastRead, nullptr))
+			if (::ReadFile(m_Handle, buffer, static_cast<DWORD>(size), &lastRead, nullptr))
 			{
 				if (lastRead == 0 && size != 0 && GetOffsetByHandle(m_Handle) == GetSizeByHandle(m_Handle))
 				{
@@ -235,7 +239,7 @@ namespace kxf
 		if (buffer)
 		{
 			DWORD lastWrite = 0;
-			if (::WriteFile(m_Handle, buffer, size, &lastWrite, nullptr))
+			if (::WriteFile(m_Handle, buffer, static_cast<DWORD>(size), &lastWrite, nullptr))
 			{
 				m_LastError = Win32Error::Success();
 			}

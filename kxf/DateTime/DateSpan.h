@@ -41,7 +41,7 @@ namespace kxf
 			constexpr DateSpan() noexcept = default;
 			constexpr DateSpan(const DateSpan&) noexcept = default;
 			constexpr DateSpan(const TimeSpan& timeSpan) noexcept
-				:m_Days(timeSpan.GetDays())
+				:m_Days(static_cast<int>(timeSpan.GetDays()))
 			{
 			}
 			constexpr DateSpan(int years, int months, int weeks, int days) noexcept

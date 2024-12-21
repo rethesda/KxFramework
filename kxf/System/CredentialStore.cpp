@@ -18,7 +18,7 @@ namespace kxf
 			credentialInfo.TargetName = m_ServiceName.wc_str().unsafe_data();
 			credentialInfo.UserName = userName.wc_str().unsafe_data();
 			credentialInfo.CredentialBlob = static_cast<uint8_t*>(const_cast<void*>(secret.GetData()));
-			credentialInfo.CredentialBlobSize = secret.GetSize();
+			credentialInfo.CredentialBlobSize = static_cast<DWORD>(secret.GetSize());
 
 			return ::CredWriteW(&credentialInfo, 0);
 		}

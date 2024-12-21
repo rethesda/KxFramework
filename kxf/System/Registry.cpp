@@ -241,7 +241,7 @@ namespace
 	}
 	bool DoSetStringValue(HKEY hkey, const String& valueName, const String& value, DWORD type, Win32Error& lastError)
 	{
-		lastError = ::RegSetKeyValueW(hkey, nullptr, valueName.wc_str(), type, value.wc_str(), value.length() * sizeof(wchar_t) + sizeof(wchar_t));
+		lastError = ::RegSetKeyValueW(hkey, nullptr, valueName.wc_str(), type, value.wc_str(), static_cast<DWORD>(value.length() * sizeof(wchar_t) + sizeof(wchar_t)));
 		return lastError.IsSuccess();
 	}
 
@@ -489,7 +489,7 @@ namespace kxf
 	}
 	bool RegistryKey::SetBinaryValue(const String& valueName, const void* data, size_t size)
 	{
-		m_LastError = ::RegSetKeyValueW(AsHKEY(m_Handle), nullptr, valueName.wc_str(), REG_BINARY, data, size);
+		m_LastError = ::RegSetKeyValueW(AsHKEY(m_Handle), nullptr, valueName.wc_str(), REG_BINARY, data, static_cast<DWORD>(size));
 		return m_LastError.IsSuccess();
 	}
 

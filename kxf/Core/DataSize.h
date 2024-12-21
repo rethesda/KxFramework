@@ -210,7 +210,7 @@ namespace kxf
 			}
 			constexpr DataSize operator*(double n) const noexcept
 			{
-				return m_Value * n;
+				return static_cast<int64_t>(m_Value * n);
 			}
 			constexpr DataSize operator/(int64_t n) const noexcept
 			{
@@ -218,7 +218,7 @@ namespace kxf
 			}
 			constexpr DataSize operator/(double n) const noexcept
 			{
-				return m_Value / n;
+				return static_cast<int64_t>(m_Value / n);
 			}
 
 			constexpr DataSize& operator+=(const DataSize& other) noexcept

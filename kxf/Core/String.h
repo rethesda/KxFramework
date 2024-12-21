@@ -396,7 +396,7 @@ namespace kxf
 			}
 			String& DoAppend(UniChar c, size_t count = 1)
 			{
-				m_String.append(count, *c);
+				m_String.append(count, c.GetAs<XChar>());
 				return *this;
 			}
 
@@ -440,7 +440,7 @@ namespace kxf
 			}
 			String& DoPrepend(UniChar c, size_t count = 1)
 			{
-				m_String.insert(0, count, *c);
+				m_String.insert(0, count, c.GetAs<XChar>());
 				return *this;
 			}
 			
@@ -466,7 +466,7 @@ namespace kxf
 			}
 			String& DoInsert(size_t pos, UniChar c, size_t count = 1)
 			{
-				m_String.insert(pos, count, *c);
+				m_String.insert(pos, count, c.GetAs<XChar>());
 				return *this;
 			}
 			
@@ -661,7 +661,7 @@ namespace kxf
 			{
 				if (!m_String.empty())
 				{
-					m_String[0] = *UniChar(m_String[0]).ToUpperCase();
+					m_String[0] = UniChar(m_String[0]).ToUpperCase().GetAs<XChar>();
 				}
 				return *this;
 			}

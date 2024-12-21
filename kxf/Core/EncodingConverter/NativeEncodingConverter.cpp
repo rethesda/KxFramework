@@ -13,8 +13,8 @@ namespace kxf
 		{
 			int length = ::WideCharToMultiByte(static_cast<uint32_t>(m_CodePage),
 											   m_Flags.ToInt(),
-											   source.data(), source.size(),
-											   reinterpret_cast<char*>(destination.data()), destination.size(),
+											   source.data(), static_cast<int>(source.size()),
+											   reinterpret_cast<char*>(destination.data()), static_cast<int>(destination.size()),
 											   nullptr,
 											   nullptr);
 
@@ -36,8 +36,8 @@ namespace kxf
 		{
 			int length = ::MultiByteToWideChar(static_cast<uint32_t>(m_CodePage),
 											   m_Flags.ToInt(),
-											   reinterpret_cast<const char*>(source.data()), source.size(),
-											   destination.data(), destination.size());
+											   reinterpret_cast<const char*>(source.data()), static_cast<int>(source.size()),
+											   destination.data(), static_cast<int>(destination.size()));
 
 			if (length == 0)
 			{
