@@ -1416,6 +1416,9 @@
     <ClInclude Include="kxf\Win32\Include-Network.h">
       <Filter>kxf\Win32</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\Utility\ConstEvalString.h">
+      <Filter>kxf\Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf\EventSystem\EventBuilder.cpp">

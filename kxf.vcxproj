@@ -459,6 +459,7 @@
     <ClInclude Include="kxf\Threading\ThreadEvent.h" />
     <ClInclude Include="kxf\Threading\LockGuard.h" />
     <ClInclude Include="kxf\Threading\ThreadLocalSlot.h" />
+    <ClInclude Include="kxf\Utility\ConstEvalString.h" />
     <ClInclude Include="kxf\Utility\RecursionGuard.h" />
     <ClInclude Include="kxf\Utility\CallbackAdapters.h" />
     <ClInclude Include="kxf\Utility\Enumerator.h" />
