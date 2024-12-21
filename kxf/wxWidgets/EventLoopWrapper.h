@@ -2,7 +2,9 @@
 #include "kxf/Application/IEventLoop.h"
 #include "kxf/Core/OptionalPtr.h"
 #include "kxf/RTTI/RTTI.h"
+
 #include <wx/evtloop.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {

@@ -7,6 +7,9 @@
 #include "kxf/wxWidgets/String.h"
 #include <cctype>
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace
 {
 	std::strong_ordering DoCompareStrings(std::string_view left, std::string_view right, bool ignoreCase) noexcept
@@ -591,12 +594,12 @@ namespace kxf
 	// Case conversion
 	String& String::MakeLower() noexcept
 	{
-		::CharLowerBuffW(m_String.data(), m_String.length());
+		::CharLowerBuffW(m_String.data(), m_String.size());
 		return *this;
 	}
 	String& String::MakeUpper() noexcept
 	{
-		::CharUpperBuffW(m_String.data(), m_String.length());
+		::CharUpperBuffW(m_String.data(), m_String.size());
 		return *this;
 	}
 

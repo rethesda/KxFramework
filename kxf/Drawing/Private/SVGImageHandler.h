@@ -1,5 +1,8 @@
 #pragma once
 #include "../IImageHandler.h"
+#include "wx/image.h"
+#include "kxf/Win32/UndefMacros.h"
+
 class wxImage;
 class wxInputStream;
 class wxOutputStream;

@@ -1,9 +1,9 @@
 #include "kxf-pch.h"
 #include "Font.h"
 #include "kxf/wxWidgets/MapDrawing.h"
-#include <wx/dc.h>
 #include <wx/font.h>
 #include <wx/fontutil.h>
+#include <wx/dcscreen.h>
 
 namespace
 {

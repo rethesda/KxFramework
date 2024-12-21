@@ -74,7 +74,7 @@ namespace kxf
 		if (handle)
 		{
 			BITMAP bitmap = {};
-			if (::GetObject(handle, sizeof(bitmap), &bitmap) != 0)
+			if (::GetObjectW(handle, sizeof(bitmap), &bitmap) != 0)
 			{
 				m_Bitmap.InitFromHBITMAP(reinterpret_cast<WXHBITMAP>(handle), bitmap.bmWidth, bitmap.bmHeight, bitmap.bmBitsPixel);
 				return;

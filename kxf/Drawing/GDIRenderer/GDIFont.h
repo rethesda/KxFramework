@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include <wx/font.h>
+#include "kxf/Win32/UndefMacros.h"
 #include "kxf/wxWidgets/MapDrawing.h"
 
 namespace kxf

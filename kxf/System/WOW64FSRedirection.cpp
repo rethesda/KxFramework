@@ -2,6 +2,9 @@
 #include "WOW64FSRedirection.h"
 #include "NativeAPI.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace kxf
 {
 	DisableWOW64FSRedirection::DisableWOW64FSRedirection() noexcept

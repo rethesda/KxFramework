@@ -75,7 +75,7 @@ namespace kxf
 {
 	const SoftwareLicenseDB& SoftwareLicenseDB::Get()
 	{
-		kxf::SoftwareLicenseDB instance;
+		static kxf::SoftwareLicenseDB instance;
 		return instance;
 	}
 

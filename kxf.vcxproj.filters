@@ -178,9 +178,6 @@
     <Filter Include="kxf/+Resources\SoftwareLicenseDB">
       <UniqueIdentifier>{09f70c3f-0b6b-49ae-afff-9f9e5b894dc5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="kxf\Widgets">
-      <UniqueIdentifier>{04e275a4-9abe-4a92-abca-c9b0b278bf56}</UniqueIdentifier>
-    </Filter>
     <Filter Include="kxf\wxWidgets">
       <UniqueIdentifier>{025a1a1a-8594-467f-b759-9e5ca71ddd88}</UniqueIdentifier>
     </Filter>
@@ -1413,6 +1410,12 @@
     <ClInclude Include="kxf\Drawing\GDIRenderer\Private.h">
       <Filter>kxf\Drawing\GDIRenderer</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\wxWidgets\Setup-IncludeBasic.h">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\Win32\Include-Network.h">
+      <Filter>kxf\Win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf\EventSystem\EventBuilder.cpp">
@@ -2035,6 +2038,12 @@
     </ClCompile>
     <ClCompile Include="kxf\Drawing\GDIRenderer\GDIIcon.cpp">
       <Filter>kxf\Drawing\GDIRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\wxWidgets\Setup.cpp">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\wxWidgets\SystemOptions.cpp">
+      <Filter>kxf\wxWidgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

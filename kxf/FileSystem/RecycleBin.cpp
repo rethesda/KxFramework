@@ -4,13 +4,11 @@
 #include "kxf/System/ShellOperations.h"
 #include "kxf/Utility/Common.h"
 
-#include <shellapi.h>
+#include "kxf/Win32/Include-Shell.h"
 #include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
-	kxf::NativeFileSystem g_NativeFS;
-
 	// https://stackoverflow.com/questions/16160052/win32api-restore-file-from-recyclebin-using-shfilestruct
 	// https://stackoverflow.com/questions/23720519/how-to-safely-delete-folder-into-recycle-bin
 	// https://www.codeproject.com/Articles/2783/How-to-programmatically-use-the-Recycle-Bin
@@ -32,11 +30,11 @@ namespace
 namespace kxf
 {
 	RecycleBin::RecycleBin(LegacyVolume volume)
-		:RecycleBin(volume, g_NativeFS)
+		:RecycleBin(volume, nullptr)
 	{
 	}
-	RecycleBin::RecycleBin(LegacyVolume volume, IFileSystem& fileSystem)
-		:m_Volume(volume), m_FileSystem(&fileSystem)
+	RecycleBin::RecycleBin(LegacyVolume volume, std::shared_ptr<IFileSystem> fileSystem)
+		:m_Volume(volume), m_FileSystem(std::move(fileSystem))
 	{
 		if (volume)
 		{
@@ -45,15 +43,20 @@ namespace kxf
 			m_Path[2] = '\\';
 			m_Path[3] = '\0';
 		}
+
+		if (m_FileSystem)
+		{
+			m_FileSystem = std::make_shared<kxf::NativeFileSystem>();
+		}
 	}
 
 	bool RecycleBin::IsEnabled() const
 	{
 		return m_Volume && !GetSize().IsValid();
 	}
-	void RecycleBin::SetWindow(wxWindow* window)
+	void RecycleBin::SetWindow(SystemWindow window)
 	{
-		m_Window = wxGetTopLevelParent(window);
+		m_Window = std::move(window);
 	}
 
 	DataSize RecycleBin::GetSize() const
@@ -75,7 +78,7 @@ namespace kxf
 	bool RecycleBin::ClearItems(FlagSet<FSActionFlag> flags)
 	{
 		DWORD emptyFlags = m_Window ? 0 : SHERB_NOCONFIRMATION|SHERB_NOPROGRESSUI|SHERB_NOSOUND;
-		return ::SHEmptyRecycleBinW(m_Window ? m_Window->GetHandle() : nullptr, m_Path, emptyFlags) == S_OK;
+		return ::SHEmptyRecycleBinW(static_cast<HWND>(m_Window.GetHandle()), m_Path, emptyFlags) == S_OK;
 	}
 
 	FileItem RecycleBin::GetItem(const FSPath& path) const

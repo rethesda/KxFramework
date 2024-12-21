@@ -1,6 +1,9 @@
 #include "kxf-pch.h"
 #include "LocaleOptions.h"
+
+#include <Windows.h>
 #include <WinNls.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::Localization::Private
 {

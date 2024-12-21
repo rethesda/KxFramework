@@ -3,6 +3,7 @@
 #include "kxf/DateTime/TimeSpan.h"
 #include "kxf/DateTime/TimeZone.h"
 #include <wx/datetime.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {

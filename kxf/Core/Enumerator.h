@@ -200,10 +200,13 @@ namespace kxf
 
 			// TValue func(void);
 			template<class TFunc, std::enable_if_t<std::is_same_v<std::invoke_result_t<TFunc>, TValue>, int> = 0>
-			Enumerator(TFunc&& func, std::optional<size_t> count = {}) noexcept
+			Enumerator(TFunc&& func, std::optional<size_t> count = {})
 				:m_TotalCount(count.value_or(npos))
 			{
-				wxASSERT_MSG(count.has_value() && *count != npos, "Producer function with no way to signal termination must only be used with known total limit");
+				if (!count.has_value() || *count == npos)
+				{
+					throw std::runtime_error("Producer function with no way to signal termination must only be used with a known total limit");
+				}
 
 				m_MoveNext = [func = std::forward<TFunc>(func)](IEnumerator& enumerator) mutable -> TValueContainer
 				{

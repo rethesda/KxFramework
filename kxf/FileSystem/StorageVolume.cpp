@@ -10,6 +10,9 @@
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/ScopeGuard.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace
 {
 	using namespace kxf;
@@ -122,7 +125,7 @@ namespace kxf
 			if (driveLetter <= g_LastLegacyVolume)
 			{
 				XChar disk[] = kxfS("\0:\\");
-				disk[0] = driveLetter++;
+				disk[0] = static_cast<XChar>(driveLetter++);
 
 				XChar volumeGuidPath[64] = {};
 				if (::GetVolumeNameForVolumeMountPointW(disk, volumeGuidPath, std::size(volumeGuidPath)))

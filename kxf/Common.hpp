@@ -42,7 +42,7 @@
 #include <span>
 #include <bit>
 
-// Essential headers
+// kxf
 #include "kxf/wxWidgets/Setup.h"
 #include "kxf/Core/FlagSet.h"
 #include "kxf/Utility/Literals.h"

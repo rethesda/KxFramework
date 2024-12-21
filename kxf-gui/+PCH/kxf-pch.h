@@ -4,4 +4,5 @@
 
 // kxf
 #include "kxf/pch.hpp"
+#include "kxf-gui/pch.hpp"
 #include "kxf/Core/String.h"

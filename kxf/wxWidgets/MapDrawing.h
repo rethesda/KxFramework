@@ -11,6 +11,7 @@ enum wxPenStyle;
 enum wxHatchStyle;
 enum wxFloodFillStyle;
 enum wxPolygonFillMode;
+enum wxDeprecatedGUIConstants;
 
 enum wxFontStyle;
 enum wxFontWeight;

@@ -4,6 +4,7 @@
 #include "kxf/EventSystem/EvtHandler.h"
 #include "kxf/Core/OptionalPtr.h"
 #include <wx/event.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {

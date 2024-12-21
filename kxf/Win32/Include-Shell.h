@@ -8,3 +8,4 @@
 #include <shlwapi.h>
 #include <shlguid.h>
 #include <Shldisp.h>
+#include <shellapi.h>

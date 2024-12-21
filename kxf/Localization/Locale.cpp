@@ -4,6 +4,10 @@
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/String.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+#pragma warning(disable: 4267)
+
 namespace
 {
 	using CharTraits = std::char_traits<wchar_t>;

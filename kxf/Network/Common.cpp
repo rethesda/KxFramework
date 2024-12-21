@@ -3,9 +3,7 @@
 #include "URI.h"
 #include "kxf/Utility/ScopeGuard.h"
 
-#include <WinINet.h>
-#include <WinDNS.h>
-#include <ws2tcpip.h>
+#include "kxf/Win32/Include-Network.h"
 #include "kxf/Win32/LinkLibs-Network.h"
 #include "kxf/Win32/UndefMacros.h"
 

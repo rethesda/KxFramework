@@ -2,6 +2,9 @@
 #include "Library.h"
 #include "kxf/System/HResult.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace
 {
 	using CreateObjectFunc = HRESULT(__stdcall*)(const ::GUID* classID, const ::GUID* interfaceID, void** outObject);

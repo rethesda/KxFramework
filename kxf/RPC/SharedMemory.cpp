@@ -1,8 +1,10 @@
 #include "kxf-pch.h"
 #include "SharedMemory.h"
-#include <Windows.h>
 #include "kxf/System/Private/System.h"
 #include "kxf/Utility/Memory.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {

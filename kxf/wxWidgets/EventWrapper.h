@@ -9,6 +9,7 @@
 #include "kxf/EventSystem/Private/EventWaitInfo.h"
 #include <wx/object.h>
 #include <wx/event.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {

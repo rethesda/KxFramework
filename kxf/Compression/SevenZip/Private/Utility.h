@@ -2,8 +2,10 @@
 #include "../Common.h"
 #include "kxf/System/COM.h"
 #include "kxf/System/VariantProperty.h"
+
 #include <7zip/CPP/7zip/Archive/IArchive.h>
 #include <7zip/C/7zTypes.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::SevenZip::Private
 {

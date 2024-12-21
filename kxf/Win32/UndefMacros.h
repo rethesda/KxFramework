@@ -34,6 +34,7 @@
 #undef GetCommandLine
 #undef CreateProcess
 #undef GetUserName
+#undef GetClassName
 #undef FindFirstFile
 #undef FindNextFile
 #undef GetEnvironmentVariable
@@ -64,3 +65,4 @@
 #undef PostMessage
 #undef PostThreadMessage
 #undef InsertMenu
+#undef Yield

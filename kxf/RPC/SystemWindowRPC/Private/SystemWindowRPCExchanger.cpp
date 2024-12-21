@@ -7,7 +7,9 @@
 #include "kxf/Threading/IThreadPool.h"
 #include "kxf/EventSystem/IEvtHandler.h"
 #include "kxf/Application/ICoreApplication.h"
+
 #include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {

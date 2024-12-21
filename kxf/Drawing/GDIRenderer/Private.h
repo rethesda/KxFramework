@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <wx/gdicmn.h>
 #include <wx/msw/gdiimage.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::Drawing::Private
 {
@@ -32,7 +33,7 @@ namespace kxf::Drawing::Private
 				auto GetBitmapInfo = [](void* handle, Size& size, ColorDepth& depth)
 				{
 					BITMAP bitmap = {};
-					if (::GetObject(handle, sizeof(bitmap), &bitmap) != 0)
+					if (::GetObjectW(handle, sizeof(bitmap), &bitmap) != 0)
 					{
 						size = {bitmap.bmWidth, bitmap.bmHeight};
 						depth = bitmap.bmBitsPixel;

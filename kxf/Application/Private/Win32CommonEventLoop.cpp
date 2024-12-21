@@ -2,7 +2,9 @@
 #include "Win32CommonEventLoop.h"
 #include "kxf/Application/ICoreApplication.h"
 #include "kxf/Log/ScopedLogger.h"
+
 #include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::EventSystem::Private
 {

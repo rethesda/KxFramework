@@ -3,6 +3,7 @@
 #include <string>
 #include <wx/string.h>
 #include <wx/buffer.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf
 {

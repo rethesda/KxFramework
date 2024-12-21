@@ -21,19 +21,20 @@ namespace kxf
 			std::unique_ptr<wxImage> m_Image;
 
 		public:
-			BitmapImage() = default;
+			BitmapImage();
 			BitmapImage(const wxIcon& other);
 			BitmapImage(const wxImage& other);
 			BitmapImage(const wxBitmap& other);
 			BitmapImage(const wxCursor& other);
-			BitmapImage(const BitmapImage& other);
-			BitmapImage(BitmapImage&&) noexcept = default;
 
 			BitmapImage(const Size& size);
 			BitmapImage(const Size& size, uint8_t* rgb);
 			BitmapImage(const Size& size, uint8_t* rgb, uint8_t* alpha);
 			BitmapImage(const Size& size, wxMemoryBuffer& rgb);
 			BitmapImage(const Size& size, wxMemoryBuffer& rgb, wxMemoryBuffer& alpha);
+
+			BitmapImage(const BitmapImage& other);
+			BitmapImage(BitmapImage&&) noexcept;
 
 			~BitmapImage();
 
@@ -169,7 +170,7 @@ namespace kxf
 			}
 
 			BitmapImage& operator=(const BitmapImage& other);
-			BitmapImage& operator=(BitmapImage&& other) noexcept = default;
+			BitmapImage& operator=(BitmapImage&&) noexcept;
 	};
 }
 

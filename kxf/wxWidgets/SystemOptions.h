@@ -1,8 +1,7 @@
 #pragma once
 #include "Common.h"
-#include "kxf/Drawing/Color.h"
 #include "kxf/Core/String.h"
-#include <wx/sysopt.h>
+#include "kxf/Drawing/Color.h"
 
 namespace kxf::wxWidgets::SystemOption
 {
@@ -47,51 +46,15 @@ namespace kxf::wxWidgets
 	class KXF_API SystemOptions final
 	{
 		public:
-			static String GetOption(const String& name)
-			{
-				return wxSystemOptions::GetOption(name);
-			}
-			static Color GetOptionColor(const String& name)
-			{
-				if (wxSystemOptions::HasOption(name))
-				{
-					return Color::FromCOLORREF(static_cast<uint32_t>(wxSystemOptions::GetOptionInt(name)));
-				}
-				return {};
-			}
-			static std::optional<bool> GetOptionBool(const String& name)
-			{
-				if (wxSystemOptions::HasOption(name))
-				{
-					return wxSystemOptions::GetOptionInt(name) != 0;
-				}
-				return {};
-			}
-			static std::optional<int> GetOptionInt(const String& name)
-			{
-				if (wxSystemOptions::HasOption(name))
-				{
-					return wxSystemOptions::GetOptionInt(name);
-				}
-				return {};
-			}
+			static String GetOptionString(const String& name);
+			static Color GetOptionColor(const String& name);
+			static std::optional<bool> GetOptionBool(const String& name);
+			static std::optional<int> GetOptionInt(const String& name);
 
-			static void SetOption(const String& name, const String& value)
-			{
-				wxSystemOptions::SetOption(name, value);
-			}
-			static void SetOption(const String& name, const Color& value)
-			{
-				wxSystemOptions::SetOption(name, static_cast<int>(value.GetCOLORREF()));
-			}
-			static void SetOption(const String& name, bool value)
-			{
-				wxSystemOptions::SetOption(name, value ? 1 : 0);
-			}
-			static void SetOption(const String& name, int value)
-			{
-				wxSystemOptions::SetOption(name, value);
-			}
+			static void SetOption(const String& name, const String& value);
+			static void SetOption(const String& name, const Color& value);
+			static void SetOption(const String& name, bool value);
+			static void SetOption(const String& name, int value);
 
 		public:
 			SystemOptions() = delete;

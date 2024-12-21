@@ -4,6 +4,9 @@
 #include "kxf/System/Private/Shell.h"
 #include "kxf/System/Private/System.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace kxf::System
 {
 	bool ProcessPipe::Create() noexcept

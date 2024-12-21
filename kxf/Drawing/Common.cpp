@@ -6,10 +6,11 @@
 #include "GDIRenderer/GDIBitmap.h"
 #include "kxf/wxWidgets/StreamWrapper.h"
 #include "kxf/Utility/ScopeGuard.h"
-#include <wx/image.h>
 
+#include <wx/image.h>
 #include <Windows.h>
 #include "kxf/Win32/LinkLibs-GUI.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::Drawing
 {

@@ -5,6 +5,7 @@
 #include "kxf/Core/Any.h"
 #include "kxf/Utility/ScopeGuard.h"
 
+#include <Windows.h>
 #include <propvarutil.h>
 #include <propidlbase.h>
 #include "kxf/Win32/LinkLibs-COM.h"
@@ -123,7 +124,7 @@ namespace kxf
 	{
 		if (&other != &m_PropVariant)
 		{
-			std::memcpy(reinterpret_cast<PROPVARIANT*>(&m_PropVariant), &other, sizeof(PROPVARIANT));
+			std::memcpy(m_PropVariant.get(), &other, sizeof(PROPVARIANT));
 
 			std::memset(&other, 0, sizeof(PROPVARIANT));
 			other.vt = VT_EMPTY;
@@ -337,12 +338,17 @@ namespace kxf
 
 	VariantProperty::VariantProperty() noexcept
 	{
+		m_PropVariant.Construct();
 		m_PropVariant->vt = VT_EMPTY;
 		m_PropVariant->wReserved1 = 0;
 	}
 	VariantProperty::~VariantProperty() noexcept
 	{
-		DoClear();
+		if (m_PropVariant.IsConstructed())
+		{
+			DoClear();
+			m_PropVariant.Destroy();
+		}
 	}
 
 	int VariantProperty::GetNativeType() const noexcept

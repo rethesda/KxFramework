@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "kxf/Drawing/IImage2D.h"
 #include <wx/icon.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf
 {

@@ -4,8 +4,10 @@
 #include "PasswordHandler.h"
 #include "kxf/Core/ErrorCode.h"
 #include "kxf/System/COM.h"
+
 #include <7zip/CPP/7zip/Archive/IArchive.h>
 #include <7zip/CPP/7zip/IPassword.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::SevenZip::Private::Callback
 {

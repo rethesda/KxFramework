@@ -4,7 +4,9 @@
 #include "kxf/wxWidgets/MapDrawing.h"
 #include "kxf/wxWidgets/StreamWrapper.h"
 #include <wx/bitmap.h>
+#include <wx/cursor.h>
 #include <wx/image.h>
+#include <wx/icon.h>
 
 namespace
 {
@@ -73,6 +75,7 @@ namespace kxf
 		return wxImage::GetImageCount(warpper, wxWidgets::MapImageFormat(format));
 	}
 
+	BitmapImage::BitmapImage() = default;
 	BitmapImage::BitmapImage(const wxIcon& other)
 	{
 		if (other.IsOk())
@@ -100,13 +103,6 @@ namespace kxf
 			m_Image = std::make_unique<wxImage>(bitmap.ConvertToImage());
 		}
 	}
-	BitmapImage::BitmapImage(const BitmapImage& other)
-	{
-		if (other)
-		{
-			m_Image = std::make_unique<wxImage>(*other.m_Image);
-		}
-	}
 
 	BitmapImage::BitmapImage(const Size& size)
 		:m_Image(std::make_unique<wxImage>(size.GetWidth(), size.GetHeight(), false))
@@ -129,6 +125,14 @@ namespace kxf
 	{
 	}
 
+	BitmapImage::BitmapImage(const BitmapImage& other)
+	{
+		if (other)
+		{
+			m_Image = std::make_unique<wxImage>(*other.m_Image);
+		}
+	}
+	BitmapImage::BitmapImage(BitmapImage&&) noexcept = default;
 	BitmapImage::~BitmapImage() = default;
 
 	// IImage2D
@@ -934,6 +938,7 @@ namespace kxf
 		}
 		return *this;
 	}
+	BitmapImage& BitmapImage::operator=(BitmapImage&&) noexcept = default;
 }
 
 namespace kxf

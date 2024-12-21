@@ -2,6 +2,9 @@
 #include "SafeArray.h"
 #include "COM.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace kxf
 {
 	HResult SafeArray::DoClear() noexcept

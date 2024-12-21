@@ -5,6 +5,7 @@
 #include "kxf/Serialization/BinarySerializer.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/Numeric.h"
+#include <numbers>
 #include <cmath>
 class wxSize;
 class wxPoint;
@@ -17,7 +18,7 @@ class wxRect2DDouble;
 
 namespace kxf::Geometry
 {
-	constexpr int DefaultCoord = wxDefaultCoord;
+	constexpr int DefaultCoord = -1;
 
 	enum class OutCode: uint32_t
 	{
@@ -297,7 +298,7 @@ namespace kxf::Geometry
 				}
 				else
 				{
-					double deg = std::atan2(m_Y, m_X) * 180.0 / M_PI;
+					double deg = std::atan2(m_Y, m_X) * 180.0 / std::numbers::pi;
 					if (deg < 0)
 					{
 						deg += 360;
@@ -310,8 +311,8 @@ namespace kxf::Geometry
 				const double length = GetVectorLength();
 				const double degrees = angle.ToDegrees();
 
-				m_X = length * std::cos(degrees / 180.0 * M_PI);
-				m_Y = length * std::sin(degrees / 180.0 * M_PI);
+				m_X = length * std::cos(degrees / 180.0 * std::numbers::pi);
+				m_Y = length * std::sin(degrees / 180.0 * std::numbers::pi);
 				return Self();
 			}
 
@@ -1166,7 +1167,7 @@ namespace kxf::Geometry
 
 			template<class T>
 			constexpr BasicSize(const BasicSize<T>& other) noexcept
-				:TBase(other.GetWidth(), other.GetHeight())
+				:TBase(static_cast<TValue_>(other.GetWidth()), static_cast<TValue_>(other.GetHeight()))
 			{
 			}
 

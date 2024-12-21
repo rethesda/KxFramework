@@ -76,10 +76,6 @@ namespace kxf
 
 		public:
 			bool SetDictionary(const void* data, size_t size);
-			bool SetDictionary(const wxMemoryBuffer& buffer)
-			{
-				return SetDictionary(buffer.GetData(), buffer.GetDataLen());
-			}
 	};
 }
 

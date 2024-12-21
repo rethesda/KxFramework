@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "kxf/Win32/UndefMacros.h"
+struct _GUID;
 
 namespace kxf
 {
@@ -194,12 +195,12 @@ namespace kxf::NativeAPI
 	}
 	namespace DXGI
 	{
-		kxf_NativeAPI_DeclateFunc(HRESULT, kxf_NativeAPI, CreateDXGIFactory1, const ::IID&, void**);
-		kxf_NativeAPI_DeclateFunc(HRESULT, kxf_NativeAPI, CreateDXGIFactory2, UINT, const ::IID&, void**);
+		kxf_NativeAPI_DeclateFunc(HRESULT, kxf_NativeAPI, CreateDXGIFactory1, const IID&, void**);
+		kxf_NativeAPI_DeclateFunc(HRESULT, kxf_NativeAPI, CreateDXGIFactory2, UINT, const IID&, void**);
 	}
 	namespace DComp
 	{
-		kxf_NativeAPI_DeclateFunc(HRESULT, kxf_NativeAPI, DCompositionCreateDevice, IDXGIDevice*, const ::IID&, void**);
+		kxf_NativeAPI_DeclateFunc(HRESULT, kxf_NativeAPI, DCompositionCreateDevice, IDXGIDevice*, const IID&, void**);
 	}
 }
 

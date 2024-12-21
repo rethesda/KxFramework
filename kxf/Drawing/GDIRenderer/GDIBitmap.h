@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "kxf/Drawing/IImage2D.h"
 #include <wx/bitmap.h>
+#include "kxf/Win32/UndefMacros.h"
 class wxDC;
 
 namespace kxf

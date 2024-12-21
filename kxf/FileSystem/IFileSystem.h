@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "FSPath.h"
-#include "StorageVolume.h"
 #include "kxf/Core/DataSize.h"
 #include "kxf/Core/CallbackFunction.h"
 #include "kxf/Core/LocallyUniqueID.h"

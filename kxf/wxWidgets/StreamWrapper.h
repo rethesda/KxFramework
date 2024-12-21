@@ -3,6 +3,7 @@
 #include "kxf/Core/OptionalPtr.h"
 #include "kxf/IO/IStream.h"
 #include <wx/stream.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {

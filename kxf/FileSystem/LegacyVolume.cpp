@@ -4,6 +4,9 @@
 #include "kxf/Core/Enumerator.h"
 #include "kxf/Utility/Common.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace
 {
 	constexpr char g_FirstLegacyVolume = 'A';
@@ -27,7 +30,7 @@ namespace kxf
 			{
 				if (driveMask & 1 << index)
 				{
-					return FromIndex(index);
+					return FromIndex(static_cast<int>(index));
 				}
 				en.SkipCurrent();
 			}
