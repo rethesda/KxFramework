@@ -4,6 +4,7 @@
 
 #include "OpenSSL/opensslv.h"
 #include "kxf/Win32/LinkLibs-Crypto.h"
+#include "kxf/Win32/LinkLibs-Network.h"
 
 namespace kxf::Crypto
 {
