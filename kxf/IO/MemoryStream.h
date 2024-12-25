@@ -306,7 +306,7 @@ namespace kxf
 			}
 
 			// IReadableOutputStream
-			std::unique_ptr<IInputStream> CreateInputStream() const override;
+			std::shared_ptr<IInputStream> CreateInputStream() const override;
 
 		public:
 			MemoryOutputStream& operator=(const MemoryOutputStream&) = delete;

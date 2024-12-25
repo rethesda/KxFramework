@@ -236,7 +236,7 @@ namespace kxf
 		return {};
 	}
 
-	std::unique_ptr<IInputStream> CURLWebResponse::GetStream() const
+	std::shared_ptr<IInputStream> CURLWebResponse::GetStream() const
 	{
 		if (m_Request.m_ReceiveStream)
 		{

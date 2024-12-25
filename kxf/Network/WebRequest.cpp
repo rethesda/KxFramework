@@ -5,11 +5,11 @@
 
 namespace kxf::Network
 {
-	std::unique_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor)
+	std::shared_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor)
 	{
 		if (uri)
 		{
-			std::unique_ptr<IWebSession> session;
+			std::shared_ptr<IWebSession> session;
 
 			const auto scheme = uri.GetScheme();
 			if (scheme.IsSameAs("ws", StringActionFlag::IgnoreCase) || scheme.IsSameAs("wss", StringActionFlag::IgnoreCase))

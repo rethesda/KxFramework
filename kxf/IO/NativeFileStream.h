@@ -103,7 +103,7 @@ namespace kxf
 			bool SetAllocationSize(DataSize allocationSize) override;
 
 			// IReadableOutputStream
-			std::unique_ptr<IInputStream> CreateInputStream() const override;
+			std::shared_ptr<IInputStream> CreateInputStream() const override;
 
 			// INativeStream
 			void* GetHandle() const override

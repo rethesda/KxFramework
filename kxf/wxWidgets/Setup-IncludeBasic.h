@@ -13,4 +13,5 @@
 #include <wx/mstream.h>
 #include <wx/datetime.h>
 #include <wx/cmdline.h>
+
 #include "kxf/Win32/UndefMacros.h"

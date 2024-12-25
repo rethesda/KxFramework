@@ -11,8 +11,6 @@
 #include "WebRequest/IWebRequestProxyOptions.h"
 #include "WebRequest/IWebRequestSecurityOptions.h"
 
-#include "kxf/Core/OptionalPtr.h"
-
 namespace kxf
 {
 	class IAsyncTaskExecutor;
@@ -20,5 +18,5 @@ namespace kxf
 
 namespace kxf::Network
 {
-	KXF_API std::unique_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor = {});
+	KXF_API std::shared_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor = {});
 }

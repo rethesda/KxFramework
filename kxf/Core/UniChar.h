@@ -21,7 +21,7 @@ namespace kxf
 
 namespace kxf
 {
-	class UniChar final
+	class KXF_API UniChar final
 	{
 		private:
 			char32_t m_Value = 0;

@@ -288,12 +288,12 @@ namespace kxf
 	}
 
 	// IReadableOutputStream
-	std::unique_ptr<IInputStream> NativeFileStream::CreateInputStream() const
+	std::shared_ptr<IInputStream> NativeFileStream::CreateInputStream() const
 	{
 		NativeFileStream stream(GetFilePath(), IOStreamAccess::Read, IOStreamDisposition::OpenExisting, IOStreamShare::Everything, m_Flags);
 		if (stream)
 		{
-			return std::make_unique<NativeFileStream>(std::move(stream));
+			return std::make_shared<NativeFileStream>(std::move(stream));
 		}
 		return nullptr;
 	}

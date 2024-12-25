@@ -7,7 +7,7 @@
 
 namespace kxf
 {
-	class WebRequestEvent: public BasicEvent
+	class KXF_API WebRequestEvent: public BasicEvent
 	{
 		public:
 			kxf_EVENT_MEMBER(WebRequestEvent, StateChanged);

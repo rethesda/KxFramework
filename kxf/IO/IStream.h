@@ -105,7 +105,7 @@ namespace kxf
 		kxf_RTTI_DeclareIID(IWriteableInputStream, {0xaad1e815, 0xa527, 0x4efc, {0xbf, 0x7a, 0xa0, 0xa2, 0x3c, 0xc, 0xd2, 0xd7}});
 
 		public:
-			virtual std::unique_ptr<IOutputStream> CreateOutputStream() const = 0;
+			virtual std::shared_ptr<IOutputStream> CreateOutputStream() const = 0;
 	};
 
 	class KXF_API IReadableOutputStream: public RTTI::Interface<IReadableOutputStream>
@@ -113,6 +113,6 @@ namespace kxf
 		kxf_RTTI_DeclareIID(IReadableOutputStream, {0x905227ef, 0xa85, 0x4b86, {0xb6, 0x34, 0xca, 0x83, 0x11, 0xc3, 0xbd, 0x34}});
 
 		public:
-			virtual std::unique_ptr<IInputStream> CreateInputStream() const = 0;
+			virtual std::shared_ptr<IInputStream> CreateInputStream() const = 0;
 	};
 }

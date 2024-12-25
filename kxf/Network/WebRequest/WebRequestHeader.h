@@ -3,7 +3,7 @@
 
 namespace kxf
 {
-	class WebRequestHeader final
+	class KXF_API WebRequestHeader final
 	{
 		friend struct std::hash<WebRequestHeader>;
 

@@ -92,7 +92,7 @@ namespace kxf
 		return {};
 	}
 
-	std::unique_ptr<IInputStream> WSPPWebResponse::GetStream() const
+	std::shared_ptr<IInputStream> WSPPWebResponse::GetStream() const
 	{
 		if (m_Request.m_ReceiveStream)
 		{

@@ -407,4 +407,3 @@ namespace kxf::NativeAPI::Private
 			}
 	};
 }
-

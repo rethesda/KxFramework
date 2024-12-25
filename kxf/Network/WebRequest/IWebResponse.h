@@ -11,7 +11,7 @@ namespace kxf
 
 namespace kxf
 {
-	class IWebResponse: public RTTI::Interface<IWebResponse>
+	class KXF_API IWebResponse: public RTTI::Interface<IWebResponse>
 	{
 		kxf_RTTI_DeclareIID(IWebResponse, {0x24f29008, 0x76c7, 0x42e7, {0x9f, 0x6b, 0x3, 0xcc, 0x4, 0xf3, 0xda, 0x33}});
 
@@ -33,7 +33,7 @@ namespace kxf
 			virtual Enumerator<String> EnumCookies() const = 0;
 
 			virtual FSPath GetSuggestedFilePath() const;
-			virtual std::unique_ptr<IInputStream> GetStream() const = 0;
+			virtual std::shared_ptr<IInputStream> GetStream() const = 0;
 
 			virtual String GetAsString() const;
 			virtual JSONDocument GetAsJSON() const;
@@ -46,7 +46,11 @@ namespace kxf
 	class NullWebResponse final: public IWebResponse
 	{
 		public:
-			static IWebResponse& Get();
+			static IWebResponse& Get()
+			{
+				static NullWebResponse instance;
+				return instance;
+			}
 
 		public:
 			URI GetURI() const override
@@ -99,6 +103,6 @@ namespace kxf
 			Enumerator<String> EnumCookies() const override;
 
 			FSPath GetSuggestedFilePath() const override;
-			std::unique_ptr<IInputStream> GetStream() const override;
+			std::shared_ptr<IInputStream> GetStream() const override;
 	};
 }

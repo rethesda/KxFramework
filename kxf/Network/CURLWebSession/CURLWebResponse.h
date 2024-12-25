@@ -54,6 +54,6 @@ namespace kxf
 			Enumerator<WebRequestHeader> EnumHeaders() const override;
 			Enumerator<String> EnumCookies() const override;
 
-			std::unique_ptr<IInputStream> GetStream() const override;
+			std::shared_ptr<IInputStream> GetStream() const override;
 	};
 }

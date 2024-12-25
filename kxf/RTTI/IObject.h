@@ -108,7 +108,7 @@ namespace kxf::RTTI
 			QueryInfo& operator=(QueryInfo&&) noexcept = default;
 	};
 
-	void DebugPrint(const char* str) noexcept;
+	KXF_API void DebugPrint(const char* str) noexcept;
 
 	template<class T>
 	RTTI::QueryInfo Cast(T& object, const IID& iid) noexcept

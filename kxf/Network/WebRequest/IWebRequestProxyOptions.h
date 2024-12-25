@@ -9,7 +9,7 @@ namespace kxf
 
 namespace kxf
 {
-	class IWebRequestProxyOptions: public RTTI::Interface<IWebRequestProxyOptions>
+	class KXF_API IWebRequestProxyOptions: public RTTI::Interface<IWebRequestProxyOptions>
 	{
 		kxf_RTTI_DeclareIID(IWebRequestProxyOptions, {0xc469b7d0, 0x28a9, 0x4f90, {0x88, 0x2d, 0x56, 0xd8, 0x55, 0xfb, 0x9f, 0xfc}});
 

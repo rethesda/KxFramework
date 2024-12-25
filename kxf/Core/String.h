@@ -30,8 +30,8 @@ namespace kxf
 
 namespace kxf
 {
-	std::basic_string_view<XChar> StringViewOf(const String& string) noexcept;
-	std::basic_string_view<XChar> StringViewOf(const wxString& string) noexcept;
+	KXF_API std::basic_string_view<XChar> StringViewOf(const String& string) noexcept;
+	KXF_API std::basic_string_view<XChar> StringViewOf(const wxString& string) noexcept;
 
 	template<class T>
 	constexpr std::basic_string_view<T> StringViewOf(const std::basic_string<T>& string) noexcept

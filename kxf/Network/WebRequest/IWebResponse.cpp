@@ -8,11 +8,6 @@
 #include "kxf/Serialization/JSON.h"
 #include "kxf/Serialization/XML.h"
 
-namespace
-{
-	kxf::NullWebResponse g_NullWebResponse;
-}
-
 namespace kxf
 {
 	FSPath IWebResponse::GetSuggestedFilePath() const
@@ -65,11 +60,6 @@ namespace kxf
 
 namespace kxf
 {
-	IWebResponse& NullWebResponse::Get()
-	{
-		return g_NullWebResponse;
-	}
-
 	Enumerator<WebRequestHeader> NullWebResponse::EnumHeaders() const
 	{
 		return {};
@@ -83,7 +73,7 @@ namespace kxf
 	{
 		return {};
 	}
-	std::unique_ptr<IInputStream> NullWebResponse::GetStream() const
+	std::shared_ptr<IInputStream> NullWebResponse::GetStream() const
 	{
 		return nullptr;
 	}
