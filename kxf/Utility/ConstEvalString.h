@@ -1,5 +1,6 @@
 #pragma once
 #include "kxf/Common.hpp"
+#include <string_view>
 #include <utility>
 
 namespace kxf::Utility
@@ -21,9 +22,13 @@ namespace kxf::Utility
 			{
 				return m_Value;
 			}
+			consteval std::basic_string_view<TChar> view() const noexcept
+			{
+				return {m_Value, size()};
+			}
 			consteval size_t size() const noexcept
 			{
-				return N - 1;
+				return N != 0 ? N - 1 : N;
 			}
 
 			consteval TChar at(size_t i) const noexcept
