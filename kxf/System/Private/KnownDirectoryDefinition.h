@@ -5,9 +5,9 @@
 
 namespace kxf::Shell::Private
 {
-	#define kxf_SHDItem(id)	{KnownDirectoryID::##id, kxfS(#id)}
+	#define kxf_SHDItem(id)	{KnownDirectoryID::##id, #id}
 
-	struct KnownDirectoryDefinition final: IndexedEnumDefinition<KnownDirectoryDefinition, KnownDirectoryID, StringView, true>
+	struct KnownDirectoryDefinition final: IndexedEnumDefinition<KnownDirectoryDefinition, KnownDirectoryID>
 	{
 		static inline constexpr TItem Items[] =
 		{

@@ -7,7 +7,7 @@ namespace kxf
 {
 	enum class HTTPStatusCode: uint32_t
 	{
-		Unknown = 0,
+		Unknown = std::numeric_limits<uint32_t>::max(),
 
 		Continue = 100,
 		SwitchingProtocols = 101,
@@ -79,7 +79,7 @@ namespace kxf
 
 namespace kxf
 {
-	struct HTTPStatusCodeDef final: public IndexedEnumDefinition<HTTPStatusCodeDef, HTTPStatusCode, std::string_view>
+	struct HTTPStatusCodeDef final: public IndexedEnumDefinition<HTTPStatusCodeDef, HTTPStatusCode>
 	{
 		inline static constexpr TItem Items[] =
 		{
@@ -154,24 +154,22 @@ namespace kxf
 
 namespace kxf
 {
-	class HTTPStatus final: public RTTI::DynamicImplementation<HTTPStatus, IErrorCode>, public IndexedEnumValue<HTTPStatusCodeDef, HTTPStatusCode::Unknown>
+	class HTTPStatus final: public RTTI::DynamicImplementation<HTTPStatus, IErrorCode>
 	{
 		kxf_RTTI_DeclareIID(HTTPStatus, {0xc9e3d90, 0xaf81, 0x48d8, {0x90, 0x25, 0xca, 0x15, 0x71, 0xec, 0x3d, 0x59}});
 
-		public:
-			HTTPStatus() noexcept = default;
-			HTTPStatus(HTTPStatusCode value) noexcept
-				:IndexedEnumValue(value)
+		private:
+			HTTPStatusCode m_Value = HTTPStatusCode::Unknown;
+
+		private:
+			constexpr bool IsInRange(uint32_t min, uint32_t max) const noexcept
 			{
-			}
-			HTTPStatus(TInt value) noexcept
-				:HTTPStatus(static_cast<HTTPStatusCode>(value))
-			{
+				return ToInt(m_Value) == std::clamp(ToInt(m_Value), min, max);
 			}
 
-			template<class T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
-			HTTPStatus(std::optional<T> value) noexcept
-				:HTTPStatus(value ? static_cast<HTTPStatusCode>(*value) : HTTPStatusCode::Unknown)
+		public:
+			HTTPStatus(HTTPStatusCode value = HTTPStatusCode::Unknown) noexcept
+				:m_Value(value)
 			{
 			}
 
@@ -185,21 +183,21 @@ namespace kxf
 			bool IsFail() const noexcept override
 			{
 				// [400, +]
-				return ToInt() >= 400;
+				return ToInt(m_Value) >= 400;
 			}
 
 			uint32_t GetValue() const noexcept override
 			{
-				return IndexedEnumValue::ToInt();
+				return ToInt(m_Value);
 			}
 			void SetValue(uint32_t value) noexcept override
 			{
-				IndexedEnumValue::SetValue(static_cast<HTTPStatusCode>(value));
+				m_Value = static_cast<HTTPStatusCode>(value);
 			}
 
 			String ToString() const override
 			{
-				return IndexedEnumValue::ToString();
+				return HTTPStatusCodeDef::QueryName(m_Value).value_or(NullString);
 			}
 			String GetMessage(const Locale& locale = {}) const override
 			{
@@ -210,11 +208,11 @@ namespace kxf
 			// HTTPStatus
 			HTTPStatusCode GetCode() const noexcept
 			{
-				return IndexedEnumValue::GetValue();
+				return m_Value;
 			}
 			void SetCode(HTTPStatusCode value) noexcept
 			{
-				IndexedEnumValue::SetValue(value);
+				m_Value = value;
 			}
 
 			bool IsInformation() const noexcept
@@ -236,22 +234,6 @@ namespace kxf
 			{
 				// [500, 600)
 				return IsInRange(500, 599);
-			}
-
-		public:
-			HTTPStatus& AddFlag(TEnum value) noexcept = delete;
-			HTTPStatus& RemoveFlag(TEnum value) noexcept = delete;
-			HTTPStatus& ModFlag(TEnum value, bool condition) noexcept = delete;
-			bool HasFlag(TEnum value) const noexcept = delete;
-			bool HasSpecifiedFlagOnly(TEnum value) const noexcept = delete;
-
-			explicit operator bool() const noexcept
-			{
-				return IsSuccess();
-			}
-			bool operator!() const noexcept
-			{
-				return IsFail();
 			}
 	};
 }
