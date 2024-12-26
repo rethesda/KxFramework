@@ -5,7 +5,7 @@
 
 namespace kxf::IO
 {
-	class InputStreamReader final
+	class KXF_API InputStreamReader final
 	{
 		private:
 			IInputStream& m_Stream;
@@ -219,7 +219,7 @@ namespace kxf::IO
 
 namespace kxf::IO
 {
-	class OutputStreamWriter final
+	class KXF_API OutputStreamWriter final
 	{
 		private:
 			IOutputStream& m_Stream;

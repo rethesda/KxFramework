@@ -54,7 +54,8 @@ namespace kxf
 		}
 		return m_ExecutablePath.GetFullPath();
 	}
-	std::unique_ptr<ISystemProcess> SystemProcessInfo::Spawn(EvtHandlerDelegate evtHandler, FlagSet<CreateSystemProcessFlag> flags)
+
+	std::shared_ptr<ISystemProcess> SystemProcessInfo::Spawn(EvtHandlerDelegate evtHandler, FlagSet<CreateSystemProcessFlag> flags)
 	{
 		return System::CreateProcess(*this, std::move(evtHandler), flags);
 	}

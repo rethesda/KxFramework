@@ -111,17 +111,17 @@ namespace kxf
 
 namespace kxf
 {
-	extern IEncodingConverter& EncodingConverter_WhateverWorks;
+	KXF_API extern IEncodingConverter& EncodingConverter_WhateverWorks;
 
-	extern IEncodingConverter& EncodingConverter_Local;
-	extern IEncodingConverter& EncodingConverter_ASCII;
-	extern IEncodingConverter& EncodingConverter_UTF8;
+	KXF_API extern IEncodingConverter& EncodingConverter_Local;
+	KXF_API extern IEncodingConverter& EncodingConverter_ASCII;
+	KXF_API extern IEncodingConverter& EncodingConverter_UTF8;
 
-	extern IEncodingConverter& EncodingConverter_UTF16LE;
-	extern IEncodingConverter& EncodingConverter_UTF16BE;
+	KXF_API extern IEncodingConverter& EncodingConverter_UTF16LE;
+	KXF_API extern IEncodingConverter& EncodingConverter_UTF16BE;
 
-	extern IEncodingConverter& EncodingConverter_UTF32LE;
-	extern IEncodingConverter& EncodingConverter_UTF32BE;
+	KXF_API extern IEncodingConverter& EncodingConverter_UTF32LE;
+	KXF_API extern IEncodingConverter& EncodingConverter_UTF32BE;
 
-	KXF_API std::unique_ptr<IEncodingConverter> GetNativeEncodingConverter(int codePage, FlagSet<uint32_t> flags = {});
+	KXF_API std::shared_ptr<IEncodingConverter> GetNativeEncodingConverter(int codePage, FlagSet<uint32_t> flags = {});
 }

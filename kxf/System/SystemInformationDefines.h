@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include <wx/settings.h>
 
 namespace kxf
 {
@@ -251,80 +250,80 @@ namespace kxf
 	{
 		None = 0,
 
-		FrameDecorations = wxSYS_CAN_DRAW_FRAME_DECORATIONS,
-		MinimizeFrame = wxSYS_CAN_ICONIZE_FRAME,
-		TabletPresent = wxSYS_TABLET_PRESENT,
+		FrameDecorations,
+		MinimizeFrame,
+		TabletPresent,
 	};
 
 	enum class SystemColor
 	{
-		Desktop = wxSYS_COLOUR_DESKTOP,
-		ScrollBar = wxSYS_COLOUR_SCROLLBAR,
-		AppWorkspace = wxSYS_COLOUR_APPWORKSPACE,
+		Desktop = 1,
+		ScrollBar = 0,
+		AppWorkspace = 12,
 
-		ActiveCaption = wxSYS_COLOUR_ACTIVECAPTION,
-		ActiveCaptionGradient = wxSYS_COLOUR_GRADIENTACTIVECAPTION,
-		InactiveCaption = wxSYS_COLOUR_INACTIVECAPTION,
-		InactiveCaptionGradient = wxSYS_COLOUR_GRADIENTINACTIVECAPTION,
-		InactiveCaptionText = wxSYS_COLOUR_INACTIVECAPTIONTEXT,
-		CaptionText = wxSYS_COLOUR_CAPTIONTEXT,
-		ActiveBroder = wxSYS_COLOUR_ACTIVEBORDER,
-		InactiveBroder = wxSYS_COLOUR_INACTIVEBORDER,
+		ActiveCaption = 2,
+		ActiveCaptionGradient = 27,
+		InactiveCaption = 3,
+		InactiveCaptionGradient = 28,
+		InactiveCaptionText = 19,
+		CaptionText = 9,
+		ActiveBroder = 10,
+		InactiveBroder = 11,
 
-		Menu = wxSYS_COLOUR_MENU,
-		MenuText = wxSYS_COLOUR_MENUTEXT,
-		MenuHighlight = wxSYS_COLOUR_MENUHILIGHT,
-		MenuBar = wxSYS_COLOUR_MENUBAR,
+		Menu = 4,
+		MenuText = 7,
+		MenuHighlight = 29,
+		MenuBar = 30,
 
-		Window = wxSYS_COLOUR_WINDOW,
-		WindowFrame = wxSYS_COLOUR_WINDOWFRAME,
-		WindowText = wxSYS_COLOUR_WINDOWTEXT,
-		Highlight = wxSYS_COLOUR_HIGHLIGHT,
-		HighlightText = wxSYS_COLOUR_HIGHLIGHTTEXT,
-		DisabledText = wxSYS_COLOUR_GRAYTEXT,
-		ShadowDark3D = wxSYS_COLOUR_3DDKSHADOW,
-		Light3D = wxSYS_COLOUR_3DLIGHT,
-		LightHot = wxSYS_COLOUR_HOTLIGHT,
+		Window = 5,
+		WindowFrame = 6,
+		WindowText = 8,
+		Highlight = 13,
+		HighlightText = 14,
+		DisabledText = 17,
+		ShadowDark3D = 21,
+		Light3D = 22,
+		LightHot = 26,
 
-		ButtonFace = wxSYS_COLOUR_BTNFACE,
-		ButtonShadow = wxSYS_COLOUR_BTNSHADOW,
-		ButtonHighlight = wxSYS_COLOUR_BTNHIGHLIGHT,
-		ButtonText = wxSYS_COLOUR_BTNTEXT,
+		ButtonFace = 15,
+		ButtonShadow = 16,
+		ButtonHighlight = 20,
+		ButtonText = 18,
 
-		TooltipText = wxSYS_COLOUR_INFOTEXT,
-		TooltipBackground = wxSYS_COLOUR_INFOBK,
+		TooltipText = 23,
+		TooltipBackground = 24,
 
-		ListBoxBackground = wxSYS_COLOUR_LISTBOX,
-		ListBoxText = wxSYS_COLOUR_LISTBOXTEXT,
-		ListBoxTextHighlight = wxSYS_COLOUR_LISTBOXHIGHLIGHTTEXT,
+		ListBoxBackground = 25,
+		ListBoxText = 31,
+		ListBoxTextHighlight = 32
 	};
 	enum class SystemFont
 	{
-		Default = wxSYS_SYSTEM_FONT,
-		DefaultGUI = wxSYS_DEFAULT_GUI_FONT,
-		DefaultDevice = wxSYS_DEVICE_DEFAULT_FONT,
-		FixedOEM = wxSYS_OEM_FIXED_FONT,
-		FixedANSI = wxSYS_ANSI_FIXED_FONT,
-		VariableANSI = wxSYS_ANSI_VAR_FONT,
+		Default = 13,
+		DefaultGUI = 17,
+		DefaultDevice = 14,
+		FixedOEM = 10,
+		FixedANSI = 11,
+		VariableANSI = 12
 	};
 	enum class SystemScreenType
 	{
-		None = wxSYS_SCREEN_NONE,
-		Tiny = wxSYS_SCREEN_TINY,
-		PDA = wxSYS_SCREEN_PDA,
-		Small = wxSYS_SCREEN_SMALL,
-		Desktop = wxSYS_SCREEN_DESKTOP,
+		None = 0,
+		Tiny,
+		PDA,
+		Small,
+		Desktop
 	};
 
 	enum class SystemMetric
 	{
-		MouseButtonCount = wxSYS_MOUSE_BUTTONS,
-		SwapMouseButtons = wxSYS_SWAP_BUTTONS,
-		CaptionHeight = wxSYS_CAPTION_Y,
-		MenuBarHeight = wxSYS_MENU_Y,
-		NetworkPresent = wxSYS_NETWORK_PRESENT,
-		PenWindowPresent = wxSYS_PENWINDOWS_PRESENT,
-		ShowSounds = wxSYS_SHOW_SOUNDS,
+		MouseButtonCount = 1,
+		SwapMouseButtons = 37,
+		CaptionHeight = 32,
+		MenuBarHeight = 33,
+		NetworkPresent = 34,
+		PenWindowPresent = 35,
+		ShowSounds = 36
 	};
 	enum class SystemSizeMetric
 	{
@@ -346,10 +345,10 @@ namespace kxf
 	};
 	enum class SystemTimeMetric
 	{
-		DClick = wxSYS_DCLICK_MSEC,
-		CaretOn = wxSYS_CARET_ON_MSEC,
-		CaretOff = wxSYS_CARET_OFF_MSEC,
-		CaretTimeout = wxSYS_CARET_TIMEOUT_MSEC,
+		DClick = 38,
+		CaretOn = 39,
+		CaretOff = 40,
+		CaretTimeout = 41,
 	};
 
 	kxf_FlagSet_Declare(ExitWorkstationCommand);

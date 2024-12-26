@@ -3,6 +3,7 @@
 #include "Private/Utility.h"
 #include "kxf/Network/URI.h"
 #include "kxf/Utility/SoftwareLicenseDB.h"
+#include <wx/memory.h>
 
 namespace
 {

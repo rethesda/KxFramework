@@ -30,10 +30,10 @@ namespace kxf::System
 		return 0;
 	}
 
-	std::unique_ptr<ISystemProcess> CreateProcess(const ISystemProcess& info, EvtHandlerDelegate evtHandler, FlagSet<CreateSystemProcessFlag> flags)
+	std::shared_ptr<ISystemProcess> CreateProcess(const ISystemProcess& info, EvtHandlerDelegate evtHandler, FlagSet<CreateSystemProcessFlag> flags)
 	{
 		IEvtHandler* evtHandlerRef = evtHandler.Get();
-		auto executor = std::make_unique<CreateProcessExecutor>(std::move(evtHandler), flags);
+		auto executor = std::make_shared<CreateProcessExecutor>(std::move(evtHandler), flags);
 
 		if (flags & CreateSystemProcessFlag::Async)
 		{

@@ -1,11 +1,11 @@
 #include "kxf-pch.h"
-#include "Common.h"
+#include "MapIO.h"
 #include <wx/stream.h> 
 #include <wx/filefn.h> 
 
-namespace kxf::IO
+namespace kxf::wxWidgets
 {
-	std::optional<wxSeekMode> ToWxSeekMode(IOStreamSeek seekMode) noexcept
+	std::optional<wxSeekMode> MapSeekMode(IOStreamSeek seekMode) noexcept
 	{
 		switch (seekMode)
 		{
@@ -24,7 +24,7 @@ namespace kxf::IO
 		};
 		return {};
 	}
-	std::optional<IOStreamSeek> FromWxSeekMode(wxSeekMode seekMode) noexcept
+	std::optional<IOStreamSeek> MapSeekMode(wxSeekMode seekMode) noexcept
 	{
 		switch (seekMode)
 		{

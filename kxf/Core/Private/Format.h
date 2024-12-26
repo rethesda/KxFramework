@@ -150,7 +150,7 @@ namespace kxf
 
 	namespace Private
 	{
-		void LogFormatterException(const std::format_error& e);
+		KXF_API void LogFormatterException(const std::format_error& e);
 
 		template<class... Args>
 		String DoFormat(std::wstring_view format, Args&&... arg)

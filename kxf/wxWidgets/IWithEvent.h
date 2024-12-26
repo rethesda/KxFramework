@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "kxf/RTTI/RTTI.h"
+class wxEvent;
 
 namespace kxf::wxWidgets
 {

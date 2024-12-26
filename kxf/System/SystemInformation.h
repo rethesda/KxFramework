@@ -1,7 +1,8 @@
 #pragma once
 #include "Common.h"
-#include "SystemInformationDefines.h"
 #include "UserName.h"
+#include "SystemWindow.h"
+#include "SystemInformationDefines.h"
 #include "kxf/Core/String.h"
 #include "kxf/Core/Version.h"
 #include "kxf/Core/DataSize.h"
@@ -128,9 +129,9 @@ namespace kxf::System
 	KXF_API Color GetColor(SystemColor index) noexcept;
 	KXF_API Font GetFont(SystemFont index);
 	KXF_API SystemScreenType GetScreenType() noexcept;
-	KXF_API int GetMetric(SystemMetric index, const wxWindow* window = nullptr) noexcept;
-	KXF_API Size GetMetric(SystemSizeMetric index, const wxWindow* window = nullptr) noexcept;
-	KXF_API TimeSpan GetMetric(SystemTimeMetric index, const wxWindow* window = nullptr) noexcept;
+	KXF_API int GetMetric(SystemMetric index, SystemWindow window = {}) noexcept;
+	KXF_API Size GetMetric(SystemSizeMetric index, SystemWindow window = {}) noexcept;
+	KXF_API TimeSpan GetMetric(SystemTimeMetric index, SystemWindow window = {}) noexcept;
 	KXF_API bool HasFeature(SystemFeature feature) noexcept;
 	KXF_API Enumerator<String> EnumStandardSounds();
 

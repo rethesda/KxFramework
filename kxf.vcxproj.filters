@@ -933,7 +933,7 @@
     <ClInclude Include="kxf\Core\AlignedObjectStorage.h">
       <Filter>kxf\Core</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\wxWidgets\EventTagRef.h">
+    <ClInclude Include="kxf\wxWidgets\EventTag.h">
       <Filter>kxf\wxWidgets</Filter>
     </ClInclude>
     <ClInclude Include="kxf\System\WMI.h">
@@ -1418,6 +1418,15 @@
     </ClInclude>
     <ClInclude Include="kxf\Utility\ConstEvalString.h">
       <Filter>kxf\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\wxWidgets\MapIO.h">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\wxWidgets\Setup-IncludeWarnings.h">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\wxWidgets\MapEventSystem.h">
+      <Filter>kxf\wxWidgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2047,6 +2056,15 @@
     </ClCompile>
     <ClCompile Include="kxf\wxWidgets\SystemOptions.cpp">
       <Filter>kxf\wxWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\wxWidgets\MapIO.cpp">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\wxWidgets\MapEventSystem.cpp">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\EventSystem\IdleEvent.cpp">
+      <Filter>kxf\EventSystem\&lt;Events&gt;</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -5,7 +5,6 @@
 #include "kxf/Core/ILibraryInfo.h"
 #include "kxf/IO/IStream.h"
 #include "TinyXML2.h"
-#include <wx/stream.h>
 
 namespace kxf
 {

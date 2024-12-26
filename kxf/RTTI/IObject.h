@@ -219,7 +219,7 @@ template<class T>	\
 friend constexpr kxf::IID kxf::RTTI::GetInterfaceID() noexcept;	\
 \
 private:	\
-	static constexpr kxf::IID ms_IID = kxf::NativeUUID __VA_ARGS__;
+	inline static constexpr kxf::IID ms_IID = kxf::NativeUUID __VA_ARGS__;
 
 #define kxf_RTTI_DeclareIID_Using(T, iid)	\
 friend class kxf::IObject;	\
@@ -228,7 +228,7 @@ template<class T>	\
 friend constexpr kxf::IID kxf::RTTI::GetInterfaceID() noexcept;	\
 \
 private:	\
-	static constexpr kxf::IID ms_IID = (iid);
+	inline static constexpr kxf::IID ms_IID = (iid);
 
 #define kxf_RTTI_DeclareIID_External(T, ...)	\
 namespace RTTI	\

@@ -1,5 +1,5 @@
 #pragma once
-#include <wx/wx.h>
+#include "../Common.h"
 
 namespace kxf::FileSystem::Private::NamespacePrefix
 {

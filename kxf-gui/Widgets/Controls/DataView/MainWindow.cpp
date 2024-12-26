@@ -2199,8 +2199,8 @@ namespace kxf::UI::DataView
 	{
 		const Size iconSpacing =
 		{
-			System::GetMetric(SystemSizeMetric::Border, this).GetWidth() * 6,
-			System::GetMetric(SystemSizeMetric::IconSmall, this).GetHeight()
+			System::GetMetric(SystemSizeMetric::Border, GetHandle()).GetWidth() * 6,
+			System::GetMetric(SystemSizeMetric::IconSmall, GetHandle()).GetHeight()
 		};
 
 		int resultHeight = 0;

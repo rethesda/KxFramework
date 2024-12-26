@@ -273,7 +273,7 @@ namespace kxf
 				m_Environment.clear();
 			}
 
-			std::unique_ptr<ISystemProcess> Spawn(EvtHandlerDelegate evtHandler = {}, FlagSet<CreateSystemProcessFlag> flags = {});
+			std::shared_ptr<ISystemProcess> Spawn(EvtHandlerDelegate evtHandler = {}, FlagSet<CreateSystemProcessFlag> flags = {});
 	};
 }
 

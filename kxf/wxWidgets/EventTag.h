@@ -1,9 +1,39 @@
 #pragma once
 #include "Common.h"
+#include "kxf/EventSystem/IEvent.h"
 #include "kxf/EventSystem/EventID.h"
 #include <wx/object.h>
 #include <wx/event.h>
 #include "kxf/Win32/UndefMacros.h"
+
+namespace kxf::wxWidgets
+{
+	template<std::derived_from<wxEvent> TEvent>
+	wxEventTypeTag<TEvent> ToWXEventTag(const IEvent& event) noexcept
+	{
+		return event.GetEventID().AsInt();
+	}
+
+	template<std::derived_from<wxEvent> TEvent = wxEvent>
+	wxEventTypeTag<TEvent> ToWXEventTag(const EventID& eventID) noexcept
+	{
+		return eventID.AsInt();
+	}
+
+	template<class TEvent = wxEvent>
+	requires(std::is_base_of_v<wxEvent, TEvent> || std::is_base_of_v<IEvent, TEvent>)
+	wxEventTypeTag<TEvent> ToWXEventTag(const EventTag<TEvent>& eventTag) noexcept
+	{
+		return (*eventTag).AsInt();
+	}
+
+	template<class TEvent = wxEvent>
+	requires(std::is_base_of_v<wxEvent, TEvent> || std::is_base_of_v<IEvent, TEvent>)
+	EventTag<TEvent> FromWXEventTag(const wxEventTypeTag<TEvent>& eventTag) noexcept
+	{
+		return static_cast<wxEventType>(eventTag);
+	}
+}
 
 namespace kxf::wxWidgets
 {

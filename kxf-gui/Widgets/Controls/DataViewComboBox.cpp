@@ -1,6 +1,7 @@
 #include "kxf-pch.h"
 #include "DataViewComboBox.h"
 #include "ComboControl.h"
+#include "kxf/wxWidgets/EventTag.h"
 #include "kxf-gui/Widgets/Windows/Panel.h"
 #include "kxf-gui/Widgets/Controls//DataView/MainWindow.h"
 
@@ -117,7 +118,7 @@ namespace kxf::UI::DataView
 			m_Sizer->Add(this, 1, wxEXPAND);
 
 			// DataView events
-			m_EvtHandler_DataView.Bind(ItemEvent::EvtItemSelected.ToWxTag(), &ComboCtrl::OnSelectItem, this);
+			m_EvtHandler_DataView.Bind(wxWidgets::ToWXEventTag(ItemEvent::EvtItemSelected), &ComboCtrl::OnSelectItem, this);
 			PushEventHandler(&m_EvtHandler_DataView);
 
 			// ComboCtrl Events

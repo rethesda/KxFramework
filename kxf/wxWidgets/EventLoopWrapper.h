@@ -1,4 +1,5 @@
 #pragma once
+#include "MapEventSystem.h"
 #include "kxf/Application/IEventLoop.h"
 #include "kxf/Core/OptionalPtr.h"
 #include "kxf/RTTI/RTTI.h"
@@ -55,7 +56,7 @@ namespace kxf::wxWidgets
 
 			void OnYieldFor(FlagSet<EventCategory> toProcess) override
 			{
-				m_EventLoop->DoYieldFor(toProcess.ToInt());
+				m_EventLoop->DoYieldFor(wxWidgets::MapEventCategory(toProcess).ToInt());
 			}
 			void OnNextIteration() override
 			{
@@ -145,7 +146,7 @@ namespace kxf::wxWidgets
 			}
 			bool YieldFor(FlagSet<EventCategory> toProcess) override
 			{
-				return m_EventLoop->YieldFor(toProcess.ToInt<wxEventCategory>());
+				return m_EventLoop->YieldFor(wxWidgets::MapEventCategory(toProcess).ToInt());
 			}
 
 		public:
@@ -170,7 +171,7 @@ namespace kxf::wxWidgets
 		private:
 			void Create(FlagSet<EventCategory> allowedToYield)
 			{
-				m_eventsToProcessInsideYield = allowedToYield.ToInt();
+				m_eventsToProcessInsideYield = wxWidgets::MapEventCategory(allowedToYield).ToInt();
 			}
 
 		protected:
@@ -206,7 +207,7 @@ namespace kxf::wxWidgets
 			{
 				m_shouldExit = shouldExit;
 				m_yieldLevel = yieldLevel;
-				m_eventsToProcessInsideYield = allowedToYield.ToInt();
+				m_eventsToProcessInsideYield = wxWidgets::MapEventCategory(allowedToYield).ToInt();
 				//m_isInsideRun = isInsideRun; // It's private unfortunately
 			}
 
@@ -262,7 +263,7 @@ namespace kxf::wxWidgets
 
 			bool YieldFor(long eventsToProcess) override
 			{
-				return m_EventLoop->YieldFor(static_cast<EventCategory>(eventsToProcess));
+				return m_EventLoop->YieldFor(wxWidgets::MapEventCategory(FromInt<wxEventCategory>(eventsToProcess)));
 			}
 			bool IsYielding() const override
 			{
@@ -270,7 +271,7 @@ namespace kxf::wxWidgets
 			}
 			bool IsEventAllowedInsideYield(wxEventCategory category) const override
 			{
-				return m_EventLoop->IsEventAllowedInsideYield(static_cast<EventCategory>(category));
+				return m_EventLoop->IsEventAllowedInsideYield(wxWidgets::MapEventCategory(category));
 			}
 
 		public:

@@ -1,19 +1,36 @@
 #include "kxf-pch.h"
+
+// Make sure WinSock2 is included first because 'wx/msw/private.h' included 'Windows.h' and 'Private/SystemInformationDefinesMapping.h' includes it too
+#include "kxf/Win32/Include-Network.h"
+#include "kxf/Win32/WrapperUnicode.h"
+#include "kxf/Win32/UndefMacros.h"
+
 #include "SystemInformation.h"
 #include "SystemProcess.h"
 #include "NativeAPI.h"
 #include "Registry.h"
 #include "COM.h"
 #include "Private/SystemInformationDefinesMapping.h"
-#include "kxf/Drawing/GDIRenderer/GDIFont.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/ScopeGuard.h"
 #include "kxf/Utility/Enumerator.h"
 #include "kxf/Utility/Literals.h"
 #include "kxf/Utility/Memory.h"
 #include "kxf/Utility/String.h"
-#include <wx/settings.h>
 
+// Make 'wx/msw/private.h' happy with our undef'd macros
+namespace
+{
+	kxf_MakeWinUnicodeCallWrapper(SendMessage);
+	kxf_MakeWinUnicodeCallWrapper(RegisterClass);
+}
+#include "wx/msw/private.h"
+
+// And undef this useless macro not to collide with DXGI interface names.
+// I hate macros and wxWidgets' devs love them. This shit is so fucking ass.
+#undef GetHwnd
+
+#include <wx/settings.h>
 #include <Windows.h>
 #include <SDDL.h>
 #include "kxf/Win32/Include-DirectX.h"
@@ -390,15 +407,19 @@ namespace kxf::System
 	{
 		return wxSystemSettings::GetFont(static_cast<wxSystemFont>(index));
 	}
-	int GetMetric(SystemMetric index, const wxWindow* window) noexcept
+	int GetMetric(SystemMetric index, SystemWindow window) noexcept
 	{
-		return wxSystemSettings::GetMetric(static_cast<wxSystemMetric>(index), window);
+		//auto ptr = wxGetWindowFromHWND(static_cast<HWND>(window.GetHandle()));
+		//return wxSystemSettings::GetMetric(static_cast<wxSystemMetric>(index), ptr);
+		return 0;
 	}
-	Size GetMetric(SystemSizeMetric index, const wxWindow* window) noexcept
+	Size GetMetric(SystemSizeMetric index, SystemWindow window) noexcept
 	{
 		auto GetValue = [&](wxSystemMetric x, wxSystemMetric y)
 		{
-			return Size(wxSystemSettings::GetMetric(x, window), wxSystemSettings::GetMetric(y, window));
+			//auto ptr = wxGetWindowFromHWND(static_cast<HWND>(window.GetHandle()));
+			//return Size(wxSystemSettings::GetMetric(x, ptr), wxSystemSettings::GetMetric(y, ptr));
+			return Size();
 		};
 
 		switch (index)
@@ -466,9 +487,11 @@ namespace kxf::System
 		};
 		return Size::UnspecifiedSize();
 	}
-	TimeSpan GetMetric(SystemTimeMetric index, const wxWindow* window) noexcept
+	TimeSpan GetMetric(SystemTimeMetric index, SystemWindow window) noexcept
 	{
-		return TimeSpan::Milliseconds(wxSystemSettings::GetMetric(static_cast<wxSystemMetric>(index), window));
+		//auto ptr = wxGetWindowFromHWND(static_cast<HWND>(window.GetHandle()));
+		//return TimeSpan::Milliseconds(wxSystemSettings::GetMetric(static_cast<wxSystemMetric>(index), ptr));
+		return {};
 	}
 	bool HasFeature(SystemFeature feature) noexcept
 	{

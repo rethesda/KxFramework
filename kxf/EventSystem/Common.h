@@ -1,7 +1,5 @@
 #pragma once
 #include "kxf/Common.hpp"
-#include <wx/event.h>
-#include <wx/windowid.h>
 
 namespace kxf
 {
@@ -9,15 +7,16 @@ namespace kxf
 	{
 		None = 0,
 
-		UI = wxEVT_CATEGORY_UI,
-		Timer = wxEVT_CATEGORY_TIMER,
-		Thread = wxEVT_CATEGORY_THREAD,
-		Socket = wxEVT_CATEGORY_SOCKET,
-		Unknown = wxEVT_CATEGORY_UNKNOWN,
-		Clipboard = wxEVT_CATEGORY_CLIPBOARD,
-		UserInput = wxEVT_CATEGORY_USER_INPUT,
+		UserInterface = FlagSetValue<EventCategory>(0),
+		UserInput = FlagSetValue<EventCategory>(1),
+		Socket = FlagSetValue<EventCategory>(2),
+		Timer = FlagSetValue<EventCategory>(3),
+		Thread = FlagSetValue<EventCategory>(4),
+		Unknown = FlagSetValue<EventCategory>(5),
+		Clipboard = FlagSetValue<EventCategory>(6),
 
-		Everything = UI|Timer|Thread|Socket|Unknown|Clipboard|UserInput
+		NativeEvents = UserInterface|UserInput,
+		Everything = UserInterface|Timer|Thread|Socket|Unknown|Clipboard|UserInput
 	};
 	kxf_FlagSet_Declare(EventCategory);
 

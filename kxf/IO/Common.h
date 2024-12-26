@@ -54,9 +54,3 @@ namespace kxf
 		CreateAlways,
 	};
 }
-
-namespace kxf::IO
-{
-	KXF_API std::optional<wxSeekMode> ToWxSeekMode(IOStreamSeek seekMode) noexcept;
-	KXF_API std::optional<IOStreamSeek> FromWxSeekMode(wxSeekMode seekMode) noexcept;
-}

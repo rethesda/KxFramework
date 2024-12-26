@@ -2,6 +2,7 @@
 #include "FileBrowseDialogEvents.h"
 #include "../FileBrowseDialog.h"
 #include "kxf/Utility/ScopeGuard.h"
+#include "kxf/wxWidgets/EventTag.h"
 
 namespace
 {
@@ -103,7 +104,7 @@ namespace kxf::UI::Private
 			// On Destroy
 			m_Dialog->m_Handle = nullptr;
 
-			wxNotifyEvent event = CreateEvent(wxEVT_CLOSE_WINDOW);
+			wxNotifyEvent event = CreateEvent(wxWidgets::FromWXEventTag(wxEVT_CLOSE_WINDOW));
 			ProcessEvent(event);
 		}
 		if (oldValue == 0)
@@ -121,7 +122,7 @@ namespace kxf::UI::Private
 			m_Dialog->m_Handle = handle;
 		}
 
-		wxNotifyEvent event = CreateEvent(wxEVT_SHOW);
+		wxNotifyEvent event = CreateEvent(wxWidgets::FromWXEventTag(wxEVT_SHOW));
 		ProcessEvent(event);
 		return S_OK;
 	}

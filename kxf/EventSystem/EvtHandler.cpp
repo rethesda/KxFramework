@@ -5,6 +5,7 @@
 #include "kxf/Application/ICoreApplication.h"
 #include "kxf/Application/Private/Utility.h"
 #include "kxf/Utility/Container.h"
+#include <wx/thread.h>
 
 namespace
 {

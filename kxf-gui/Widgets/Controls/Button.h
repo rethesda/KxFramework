@@ -1,7 +1,7 @@
 #pragma once
 #include "kxf-gui/Widgets/Common.h"
 #include "kxf-gui/Widgets/WindowRefreshScheduler.h"
-#include "kxf/wxWidgets/EventTagRef.h"
+#include "kxf/wxWidgets/EventTag.h"
 #include <wx/renderer.h>
 #include <wx/anybutton.h>
 #include <wx/systhemectrl.h>

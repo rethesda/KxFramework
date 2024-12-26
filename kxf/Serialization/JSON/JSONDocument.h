@@ -6,7 +6,7 @@
 
 namespace kxf
 {
-	class JSONDocument final: public nlohmann::json, public ILibraryInfo
+	class KXF_API JSONDocument final: public nlohmann::json, public ILibraryInfo
 	{
 		private:
 			nlohmann::json& AsBase() noexcept

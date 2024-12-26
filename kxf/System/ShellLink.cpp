@@ -3,6 +3,7 @@
 #include "Private/Shell.h"
 #include "kxf/Utility/Memory.h"
 
+#include <wx/event.h>
 #include <ShObjIDL.h>
 #include "kxf/Win32/UndefMacros.h"
 

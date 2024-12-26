@@ -12,7 +12,7 @@ namespace kxf
 {
 	class Coroutine;
 
-	class ICoroutine: public RTTI::Interface<ICoroutine>
+	class KXF_API ICoroutine: public RTTI::Interface<ICoroutine>
 	{
 		kxf_RTTI_DeclareIID(ICoroutine, {0x948e00f7, 0xc620, 0x4c7d, { 0xb6, 0x95, 0x96, 0x67, 0x71, 0xd5, 0xd9, 0x83}});
 

@@ -73,15 +73,6 @@ namespace kxf
 				:m_ID(String(id))
 			{
 			}
-			
-			// wxWidgets event tag (integer)
-			#ifdef __WXWINDOWS__
-			template<class T>
-			EventID(const wxEventTypeTag<T>& eventTag) noexcept
-				:m_ID(static_cast<wxEventType>(eventTag))
-			{
-			}
-			#endif
 
 			EventID(EventID&& other) noexcept
 			{
@@ -129,9 +120,7 @@ namespace kxf
 				}
 			}
 
-			#ifdef __WXWINDOWS__
-			bool IsWxWidgetsID() const noexcept;
-			#endif
+			bool IsWXID() const noexcept;
 
 		public:
 			explicit operator bool() const noexcept
@@ -217,12 +206,6 @@ namespace kxf
 			{
 				return m_ID.IsNull();
 			}
-			#ifdef __WXWINDOWS__
-			wxEventTypeTag<TEvent> ToWxTag() const noexcept
-			{
-				return m_ID.AsInt();
-			}
-			#endif
 
 			const EventID& operator*() const noexcept
 			{

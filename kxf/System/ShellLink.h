@@ -3,7 +3,7 @@
 #include "COM.h"
 #include "HResult.h"
 #include "kxf/FileSystem/FSPath.h"
-#include <wx/event.h>
+class wxKeyEvent;
 struct IShellLinkW;
 
 namespace kxf

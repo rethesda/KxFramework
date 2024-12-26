@@ -44,7 +44,7 @@ namespace kxf
 			}
 			FlagSet<EventCategory> GetEventCategory() const noexcept override
 			{
-				return EventCategory::UI;
+				return EventCategory::UserInterface;
 			}
 
 			//SciterEvent

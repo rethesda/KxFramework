@@ -2,6 +2,8 @@
 #include "CommandLineParser.h"
 #include "kxf/Utility/Enumerator.h"
 #include "kxf/wxWidgets/Setup.h"
+
+#include "wx/datetime.h"
 #include "wx/cmdline.h"
 #include <Windows.h>
 #include "kxf/Win32/UndefMacros.h"

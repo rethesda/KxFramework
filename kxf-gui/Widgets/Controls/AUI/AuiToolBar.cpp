@@ -1,5 +1,6 @@
 #include "kxf-pch.h"
 #include "AuiToolBar.h"
+#include "kxf/wxWidgets/EventTag.h"
 #include <wx/wupdlock.h>
 #include <wx/dc.h>
 
@@ -22,22 +23,23 @@ namespace kxf::UI
 			if (AuiToolBarItem* item = FindToolByID(event.GetToolId()))
 			{
 				bool canShowMenu = false;
+
 				EventID type = event.GetEventType();
-				if (type == wxEVT_AUITOOLBAR_RIGHT_CLICK)
+				if (wxWidgets::ToWXEventTag(type) == wxEVT_AUITOOLBAR_RIGHT_CLICK)
 				{
 					type = AuiToolBarEvent::EvtItemRightClick;
 					//canShowMenu = item->HasDropdownMenu() && item->ContainsOption(AuiToolBarItemOption::MenuOnRightClick);
 				}
-				else if (type == wxEVT_AUITOOLBAR_MIDDLE_CLICK)
+				else if (wxWidgets::ToWXEventTag(type) == wxEVT_AUITOOLBAR_MIDDLE_CLICK)
 				{
 					type = AuiToolBarEvent::EvtItemMiddleClick;
 					//canShowMenu = item->HasDropdownMenu() && item->ContainsOption(AuiToolBarItemOption::MenuOnMiddleClick);
 				}
-				else if (type == wxEVT_AUITOOLBAR_TOOL_DROPDOWN)
+				else if (wxWidgets::ToWXEventTag(type) == wxEVT_AUITOOLBAR_TOOL_DROPDOWN)
 				{
 					type = AuiToolBarEvent::EvtItemDropdown;
 				}
-				else if (type == wxEVT_AUITOOLBAR_OVERFLOW_CLICK)
+				else if (wxWidgets::ToWXEventTag(type) == wxEVT_AUITOOLBAR_OVERFLOW_CLICK)
 				{
 					type = AuiToolBarEvent::EvtOverflowClick;
 				}

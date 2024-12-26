@@ -53,11 +53,11 @@ namespace kxf::EventSystem::Private
 
 			if (nativeMessage.message == WM_PAINT)
 			{
-				// 'WM_PAINT' messages are categorized as 'EventCategory::UI'
-				if (!toProcess.Contains(EventCategory::UI))
+				// 'WM_PAINT' messages are categorized as 'EventCategory::UserInterface'
+				if (!toProcess.Contains(EventCategory::UserInterface))
 				{
 					// This 'nativeMessage' is not going to be dispatched however 'WM_PAINT' is special:
-					// until there are damaged windows, Windows will keep sending it forever!
+					// until there are damaged windows, the system will keep sending it forever!
 					if (countOfPaintEvents > 10)
 					{
 						// We got 10 WM_PAINT consecutive messages, we must have reached the tail of the
@@ -147,7 +147,7 @@ namespace kxf::EventSystem::Private
 				}
 				case WM_TIMER:
 				{
-					toProcess.Contains(EventCategory::Timer);
+					processNow = toProcess.Contains(EventCategory::Timer);
 					break;
 				}
 				default:
@@ -156,7 +156,7 @@ namespace kxf::EventSystem::Private
 					{
 						// [0; WM_USER) is the range of message IDs reserved for use by the system.
 						// There are too many of these types of messages to handle them in this switch.
-						processNow = toProcess.Contains(EventCategory::UI);
+						processNow = toProcess.Contains(EventCategory::UserInterface);
 					}
 					else
 					{

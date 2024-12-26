@@ -8,8 +8,9 @@
 #include "kxf/Utility/String.h"
 #include "Private/NamespacePrefix.h"
 
-#include <pathcch.h>
 #include <locale>
+#include <Windows.h>
+#include <pathcch.h>
 #include <shlwapi.h>
 #include "kxf/Win32/UndefMacros.h"
 #pragma warning(disable: 4995) // 'PathCanonicalizeW': name was marked as #pragma deprecated

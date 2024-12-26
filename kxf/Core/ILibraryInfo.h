@@ -11,7 +11,7 @@ namespace kxf
 
 namespace kxf
 {
-	class ILibraryInfo: public RTTI::Interface<ILibraryInfo>
+	class KXF_API ILibraryInfo: public RTTI::Interface<ILibraryInfo>
 	{
 		kxf_RTTI_DeclareIID(ILibraryInfo, {0x66ffd9cb, 0x32cc, 0x47dd, {0xab, 0x37, 0xb0, 0x83, 0xf2, 0x61, 0x3e, 0xc1}});
 

@@ -6,8 +6,8 @@ namespace kxf
 {
 	enum class IdleEventMode
 	{
-		ProcessAll = wxIDLE_PROCESS_ALL,
-		ProcessSpecific = wxIDLE_PROCESS_SPECIFIED
+		ProcessAll,
+		ProcessSpecific
 	};
 }
 
@@ -19,14 +19,8 @@ namespace kxf
 			kxf_EVENT_MEMBER(IdleEvent, Idle);
 
 		public:
-			static IdleEventMode GetMode() noexcept
-			{
-				return static_cast<IdleEventMode>(wxIdleEvent::GetMode());
-			}
-			static void SetMode(IdleEventMode mode) noexcept
-			{
-				wxIdleEvent::SetMode(static_cast<wxIdleMode>(mode));
-			}
+			static IdleEventMode GetMode() noexcept;
+			static void SetMode(IdleEventMode mode) noexcept;
 
 		private:
 			bool m_RequestedMore = false;
