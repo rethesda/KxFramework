@@ -11,7 +11,7 @@ namespace kxf
 
 namespace kxf
 {
-	class WSPPWebResponse final: public IWebResponse, public Private::WSPPTypes
+	class KXF_API_NETWORK WSPPWebResponse final: public IWebResponse, public Private::WSPPTypes
 	{
 		friend class WSPPWebRequest;
 

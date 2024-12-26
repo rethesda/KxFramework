@@ -8,7 +8,7 @@ namespace kxf
 
 namespace kxf
 {
-	class CURLWebAuthChallenge final: public IWebAuthChallenge
+	class KXF_API_NETWORK CURLWebAuthChallenge final: public IWebAuthChallenge
 	{
 		private:
 			CURLWebRequest& m_Request;

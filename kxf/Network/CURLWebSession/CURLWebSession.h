@@ -5,7 +5,7 @@
 
 namespace kxf
 {
-	class KXF_API CURLWebSession final: public RTTI::DynamicImplementation<CURLWebSession, Private::BasicWebSession, ILibraryInfo>
+	class KXF_API_NETWORK CURLWebSession final: public RTTI::DynamicImplementation<CURLWebSession, Private::BasicWebSession, ILibraryInfo>
 	{
 		friend class CURLWebRequest;
 

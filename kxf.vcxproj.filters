@@ -94,18 +94,6 @@
     <Filter Include="kxf\Log">
       <UniqueIdentifier>{3e786109-f51a-4653-8566-c33d43e122c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="kxf\Network\CURLWebSession">
-      <UniqueIdentifier>{7a962409-a4c6-438c-bc0a-e182899e59fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="kxf\Network\WebRequest">
-      <UniqueIdentifier>{d232eef0-6ea2-41d3-93ee-3ac028409b02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="kxf\Network\Private">
-      <UniqueIdentifier>{3ed4aa7f-83d3-4b24-8e42-244d3ab51af7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="kxf\Network\WSPPWebSession">
-      <UniqueIdentifier>{81faf50f-5e4d-4d78-bb14-cc0847031b43}</UniqueIdentifier>
-    </Filter>
     <Filter Include="kxf\RPC">
       <UniqueIdentifier>{a0aa2b7d-a31f-46f5-83a7-3816b8156f52}</UniqueIdentifier>
     </Filter>
@@ -342,9 +330,6 @@
     <ClInclude Include="kxf\System\Registry.h">
       <Filter>kxf\System</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Network\Common.h">
-      <Filter>kxf\Network</Filter>
-    </ClInclude>
     <ClInclude Include="kxf\Utility\Container.h">
       <Filter>kxf\Utility</Filter>
     </ClInclude>
@@ -356,9 +341,6 @@
     </ClInclude>
     <ClInclude Include="kxf\Utility\Memory.h">
       <Filter>kxf\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\URI.h">
-      <Filter>kxf\Network</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Compression\ArchiveEvent.h">
       <Filter>kxf\Compression</Filter>
@@ -807,9 +789,6 @@
     <ClInclude Include="kxf\IO\StreamError.h">
       <Filter>kxf\IO</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Network\HTTPStatus.h">
-      <Filter>kxf\Network</Filter>
-    </ClInclude>
     <ClInclude Include="kxf\Localization\QtLocalizationPackage.h">
       <Filter>kxf\Localization</Filter>
     </ClInclude>
@@ -951,92 +930,11 @@
     <ClInclude Include="kxf\Threading\IThreadPool.h">
       <Filter>kxf\Threading</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Network\CURLWebSession\Common.h">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebRequest.h">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebResponse.h">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebSession.h">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\CURLWebSession\LibCURLUtility.h">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\CURLWebSession\LibCURL.h">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebAuthChallenge.h">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest.h">
-      <Filter>kxf\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\Common.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequest.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestAuthOptions.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestOptions.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestProxyOptions.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestSecurityOptions.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebResponse.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebSession.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\WebRequestEvent.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\WebRequestHeader.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\IWebAuthChallenge.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WebRequest\Options.h">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClInclude>
     <ClInclude Include="kxf\IO\IMemoryStream.h">
       <Filter>kxf\IO</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Utility\SoftwareLicenseDB.h">
       <Filter>kxf\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\Private\BasicWebSession.h">
-      <Filter>kxf\Network\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\Private\BasicWebRequest.h">
-      <Filter>kxf\Network\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebRequest.h">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebResponse.h">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebSession.h">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WSPPWebSession\Common.h">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPP.h">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Serialization\BinarySerializer.h">
       <Filter>kxf\Serialization</Filter>
@@ -1419,6 +1317,15 @@
     <ClInclude Include="kxf\Utility\ConstEvalString.h">
       <Filter>kxf\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\Network\URI.h">
+      <Filter>kxf\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\Network\HTTPStatus.h">
+      <Filter>kxf\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\Network\Common.h">
+      <Filter>kxf\Network</Filter>
+    </ClInclude>
     <ClInclude Include="kxf\wxWidgets\MapIO.h">
       <Filter>kxf\wxWidgets</Filter>
     </ClInclude>
@@ -1504,9 +1411,6 @@
     </ClCompile>
     <ClCompile Include="kxf\System\Registry.cpp">
       <Filter>kxf\System</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\Common.cpp">
-      <Filter>kxf\Network</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Utility\String.cpp">
       <Filter>kxf\Utility</Filter>
@@ -1615,9 +1519,6 @@
     </ClCompile>
     <ClCompile Include="kxf\Threading\CriticalSection.cpp">
       <Filter>kxf\Threading</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\IO\Common.cpp">
-      <Filter>kxf\IO</Filter>
     </ClCompile>
     <ClCompile Include="kxf\IO\MemoryStream.cpp">
       <Filter>kxf\IO</Filter>
@@ -1778,47 +1679,8 @@
     <ClCompile Include="kxf\Core\ResourceID.cpp">
       <Filter>kxf\Core</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebRequest.cpp">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebResponse.cpp">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebSession.cpp">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\CURLWebSession\LibCURLUtility.cpp">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebAuthChallenge.cpp">
-      <Filter>kxf\Network\CURLWebSession</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WebRequest\IWebRequestOptions.cpp">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WebRequest\IWebResponse.cpp">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WebRequest\WebRequestHeader.cpp">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WebRequest\IWebAuthChallenge.cpp">
-      <Filter>kxf\Network\WebRequest</Filter>
-    </ClCompile>
     <ClCompile Include="kxf\Utility\SoftwareLicenseDB.cpp">
       <Filter>kxf\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\Private\BasicWebSession.cpp">
-      <Filter>kxf\Network\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebRequest.cpp">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebResponse.cpp">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebSession.cpp">
-      <Filter>kxf\Network\WSPPWebSession</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Serialization\BinarySerializer.cpp">
       <Filter>kxf\Serialization</Filter>
@@ -1849,9 +1711,6 @@
     </ClCompile>
     <ClCompile Include="kxf\Log\Private\WxOverride.cpp">
       <Filter>kxf\Log\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Network\WebRequest.cpp">
-      <Filter>kxf\Network</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Drawing\Geometry.cpp">
       <Filter>kxf\Drawing</Filter>

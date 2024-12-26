@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef KXF_DYNAMIC_LIBRARY
-	#ifdef KXF_LIBRARY
+	#ifdef KXF_LIBRARY_CORE
 		#define KXF_API __declspec(dllexport)
 	#else
 		#define KXF_API __declspec(dllimport)

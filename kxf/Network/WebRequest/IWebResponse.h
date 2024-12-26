@@ -11,7 +11,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API IWebResponse: public RTTI::Interface<IWebResponse>
+	class KXF_API_NETWORK IWebResponse: public RTTI::Interface<IWebResponse>
 	{
 		kxf_RTTI_DeclareIID(IWebResponse, {0x24f29008, 0x76c7, 0x42e7, {0x9f, 0x6b, 0x3, 0xcc, 0x4, 0xf3, 0xda, 0x33}});
 

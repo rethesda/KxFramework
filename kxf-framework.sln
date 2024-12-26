@@ -12,6 +12,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kxf-gui", "kxf-gui.vcxproj"
 		{157DA1E6-2B05-4203-8284-9A9EDD0F1235} = {157DA1E6-2B05-4203-8284-9A9EDD0F1235}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kxf-network", "kxf-network.vcxproj", "{CDF9E591-F96D-451B-B44F-196C17F104B6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{157DA1E6-2B05-4203-8284-9A9EDD0F1235} = {157DA1E6-2B05-4203-8284-9A9EDD0F1235}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -42,6 +47,18 @@ Global
 		{4DA13401-93D5-4E1F-980D-3E1746D44131}.Release|x64.Build.0 = Release|x64
 		{4DA13401-93D5-4E1F-980D-3E1746D44131}.Release|x86.ActiveCfg = Release|Win32
 		{4DA13401-93D5-4E1F-980D-3E1746D44131}.Release|x86.Build.0 = Release|Win32
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Debug|x64.ActiveCfg = Debug|x64
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Debug|x64.Build.0 = Debug|x64
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Debug|x86.ActiveCfg = Debug|Win32
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Debug|x86.Build.0 = Debug|Win32
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release Static|x64.ActiveCfg = Release Static|x64
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release Static|x64.Build.0 = Release Static|x64
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release Static|x86.ActiveCfg = Release Static|Win32
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release Static|x86.Build.0 = Release Static|Win32
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release|x64.ActiveCfg = Release|x64
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release|x64.Build.0 = Release|x64
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release|x86.ActiveCfg = Release|Win32
+		{CDF9E591-F96D-451B-B44F-196C17F104B6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

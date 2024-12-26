@@ -15,7 +15,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API IWebAuthChallenge: public RTTI::Interface<IWebAuthChallenge>
+	class KXF_API_NETWORK IWebAuthChallenge: public RTTI::Interface<IWebAuthChallenge>
 	{
 		kxf_RTTI_DeclareIID(IWebAuthChallenge, {0xb2231898, 0xd519, 0x4a61, {0xbc, 0x36, 0xfc, 0x4, 0x5d, 0x9a, 0x7c, 0x13}});
 

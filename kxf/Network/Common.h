@@ -19,9 +19,3 @@ namespace kxf
 		IPv6 = 6, // Host is IPv6 address: '[aa:aa:aa:aa::aa:aa]:5050'
 	};
 }
-
-namespace kxf::Network
-{
-	KXF_API bool IsInternetAvailable() noexcept;
-	KXF_API String LookupIP(const URI& uri, NetworkHostType ip);
-}

@@ -4,7 +4,7 @@
 
 namespace kxf
 {
-	class KXF_API IWebRequestOptions: public RTTI::Interface<IWebRequestOptions>
+	class KXF_API_NETWORK IWebRequestOptions: public RTTI::Interface<IWebRequestOptions>
 	{
 		kxf_RTTI_DeclareIID(IWebRequestOptions, {0x6a4c956d, 0x2842, 0x4a2f, {0xaa, 0x30, 0x31, 0x16, 0xb1, 0x58, 0xe9, 0x37}});
 

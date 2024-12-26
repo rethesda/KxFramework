@@ -10,7 +10,7 @@ namespace kxf::Private
 
 namespace kxf::Private
 {
-	class KXF_API BasicWebRequest: public RTTI::PrivateStub<BasicWebRequest, IWebRequest>
+	class KXF_API_NETWORK BasicWebRequest: public RTTI::PrivateStub<BasicWebRequest, IWebRequest>
 	{
 		friend class BasicWebSession;
 

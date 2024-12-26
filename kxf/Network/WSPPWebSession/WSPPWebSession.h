@@ -5,7 +5,7 @@
 
 namespace kxf
 {
-	class KXF_API WSPPWebSession final: public RTTI::DynamicImplementation<WSPPWebSession, Private::BasicWebSession, ILibraryInfo>
+	class KXF_API_NETWORK WSPPWebSession final: public RTTI::DynamicImplementation<WSPPWebSession, Private::BasicWebSession, ILibraryInfo>
 	{
 		friend class WSPPWebRequest;
 

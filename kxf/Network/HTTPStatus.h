@@ -235,5 +235,11 @@ namespace kxf
 				// [500, 600)
 				return IsInRange(500, 599);
 			}
+
+		public:
+			bool operator==(const HTTPStatus& other) const noexcept
+			{
+				return m_Value == other.m_Value;
+			}
 	};
 }

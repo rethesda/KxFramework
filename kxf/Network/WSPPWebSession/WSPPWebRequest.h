@@ -11,7 +11,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API WSPPWebRequest final: public RTTI::Implementation<WSPPWebRequest, Private::BasicWebRequest, IWebRequestOptions, IWebRequestSecurityOptions>, public Private::WSPPTypes
+	class KXF_API_NETWORK WSPPWebRequest final: public RTTI::Implementation<WSPPWebRequest, Private::BasicWebRequest, IWebRequestOptions, IWebRequestSecurityOptions>, public Private::WSPPTypes
 	{
 		friend class WSPPWebResponse;
 

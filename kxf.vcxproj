@@ -109,7 +109,7 @@
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;KXF_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;KXF_LIBRARY;KXF_LIBRARY_CORE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -125,8 +125,8 @@
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4251;4244</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4251;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4251;4244;4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4251;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -151,8 +151,8 @@
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">4251;4244</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">4251;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">4251;4244;4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">4251;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -171,8 +171,8 @@
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4251;4244</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4251;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4251;4244;4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4251;4244;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -337,6 +337,9 @@
     <ClInclude Include="kxf\IO\StreamDelegate.h" />
     <ClInclude Include="kxf\IO\StreamError.h" />
     <ClInclude Include="kxf\IO\StreamReaderWriter.h" />
+    <ClInclude Include="kxf\Network\Common.h" />
+    <ClInclude Include="kxf\Network\HTTPStatus.h" />
+    <ClInclude Include="kxf\Network\URI.h" />
     <ClInclude Include="kxf\RPC.hpp" />
     <ClInclude Include="kxf\RPC\Common.h" />
     <ClInclude Include="kxf\RPC\IRPCClient.h" />
@@ -365,33 +368,6 @@
     <ClInclude Include="kxf\Log\ScopedLogger.h" />
     <ClInclude Include="kxf\Log\ScopedLoggerContext.h" />
     <ClInclude Include="kxf\Log\ScopedLoggerTarget.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\Common.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\LibCURL.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebAuthChallenge.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebResponse.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebRequest.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebSession.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\LibCURLUtility.h" />
-    <ClInclude Include="kxf\Network\Private\BasicWebRequest.h" />
-    <ClInclude Include="kxf\Network\Private\BasicWebSession.h" />
-    <ClInclude Include="kxf\Network\WebRequest.h" />
-    <ClInclude Include="kxf\Network\WebRequest\Common.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebAuthChallenge.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequest.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestAuthOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestProxyOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestSecurityOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebResponse.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebSession.h" />
-    <ClInclude Include="kxf\Network\WebRequest\Options.h" />
-    <ClInclude Include="kxf\Network\WebRequest\WebRequestEvent.h" />
-    <ClInclude Include="kxf\Network\WebRequest\WebRequestHeader.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\Common.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPP.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebRequest.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebResponse.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebSession.h" />
     <ClInclude Include="kxf\pch.hpp" />
     <ClInclude Include="kxf\RTTI\ClassInfo.h" />
     <ClInclude Include="kxf\RTTI\IID.h" />
@@ -559,9 +535,6 @@
     <ClInclude Include="kxf\Localization\Private\LocaleOptions.h" />
     <ClInclude Include="kxf\Localization\AndroidLocalizationPackage.h" />
     <ClInclude Include="kxf\Network.hpp" />
-    <ClInclude Include="kxf\Network\Common.h" />
-    <ClInclude Include="kxf\Network\HTTPStatus.h" />
-    <ClInclude Include="kxf\Network\URI.h" />
     <ClInclude Include="kxf\RTTI.hpp" />
     <ClInclude Include="kxf\RTTI\Common.h" />
     <ClInclude Include="kxf\RTTI\IObject.h" />
@@ -674,6 +647,7 @@
     <ClCompile Include="kxf\EventSystem\BasicEvent.cpp" />
     <ClCompile Include="kxf\EventSystem\EventID.cpp" />
     <ClCompile Include="kxf\EventSystem\EvtHandler.cpp" />
+    <ClCompile Include="kxf\EventSystem\IdleEvent.cpp" />
     <ClCompile Include="kxf\FileSystem\IFileSystem.cpp" />
     <ClCompile Include="kxf\FileSystem\Private\NativeFSUtility.cpp" />
     <ClCompile Include="kxf\Core\CombinedVariableCollection.cpp" />
@@ -686,7 +660,6 @@
     <ClCompile Include="kxf\Core\ResourceID.cpp" />
     <ClCompile Include="kxf\Core\StaticVariableCollection.cpp" />
     <ClCompile Include="kxf\Core\StupidMemoryAllocator.cpp" />
-    <ClCompile Include="kxf\IO\Common.cpp" />
     <ClCompile Include="kxf\IO\MemoryStreamBuffer.cpp" />
     <ClCompile Include="kxf\IO\NativeFileStream.cpp" />
     <ClCompile Include="kxf\IO\IStream.cpp" />
@@ -709,20 +682,6 @@
     <ClCompile Include="kxf\Log\ScopedLogger.cpp" />
     <ClCompile Include="kxf\Log\ScopedLoggerContext.cpp" />
     <ClCompile Include="kxf\Log\ScopedLoggerTarget.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebAuthChallenge.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebResponse.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebRequest.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebSession.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\LibCURLUtility.cpp" />
-    <ClCompile Include="kxf\Network\Private\BasicWebSession.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest\IWebAuthChallenge.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest\IWebRequestOptions.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest\IWebResponse.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest\WebRequestHeader.cpp" />
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebRequest.cpp" />
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebResponse.cpp" />
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebSession.cpp" />
     <ClCompile Include="kxf\RTTI\ClassInfo.cpp" />
     <ClCompile Include="kxf\RTTI\Common.cpp" />
     <ClCompile Include="kxf\RTTI\IID.cpp" />
@@ -797,7 +756,6 @@
     <ClCompile Include="kxf\Localization\Locale.cpp" />
     <ClCompile Include="kxf\Localization\Private\LocaleOptions.cpp" />
     <ClCompile Include="kxf\Localization\AndroidLocalizationPackage.cpp" />
-    <ClCompile Include="kxf\Network\Common.cpp" />
     <ClCompile Include="kxf\Network\URI.cpp" />
     <ClCompile Include="kxf\System\CFunctionCompiler.cpp" />
     <ClCompile Include="kxf\System\DPIAwareness.cpp" />

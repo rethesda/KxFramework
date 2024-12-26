@@ -14,7 +14,7 @@ namespace kxf::CURL::Private
 
 namespace kxf
 {
-	class CURLWebResponse final: public IWebResponse
+	class KXF_API_NETWORK CURLWebResponse final: public IWebResponse
 	{
 		private:
 			CURLWebRequest& m_Request;

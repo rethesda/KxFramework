@@ -1,4 +1,6 @@
 #pragma once
+#include "Common.h"
+
 #include "WebRequest/IWebSession.h"
 #include "WebRequest/IWebRequest.h"
 #include "WebRequest/IWebResponse.h"
@@ -18,5 +20,8 @@ namespace kxf
 
 namespace kxf::Network
 {
-	KXF_API std::shared_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor = {});
+	KXF_API_NETWORK bool IsInternetAvailable() noexcept;
+	KXF_API_NETWORK String LookupIP(const URI& uri, NetworkHostType ip);
+
+	KXF_API_NETWORK std::shared_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor = {});
 }

@@ -159,9 +159,6 @@
     <ClInclude Include="kxf-gui\pch.hpp">
       <Filter>kxf-gui</Filter>
     </ClInclude>
-    <ClInclude Include="kxf-gui\Common.hpp">
-      <Filter>kxf-gui</Filter>
-    </ClInclude>
     <ClInclude Include="kxf-gui\+PCH\kxf-pch.h">
       <Filter>kxf-gui/+PCH</Filter>
     </ClInclude>
@@ -1193,6 +1190,9 @@
     </ClInclude>
     <ClInclude Include="kxf-gui\Drawing\GDIRenderer\GDIFont.h">
       <Filter>kxf-gui\Drawing\GDIRenderer\&lt;GDIObjects&gt;</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-gui\Common.hpp">
+      <Filter>kxf-gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
