@@ -1,8 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "kxf/Core/String.h"
 #include "kxf/Core/IEncodingConverter.h"
-#include <vector>
 
 namespace kxf
 {
@@ -62,6 +60,7 @@ namespace kxf
 			{
 				m_Storage = std::move(other.m_Storage);
 				other.Wipe();
+
 				return *this;
 			}
 
@@ -71,7 +70,7 @@ namespace kxf
 			}
 			bool operator!=(const SecretValue& other) const noexcept
 			{
-				return !(*this == other);
+				return m_Storage != other.m_Storage;
 			}
 
 			explicit operator bool() const noexcept

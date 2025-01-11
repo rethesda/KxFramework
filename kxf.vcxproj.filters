@@ -309,9 +309,6 @@
     <ClInclude Include="kxf\wxWidgets\Setup.h">
       <Filter>kxf\wxWidgets</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Crypto\Crypto.h">
-      <Filter>kxf\Crypto</Filter>
-    </ClInclude>
     <ClInclude Include="kxf\Crypto\Common.h">
       <Filter>kxf\Crypto</Filter>
     </ClInclude>
@@ -467,9 +464,6 @@
     </ClInclude>
     <ClInclude Include="kxf\Core\RegEx.h">
       <Filter>kxf\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Crypto\UserCredentials.h">
-      <Filter>kxf\Crypto</Filter>
     </ClInclude>
     <ClInclude Include="kxf\System\UserName.h">
       <Filter>kxf\System</Filter>
@@ -1335,6 +1329,9 @@
     <ClInclude Include="kxf\wxWidgets\MapEventSystem.h">
       <Filter>kxf\wxWidgets</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\System\UserCredentials.h">
+      <Filter>kxf\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf\EventSystem\EventBuilder.cpp">
@@ -1399,12 +1396,6 @@
     </ClCompile>
     <ClCompile Include="kxf\System\CredentialStore.cpp">
       <Filter>kxf\System</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Crypto\Crypto.cpp">
-      <Filter>kxf\Crypto</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Crypto\Common.cpp">
-      <Filter>kxf\Crypto</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Crypto\SecretValue.cpp">
       <Filter>kxf\Crypto</Filter>

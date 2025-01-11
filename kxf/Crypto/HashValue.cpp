@@ -1,6 +1,5 @@
 #include "kxf-pch.h"
 #include "HashValue.h"
-#include "kxf/Core/String.h"
 
 namespace kxf::Crypto::Private
 {
@@ -11,7 +10,7 @@ namespace kxf::Crypto::Private
 
 		for (std::byte x: data)
 		{
-			result += Format("{:02x}", x);
+			result.Format(kxfS("{:02x}"), x);
 		};
 		return result;
 	}

@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
-#include "SecretValue.h"
-#include "kxf/System/UserName.h"
+#include "UserName.h"
+#include "kxf/Crypto/SecretValue.h"
 
 namespace kxf
 {

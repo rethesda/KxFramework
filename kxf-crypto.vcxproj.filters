@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="kxf-crypto">
+      <UniqueIdentifier>{b754c7f1-7cfc-4648-b498-fd9750d8b242}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="kxf-crypto/+PCH">
+      <UniqueIdentifier>{41eede33-8691-4162-8bf6-d3e5c13b4a89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="kxf-crypto/+Resources">
+      <UniqueIdentifier>{0ca53471-4645-42d9-a8a6-7201d33f4451}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="kxf-crypto/&lt;Modules&gt;">
+      <UniqueIdentifier>{916829f1-4a51-4891-9918-1b9723789c5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="kxf">
+      <UniqueIdentifier>{195735c6-056c-4db8-ba50-ea27daffe07f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="kxf\Crypto">
+      <UniqueIdentifier>{8b494d54-9f33-401e-9565-c01b09408c95}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="kxf-crypto\pch.hpp">
+      <Filter>kxf-crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-crypto\+PCH\kxf-pch.h">
+      <Filter>kxf-crypto/+PCH</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-crypto\Common.hpp">
+      <Filter>kxf-crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\Crypto\Hash.h">
+      <Filter>kxf\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\Crypto\Crypto.h">
+      <Filter>kxf\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\Crypto\Encoding.h">
+      <Filter>kxf\Crypto</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="kxf-crypto\+PCH\kxf-pch.cpp">
+      <Filter>kxf-crypto/+PCH</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\Crypto\Hash.cpp">
+      <Filter>kxf\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\Crypto\Crypto.cpp">
+      <Filter>kxf\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\Crypto\Encoding.cpp">
+      <Filter>kxf\Crypto</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

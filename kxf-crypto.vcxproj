@@ -28,12 +28,12 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{CDF9E591-F96D-451B-B44F-196C17F104B6}</ProjectGuid>
+    <ProjectGuid>{E09DC1A8-1672-4EC5-B57F-E4FE9E6A8B92}</ProjectGuid>
     <RootNamespace>kxf</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <OverrideVcpkgTriplet>false</OverrideVcpkgTriplet>
     <OverrideVcpkgTripletName>none</OverrideVcpkgTripletName>
-    <ProjectName>kxf-network</ProjectName>
+    <ProjectName>kxf-crypto</ProjectName>
     <EnableStdModules>false</EnableStdModules>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
@@ -104,12 +104,12 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>kxf-pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)kxf-network\+PCH\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)kxf-crypto\+PCH\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>KXF_LIBRARY;KXF_LIBRARY_NETWORK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>KXF_LIBRARY;KXF_LIBRARY_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -125,8 +125,8 @@
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4251;4244;4267</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4251;4244;4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4251;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4251;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -149,8 +149,8 @@
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">4251;4244;4267</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">4251;4244;4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">4251;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">4251;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -169,8 +169,8 @@
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4251;4244;4267</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4251;4244;4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4251;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4251;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -189,40 +189,15 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="kxf-network\+PCH\kxf-pch.h" />
-    <ClInclude Include="kxf-network\Common.hpp" />
-    <ClInclude Include="kxf-network\pch.hpp" />
-    <ClInclude Include="kxf\Network\Common.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\Common.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebAuthChallenge.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebRequest.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebResponse.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\CURLWebSession.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\LibCURL.h" />
-    <ClInclude Include="kxf\Network\CURLWebSession\LibCURLUtility.h" />
-    <ClInclude Include="kxf\Network\Private\BasicWebRequest.h" />
-    <ClInclude Include="kxf\Network\Private\BasicWebSession.h" />
-    <ClInclude Include="kxf\Network\WebRequest.h" />
-    <ClInclude Include="kxf\Network\WebRequest\Common.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebAuthChallenge.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequest.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestAuthOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestProxyOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebRequestSecurityOptions.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebResponse.h" />
-    <ClInclude Include="kxf\Network\WebRequest\IWebSession.h" />
-    <ClInclude Include="kxf\Network\WebRequest\Options.h" />
-    <ClInclude Include="kxf\Network\WebRequest\WebRequestEvent.h" />
-    <ClInclude Include="kxf\Network\WebRequest\WebRequestHeader.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\Common.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPP.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebRequest.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebResponse.h" />
-    <ClInclude Include="kxf\Network\WSPPWebSession\WSPPWebSession.h" />
+    <ClInclude Include="kxf-crypto\+PCH\kxf-pch.h" />
+    <ClInclude Include="kxf-crypto\Common.hpp" />
+    <ClInclude Include="kxf-crypto\pch.hpp" />
+    <ClInclude Include="kxf\Crypto\Crypto.h" />
+    <ClInclude Include="kxf\Crypto\Encoding.h" />
+    <ClInclude Include="kxf\Crypto\Hash.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="kxf-network\+PCH\kxf-pch.cpp">
+    <ClCompile Include="kxf-crypto\+PCH\kxf-pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -230,19 +205,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebAuthChallenge.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebRequest.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebResponse.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\CURLWebSession.cpp" />
-    <ClCompile Include="kxf\Network\CURLWebSession\LibCURLUtility.cpp" />
-    <ClCompile Include="kxf\Network\Private\BasicWebSession.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest\IWebRequestOptions.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest\IWebResponse.cpp" />
-    <ClCompile Include="kxf\Network\WebRequest\WebRequestHeader.cpp" />
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebRequest.cpp" />
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebResponse.cpp" />
-    <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebSession.cpp" />
+    <ClCompile Include="kxf\Crypto\Crypto.cpp" />
+    <ClCompile Include="kxf\Crypto\Encoding.cpp" />
+    <ClCompile Include="kxf\Crypto\Hash.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

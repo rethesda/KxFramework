@@ -1,11 +1,10 @@
 #pragma once
 #include "Common.h"
 #include "COM.h"
+#include "UserCredentials.h"
 #include "kxf/DateTime/TimeSpan.h"
 #include "kxf/DateTime/DateTime.h"
 #include "kxf/FileSystem/FSPath.h"
-#include "kxf/Crypto/SecretValue.h"
-#include "kxf/Crypto/UserCredentials.h"
 struct ITaskDefinition;
 struct IRegistrationInfo;
 struct IPrincipal;

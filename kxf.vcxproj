@@ -247,7 +247,6 @@
     <ClInclude Include="kxf\Core\StandardAllocator.h" />
     <ClInclude Include="kxf\Core\StdButton.h" />
     <ClInclude Include="kxf\Core\StdIcon.h" />
-    <ClInclude Include="kxf\Crypto\UserCredentials.h" />
     <ClInclude Include="kxf\DateTime\Common.h" />
     <ClInclude Include="kxf\DateTime\DateSpan.h" />
     <ClInclude Include="kxf\DateTime\DateTime.h" />
@@ -422,6 +421,7 @@
     <ClInclude Include="kxf\System\SystemWindow\AnonymousSystemWindow.h" />
     <ClInclude Include="kxf\System\SystemWindow\ISystemWindow.h" />
     <ClInclude Include="kxf\System\SystemWindow\SystemWindow.h" />
+    <ClInclude Include="kxf\System\UserCredentials.h" />
     <ClInclude Include="kxf\System\UserName.h" />
     <ClInclude Include="kxf\System\VariantProperty.h" />
     <ClInclude Include="kxf\System\Win32Error.h" />
@@ -489,7 +489,6 @@
     <ClInclude Include="kxf\Compression\ZLibStream.h" />
     <ClInclude Include="kxf\Crypto.hpp" />
     <ClInclude Include="kxf\Crypto\Common.h" />
-    <ClInclude Include="kxf\Crypto\Crypto.h" />
     <ClInclude Include="kxf\Crypto\HashValue.h" />
     <ClInclude Include="kxf\Crypto\ISecretStore.h" />
     <ClInclude Include="kxf\Crypto\SecretValue.h" />
@@ -743,8 +742,6 @@
     <ClCompile Include="kxf\wxWidgets\StreamWrapper.cpp" />
     <ClCompile Include="kxf\Compression\LZ4Stream.cpp" />
     <ClCompile Include="kxf\Compression\ZLibStream.cpp" />
-    <ClCompile Include="kxf\Crypto\Common.cpp" />
-    <ClCompile Include="kxf\Crypto\Crypto.cpp" />
     <ClCompile Include="kxf\Crypto\SecretValue.cpp" />
     <ClCompile Include="kxf\Drawing\Common.cpp" />
     <ClCompile Include="kxf\Core\Any.cpp" />

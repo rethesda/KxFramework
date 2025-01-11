@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "kxf/Crypto/UserCredentials.h"
+#include "kxf/System/UserCredentials.h"
 
 namespace kxf
 {

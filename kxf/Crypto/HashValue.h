@@ -1,16 +1,16 @@
 #pragma once
 #include "Common.h"
-#include <array>
+#include "kxf/Core/String.h"
 
 namespace kxf::Crypto::Private
 {
-	template<size_t bitLength, class T = uint8_t>
+	template<size_t bitLength, class T = void>
 	constexpr bool IsHashConvertibleToInteger() noexcept
 	{
-		return std::is_unsigned_v<T> && (sizeof(T) <= bitLength / 8) && (bitLength == 8 || bitLength == 16 || bitLength == 32 || bitLength == 64);
+		return (bitLength % 8 == 0 || bitLength <= 64) && (std::is_void_v<T> || (std::is_unsigned_v<T> && sizeof(T) >= bitLength / 8));
 	}
 
-	String HashValueToString(std::span<const std::byte> data);
+	KXF_API String HashValueToString(std::span<const std::byte> data);
 }
 
 namespace kxf::Crypto
@@ -18,7 +18,7 @@ namespace kxf::Crypto
 	template<size_t bitLength>
 	class HashValue final
 	{
-		static_assert(bitLength >= 8 && (static_cast<size_t>(bitLength / 8.0) * 8 == bitLength), "hash value length should be >= 8 bits and evenly divisible by 8");
+		static_assert(bitLength >= 8 && bitLength % 8 == 0, "hash value length should be >= 8 bits and evenly divisible by 8");
 
 		public:
 			static constexpr size_t BitLength() noexcept
@@ -46,9 +46,10 @@ namespace kxf::Crypto
 				}
 			}
 
-			template<class T> requires(Private::IsHashConvertibleToInteger<bitLength, T>())
-			constexpr HashValue(T intValue) noexcept
-				:HashValue(&intValue, sizeof(intValue))
+			template<class T>
+			requires(Private::IsHashConvertibleToInteger<bitLength, T>())
+			constexpr HashValue(T value) noexcept
+				:HashValue(&value, sizeof(value))
 			{
 			}
 
@@ -69,17 +70,17 @@ namespace kxf::Crypto
 				return Private::IsHashConvertibleToInteger<bitLength>();
 			}
 
-			constexpr size_t length() const noexcept
+			constexpr std::byte* data() noexcept
 			{
-				return m_Hash.size();
+				return m_Hash.data();
 			}
 			constexpr const std::byte* data() const noexcept
 			{
 				return m_Hash.data();
 			}
-			constexpr std::byte* data() noexcept
+			constexpr size_t length() const noexcept
 			{
-				return m_Hash.data();
+				return m_Hash.size();
 			}
 
 			String ToString() const
@@ -87,7 +88,8 @@ namespace kxf::Crypto
 				return Private::HashValueToString({m_Hash.data(), m_Hash.size()});
 			}
 
-			template<class = void> requires(Private::IsHashConvertibleToInteger<bitLength>())
+			template<class = void>
+			requires(Private::IsHashConvertibleToInteger<bitLength>())
 			auto ToInt() const noexcept
 			{
 				auto Convert = [](auto& value)
@@ -116,6 +118,17 @@ namespace kxf::Crypto
 					uint64_t value = 0;
 					return Convert(value);
 				}
+			}
+
+			template<class T>
+			requires(Private::IsHashConvertibleToInteger<bitLength, T>())
+			void FromInt(T value) noexcept
+			{
+				if (sizeof(value) != m_Hash.size())
+				{
+					m_Hash.fill(std::byte{0});
+				}
+				std::memcpy(m_Hash.data(), &value, sizeof(value));
 			}
 
 			constexpr auto begin() noexcept

@@ -1,10 +1,10 @@
 #pragma once
 #include "Common.h"
 #include "COM.h"
+#include "UserCredentials.h"
 #include "kxf/Core/Any.h"
 #include "kxf/Core/String.h"
 #include "kxf/Core/Enumerator.h"
-#include "kxf/Crypto/UserCredentials.h"
 #include "kxf/FileSystem/FSPath.h"
 #include "kxf/Localization/Locale.h"
 struct IWbemLocator;
