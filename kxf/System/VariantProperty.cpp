@@ -6,6 +6,7 @@
 #include "kxf/Utility/ScopeGuard.h"
 
 #include <Windows.h>
+#include <oaidl.h>
 #include <propvarutil.h>
 #include <propidlbase.h>
 #include "kxf/Win32/LinkLibs-COM.h"
@@ -143,15 +144,24 @@ namespace kxf
 
 	uint64_t VariantProperty::Serialize(IOutputStream& stream) const
 	{
-		VARIANT variant;
+		VARIANT variant = {};
 		if (DoConvertToVariant(variant))
 		{
 			unsigned long rpcData = 0;
+			#if _WIN64
 			uint64_t bufferSize = ::VARIANT_UserSize64(&rpcData, 0, &variant);
+			#else
+			uint64_t bufferSize = ::VARIANT_UserSize(&rpcData, 0, &variant);
+			#endif
 
 			std::vector<uint8_t> buffer;
 			buffer.resize(static_cast<size_t>(bufferSize));
+			#if _WIN64
 			auto result = ::VARIANT_UserMarshal64(&rpcData, buffer.data(), &variant);
+			#else
+			auto result = ::VARIANT_UserMarshal(&rpcData, buffer.data(), &variant);
+			#endif
+
 			if (HResult(static_cast<HRESULT>(reinterpret_cast<size_t>(result))))
 			{
 				uint64_t written = Serialization::WriteObject(stream, bufferSize);
@@ -187,7 +197,12 @@ namespace kxf
 
 			VARIANT variant;
 			unsigned long rpcData = 0;
+			#if _WIN64
 			auto result = ::VARIANT_UserUnmarshal64(&rpcData, buffer.data(), &variant);
+			#else
+			auto result = ::VARIANT_UserUnmarshal(&rpcData, buffer.data(), &variant);
+			#endif
+
 			if (HResult(static_cast<HRESULT>(reinterpret_cast<size_t>(result))))
 			{
 				DoConvertFromVariant(variant);
