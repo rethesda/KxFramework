@@ -65,7 +65,7 @@ namespace kxf::Crypto
 			// HashCalculator_xxHash1
 			auto Compute(IInputStream& stream, uint64_t seed)
 			{
-				return IHashCalculator::ComputeDefault<sizeof(THashType) * 8>(*this, stream, seed, {});
+				return IHashCalculator::ComputeDefault<sizeof(THashType) * 8>(*this, stream, seed, {}).Reverse();
 			}
 	};
 
@@ -149,7 +149,7 @@ namespace kxf::Crypto
 			// HashCalculator_xxHash3
 			auto Compute(IInputStream& stream, uint64_t seed, const SecretValue& secret)
 			{
-				return IHashCalculator::ComputeDefault<bitLength>(*this, stream, seed, secret);
+				return IHashCalculator::ComputeDefault<bitLength>(*this, stream, seed, secret).Reverse();
 			}
 	};
 
