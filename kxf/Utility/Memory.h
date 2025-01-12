@@ -46,11 +46,15 @@ namespace kxf::Utility
 		std::destroy_at(ptr);
 	}
 
-	template<class TFunc>
+	template<size_t size = 0, class TFunc>
 	requires(std::is_member_function_pointer_v<TFunc>)
 	auto StoreMemberFunction(TFunc func) noexcept
 	{
-		std::array<uint8_t, sizeof(func)> buffer;
+		std::array<uint8_t, std::max(sizeof(func), size)> buffer;
+		if constexpr(buffer.size() != sizeof(func))
+		{
+			buffer.fill(0);
+		}
 		std::memcpy(buffer.data(), &func, sizeof(func));
 
 		return buffer;

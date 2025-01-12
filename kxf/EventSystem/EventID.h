@@ -42,7 +42,7 @@ namespace kxf
 			template<class TFunc>
 			requires(std::is_member_function_pointer_v<TFunc>)
 			EventID(TFunc func) noexcept
-				:m_ID(UniversallyUniqueID::CreateFromInt128(Utility::StoreMemberFunction(func)))
+				:m_ID(UniversallyUniqueID::CreateFromInt128(Utility::StoreMemberFunction<16>(func)))
 			{
 			}
 			
@@ -188,7 +188,8 @@ namespace kxf
 				Init();
 			}
 
-			template<class T> requires(std::is_constructible_v<EventID, T>)
+			template<class T>
+			requires(std::is_constructible_v<EventID, T>)
 			EventTag(T&& arg) noexcept(std::is_nothrow_constructible_v<EventID, T>)
 				:m_ID(std::forward<T>(arg))
 			{
