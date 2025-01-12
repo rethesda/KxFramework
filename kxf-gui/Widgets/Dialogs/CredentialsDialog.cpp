@@ -113,7 +113,7 @@ namespace kxf::UI
 			if (unpacked)
 			{
 				m_UserName = String(name, nameLength);
-				m_Password = SecretValue(String(password, passwordLength));
+				m_Password = SecretValue::FromString(String(password, passwordLength));
 			}
 		}
 		return status.IsSuccess() ? wxID_OK : wxID_CANCEL;
