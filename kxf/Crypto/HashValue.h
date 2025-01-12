@@ -4,13 +4,19 @@
 
 namespace kxf::Crypto::Private
 {
-	template<size_t bitLength, class T = void>
+	template<size_t bitLength>
 	constexpr bool IsHashConvertibleToInteger() noexcept
 	{
-		return (bitLength % 8 == 0 || bitLength <= 64) && (std::is_void_v<T> || (std::is_unsigned_v<T> && sizeof(T) >= bitLength / 8));
+		return bitLength % 8 == 0 && bitLength <= 64;
 	}
 
-	KXF_API String HashValueToString(std::span<const std::byte> data);
+	template<size_t bitLength, class T>
+	constexpr bool IsHashConvertibleToIntegerOfType() noexcept
+	{
+		return IsHashConvertibleToInteger<bitLength>() && (std::is_unsigned_v<T> && sizeof(T) >= bitLength / 8);
+	}
+
+	KXF_API String HashValueToString(std::span<const std::byte> hashData);
 }
 
 namespace kxf::Crypto
@@ -47,7 +53,7 @@ namespace kxf::Crypto
 			}
 
 			template<class T>
-			requires(Private::IsHashConvertibleToInteger<bitLength, T>())
+			requires(Private::IsHashConvertibleToIntegerOfType<bitLength, T>())
 			constexpr HashValue(T value) noexcept
 				:HashValue(&value, sizeof(value))
 			{
@@ -56,7 +62,7 @@ namespace kxf::Crypto
 		public:
 			constexpr bool IsNull() const noexcept
 			{
-				for (std::byte c: m_Hash)
+				for (auto c: m_Hash)
 				{
 					if (c != std::byte{0})
 					{
@@ -68,6 +74,11 @@ namespace kxf::Crypto
 			constexpr bool IsConvertibleToInteger() const noexcept
 			{
 				return Private::IsHashConvertibleToInteger<bitLength>();
+			}
+			constexpr HashValue& Reverse() noexcept
+			{
+				std::reverse(m_Hash.begin(), m_Hash.end());
+				return *this;
 			}
 			
 			constexpr std::span<std::byte> as_span() noexcept
@@ -101,7 +112,7 @@ namespace kxf::Crypto
 			requires(Private::IsHashConvertibleToInteger<bitLength>())
 			auto ToInt() const noexcept
 			{
-				auto Convert = [](auto& value)
+				auto Convert = [&](auto& value)
 				{
 					std::memcpy(&value, m_Hash.data(), sizeof(value));
 					return value;
@@ -130,14 +141,16 @@ namespace kxf::Crypto
 			}
 
 			template<class T>
-			requires(Private::IsHashConvertibleToInteger<bitLength, T>())
-			void FromInt(T value) noexcept
+			requires(Private::IsHashConvertibleToIntegerOfType<bitLength, T>())
+			HashValue& FromInt(T value) noexcept
 			{
 				if (sizeof(value) != m_Hash.size())
 				{
 					m_Hash.fill(std::byte{0});
 				}
 				std::memcpy(m_Hash.data(), &value, sizeof(value));
+
+				return *this;
 			}
 
 			constexpr auto begin() noexcept
