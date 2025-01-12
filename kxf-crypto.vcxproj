@@ -191,10 +191,15 @@
   <ItemGroup>
     <ClInclude Include="kxf-crypto\+PCH\kxf-pch.h" />
     <ClInclude Include="kxf-crypto\Common.hpp" />
+    <ClInclude Include="kxf-crypto\Crypto\Common.h" />
+    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_CRC32.h" />
+    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_OpenSSL.h" />
+    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_xxHash.h" />
     <ClInclude Include="kxf-crypto\pch.hpp" />
     <ClInclude Include="kxf\Crypto\Crypto.h" />
     <ClInclude Include="kxf\Crypto\Encoding.h" />
     <ClInclude Include="kxf\Crypto\Hash.h" />
+    <ClInclude Include="kxf\Crypto\IHashCalculator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-crypto\+PCH\kxf-pch.cpp">

@@ -19,6 +19,9 @@
     <Filter Include="kxf\Crypto">
       <UniqueIdentifier>{8b494d54-9f33-401e-9565-c01b09408c95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="kxf-crypto\Crypto">
+      <UniqueIdentifier>{a550bec7-a3a6-4df6-99cb-77594da1a5e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kxf-crypto\pch.hpp">
@@ -38,6 +41,21 @@
     </ClInclude>
     <ClInclude Include="kxf\Crypto\Encoding.h">
       <Filter>kxf\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_OpenSSL.h">
+      <Filter>kxf-crypto\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-crypto\Crypto\Common.h">
+      <Filter>kxf-crypto\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\Crypto\IHashCalculator.h">
+      <Filter>kxf\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_xxHash.h">
+      <Filter>kxf-crypto\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_CRC32.h">
+      <Filter>kxf-crypto\Crypto</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

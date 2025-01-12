@@ -69,6 +69,15 @@ namespace kxf::Crypto
 			{
 				return Private::IsHashConvertibleToInteger<bitLength>();
 			}
+			
+			constexpr std::span<std::byte> as_span() noexcept
+			{
+				return m_Hash;
+			}
+			constexpr std::span<const std::byte> as_span() const noexcept
+			{
+				return m_Hash;
+			}
 
 			constexpr std::byte* data() noexcept
 			{
