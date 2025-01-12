@@ -1,5 +1,6 @@
 #pragma once
 #include "kxf/Common.hpp"
+#include "kxf-crypto/Common.hpp"
 
 namespace kxf
 {

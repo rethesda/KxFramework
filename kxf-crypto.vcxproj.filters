@@ -57,6 +57,9 @@
     <ClInclude Include="kxf-crypto\+Resources\kxf-resources.h">
       <Filter>kxf-crypto/+Resources</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\Crypto\Common.h">
+      <Filter>kxf\Crypto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-crypto\+PCH\kxf-pch.cpp">
