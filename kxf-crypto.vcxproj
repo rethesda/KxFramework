@@ -190,6 +190,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="kxf-crypto\+PCH\kxf-pch.h" />
+    <ClInclude Include="kxf-crypto\+Resources\kxf-resources.h" />
     <ClInclude Include="kxf-crypto\Common.hpp" />
     <ClInclude Include="kxf-crypto\Crypto\Common.h" />
     <ClInclude Include="kxf-crypto\Crypto\HashCalculator_CRC32.h" />
@@ -213,6 +214,9 @@
     <ClCompile Include="kxf\Crypto\Crypto.cpp" />
     <ClCompile Include="kxf\Crypto\Encoding.cpp" />
     <ClCompile Include="kxf\Crypto\Hash.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="kxf-crypto\+Resources\kxf-resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -43,9 +43,6 @@
     <Filter Include="kxf-gui/+Resources">
       <UniqueIdentifier>{0ca53471-4645-42d9-a8a6-7201d33f4451}</UniqueIdentifier>
     </Filter>
-    <Filter Include="kxf-gui/&lt;Modules&gt;">
-      <UniqueIdentifier>{916829f1-4a51-4891-9918-1b9723789c5a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="kxf-gui\Application">
       <UniqueIdentifier>{13f57d0a-8330-4569-b8bf-03bb07e12281}</UniqueIdentifier>
     </Filter>
@@ -1194,6 +1191,9 @@
     <ClInclude Include="kxf-gui\Common.hpp">
       <Filter>kxf-gui</Filter>
     </ClInclude>
+    <ClInclude Include="kxf-gui\+Resources\kxf-resources.h">
+      <Filter>kxf-gui/+Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-gui\+PCH\kxf-pch.cpp">
@@ -1876,5 +1876,10 @@
     <None Include="kxf-gui\Sciter\Stylesheets\MasterStylesheet.css">
       <Filter>kxf-gui\Sciter\Stylesheets</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="kxf-gui\+Resources\kxf-resources.rc">
+      <Filter>kxf-gui/+Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

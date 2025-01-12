@@ -182,6 +182,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="kxf-gui\+PCH\kxf-pch.h" />
+    <ClInclude Include="kxf-gui\+Resources\kxf-resources.h" />
     <ClInclude Include="kxf-gui\Application\Common.h" />
     <ClInclude Include="kxf-gui\Application\GUIApplication.h" />
     <ClInclude Include="kxf-gui\Application\Private\Win32GUIEventLoop.h" />
@@ -764,6 +765,9 @@
     <None Include="kxf-gui\Sciter\Stylesheets\MasterStylesheet.css" />
     <None Include="kxf-gui\Sciter\Widgets\Native\TextBoxWidget.css" />
     <None Include="kxf-gui\Sciter\Widgets\TextBoxWidget.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="kxf-gui\+Resources\kxf-resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

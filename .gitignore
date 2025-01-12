@@ -5,7 +5,6 @@
 cpp.hint
 ClassDiagram.cd
 kxf/+Resources/RC*
-kxf-gui/+Resources/RC*
 
 # Output and intermediate build files
 Bin/*

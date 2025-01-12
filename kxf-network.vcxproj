@@ -190,6 +190,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="kxf-network\+PCH\kxf-pch.h" />
+    <ClInclude Include="kxf-network\+Resources\kxf-resources.h" />
     <ClInclude Include="kxf-network\Common.hpp" />
     <ClInclude Include="kxf-network\pch.hpp" />
     <ClInclude Include="kxf\Network\Common.h" />
@@ -243,6 +244,9 @@
     <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebRequest.cpp" />
     <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebResponse.cpp" />
     <ClCompile Include="kxf\Network\WSPPWebSession\WSPPWebSession.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="kxf-network\+Resources\kxf-resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -10,9 +10,6 @@
     <Filter Include="kxf-crypto/+Resources">
       <UniqueIdentifier>{0ca53471-4645-42d9-a8a6-7201d33f4451}</UniqueIdentifier>
     </Filter>
-    <Filter Include="kxf-crypto/&lt;Modules&gt;">
-      <UniqueIdentifier>{916829f1-4a51-4891-9918-1b9723789c5a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="kxf">
       <UniqueIdentifier>{195735c6-056c-4db8-ba50-ea27daffe07f}</UniqueIdentifier>
     </Filter>
@@ -57,6 +54,9 @@
     <ClInclude Include="kxf-crypto\Crypto\HashCalculator_CRC32.h">
       <Filter>kxf-crypto\Crypto</Filter>
     </ClInclude>
+    <ClInclude Include="kxf-crypto\+Resources\kxf-resources.h">
+      <Filter>kxf-crypto/+Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-crypto\+PCH\kxf-pch.cpp">
@@ -71,5 +71,10 @@
     <ClCompile Include="kxf\Crypto\Encoding.cpp">
       <Filter>kxf\Crypto</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="kxf-crypto\+Resources\kxf-resources.rc">
+      <Filter>kxf-crypto/+Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

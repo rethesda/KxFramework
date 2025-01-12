@@ -10,9 +10,6 @@
     <Filter Include="kxf-network/+Resources">
       <UniqueIdentifier>{0ca53471-4645-42d9-a8a6-7201d33f4451}</UniqueIdentifier>
     </Filter>
-    <Filter Include="kxf-network/&lt;Modules&gt;">
-      <UniqueIdentifier>{916829f1-4a51-4891-9918-1b9723789c5a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="kxf">
       <UniqueIdentifier>{195735c6-056c-4db8-ba50-ea27daffe07f}</UniqueIdentifier>
     </Filter>
@@ -126,6 +123,9 @@
     <ClInclude Include="kxf\Network\WebRequest\WebRequestHeader.h">
       <Filter>kxf\Network\WebRequest</Filter>
     </ClInclude>
+    <ClInclude Include="kxf-network\+Resources\kxf-resources.h">
+      <Filter>kxf-network/+Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-network\+PCH\kxf-pch.cpp">
@@ -170,5 +170,10 @@
     <ClCompile Include="kxf\Network\WebRequest\WebRequestHeader.cpp">
       <Filter>kxf\Network\WebRequest</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="kxf-network\+Resources\kxf-resources.rc">
+      <Filter>kxf-network/+Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
