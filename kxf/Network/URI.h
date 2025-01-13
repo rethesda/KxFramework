@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "kxf/Core/UninitializedStorage.h"
 class wxURI;
 
 namespace kxf
@@ -37,47 +38,46 @@ namespace kxf
 			static String Unescape(const String& source, LineBreakFormat lineBreakFormat = LineBreakFormat::None, FlagSet<URIFlag> flags = {});
 
 		private:
-			std::unique_ptr<Private::URIObject> m_URI;
+			UninitializedStorage<Private::URIObject, 192, 0> m_URI;
 
 		public:
-			URI() noexcept;
+			URI() noexcept = default;
 			URI(const String& uri)
-				:URI()
 			{
 				Create(uri);
 			}
 			URI(const FSPath& path)
-				:URI()
 			{
 				Create(path);
 			}
 			URI(const wxURI& uri)
-				:URI()
 			{
 				Create(uri);
 			}
 			URI(const wxString& uri)
-				:URI()
 			{
 				Create(uri);
 			}
 			URI(const char* uri)
-				:URI()
 			{
 				Create(uri);
 			}
 			URI(const wchar_t* uri)
-				:URI()
 			{
 				Create(uri);
 			}
 			URI(const URI& other)
-				:URI()
 			{
 				*this = other;
 			}
-			URI(URI&&) noexcept;
-			~URI();
+			URI(URI&& other) noexcept
+			{
+				*this = std::move(other);
+			}
+			~URI()
+			{
+				Clear();
+			}
 
 		public:
 			bool IsNull() const noexcept;
@@ -144,7 +144,7 @@ namespace kxf
 			}
 
 			URI& operator=(const URI& other);
-			URI& operator=(URI&&) noexcept;
+			URI& operator=(URI&& other) noexcept;
 
 			bool operator==(const URI& other) const noexcept;
 			bool operator==(const wxURI& other) const;
@@ -159,5 +159,30 @@ namespace std
 	struct hash<kxf::URI> final
 	{
 		size_t operator()(const kxf::URI& uri) const noexcept;
+	};
+}
+
+namespace std
+{
+	template<>
+	struct formatter<kxf::URI, char>: std::formatter<std::string_view, char>
+	{
+		template<class TFormatContext>
+		auto format(const kxf::URI& uri, TFormatContext& formatContext) const
+		{
+			auto formatted = uri.BuildUnescapedURI();
+			return std::formatter<std::string_view, char>::format(formatted.utf8_str(), formatContext);
+		}
+	};
+
+	template<>
+	struct formatter<kxf::URI, wchar_t>: std::formatter<std::wstring_view, wchar_t>
+	{
+		template<class TFormatContext>
+		auto format(const kxf::URI& uri, TFormatContext& formatContext) const
+		{
+			auto formatted = uri.BuildUnescapedURI();
+			return std::formatter<std::wstring_view, wchar_t>::format(formatted.view(), formatContext);
+		}
 	};
 }
