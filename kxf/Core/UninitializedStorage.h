@@ -61,9 +61,19 @@ namespace kxf
 			{
 				Utility::DestroyAt<TValue>(data());
 			}
+
 			void ZeroBuffer() noexcept
 			{
 				std::memset(m_Buffer, 0, Size_);
+			}
+			void CopyBuffer(const UninitializedBuffer& other) noexcept
+			{
+				std::memcpy(m_Buffer, other.m_Buffer, Size_);
+			}
+			void MoveBuffer(UninitializedBuffer& other) noexcept
+			{
+				CopyBuffer(other);
+				other.ZeroBuffer();
 			}
 
 		public:
@@ -131,22 +141,26 @@ namespace kxf
 
 			template<class... Args>
 			requires(Alignment_ == 0 && std::is_constructible_v<TValue, Args...>)
-			TValue* AlignAndConstruct(Args&&... arg) noexcept(std::is_nothrow_constructible_v<TValue, Args...>)
+			TValue* ConstructAligned(Args&&... arg) noexcept(std::is_nothrow_constructible_v<TValue, Args...>)
 			{
 				if (!m_Value)
 				{
-					m_Value = Utility::AlignAndConstructAt<TValue>(m_Buffer.data(), m_Buffer.size(), std::forward<Args>(arg)...);
+					static_assert(Size_ >= sizeof(TValue), "insufficient buffer size");
+
+					m_Value = Utility::ConstructAtAlignedWith<TValue>(m_Buffer.data(), m_Buffer.size(), std::forward<Args>(arg)...);
 				}
 				return m_Value;
 			}
 
 			template<class... Args>
 			requires(Alignment_ == 0 && std::is_constructible_v<TValue, Args...>)
-			TValue* AlignAndConstruct(size_t alignment, Args&&... arg) noexcept(std::is_nothrow_constructible_v<TValue, Args...>)
+			TValue* ConstructAlignedTo(size_t alignment, Args&&... arg) noexcept(std::is_nothrow_constructible_v<TValue, Args...>)
 			{
 				if (!m_Value)
 				{
-					m_Value = Utility::AlignAndConstructAt<TValue>(m_Buffer.data(), m_Buffer.size(), alignment, std::forward<Args>(arg)...);
+					static_assert(Size_ >= sizeof(TValue), "insufficient buffer size");
+
+					m_Value = Utility::ConstructAtAlignedTo<TValue>(m_Buffer.data(), m_Buffer.size(), alignment, std::forward<Args>(arg)...);
 				}
 				return m_Value;
 			}
@@ -214,6 +228,13 @@ namespace kxf
 			const TValue* get() const noexcept
 			{
 				return m_Value;
+			}
+			void set(TValue* ptr) noexcept
+			{
+				if (!m_Value)
+				{
+					m_Value = ptr;
+				}
 			}
 
 		public:

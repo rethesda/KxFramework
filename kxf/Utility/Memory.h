@@ -16,7 +16,7 @@ namespace kxf::Utility
 
 	template<class T, class... Args>
 	requires(std::is_constructible_v<T, Args...>)
-	constexpr T* AlignAndConstructAt(void* buffer, size_t size, size_t alignment, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
+	constexpr T* ConstructAtAlignedTo(void* buffer, size_t size, size_t alignment, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
 	{
 		void* ptr = buffer;
 		size_t space = size;
@@ -29,9 +29,9 @@ namespace kxf::Utility
 
 	template<class T, class... Args>
 	requires(std::is_constructible_v<T, Args...>)
-	constexpr T* AlignAndConstructAt(void* buffer, size_t size, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
+	constexpr T* ConstructAtAlignedWith(void* buffer, size_t size, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
 	{
-		return AlignAndConstructAt<T>(buffer, size, alignof(T), std::forward<Args>(arg)...);
+		return ConstructAtAlignedTo<T>(buffer, size, alignof(T), std::forward<Args>(arg)...);
 	}
 
 	template<class T>

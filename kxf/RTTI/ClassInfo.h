@@ -332,7 +332,7 @@ namespace kxf::RTTI
 			}
 			IObject* DoCreateObjectInstanceAt(void* ptr, size_t size) const override
 			{
-				return Utility::AlignAndConstructAt<T>(ptr, size);
+				return Utility::ConstructAtAlignedWith<T>(ptr, size);
 			}
 
 		public:
