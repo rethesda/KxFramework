@@ -6,11 +6,6 @@ class wxURI;
 namespace kxf
 {
 	class FSPath;
-
-	namespace Private
-	{
-		class URIObject;
-	}
 }
 
 namespace kxf
@@ -30,7 +25,6 @@ namespace kxf
 {
 	class KXF_API URI final
 	{
-		friend class Private::URIObject;
 		friend struct std::hash<URI>;
 
 		public:
@@ -38,7 +32,7 @@ namespace kxf
 			static String Unescape(const String& source, LineBreakFormat lineBreakFormat = LineBreakFormat::None, FlagSet<URIFlag> flags = {});
 
 		private:
-			UninitializedStorage<Private::URIObject, 192, 0> m_URI;
+			UninitializedStorage<class URIImpl, 192, 0> m_URI;
 
 		public:
 			URI() noexcept = default;
@@ -81,7 +75,6 @@ namespace kxf
 
 		public:
 			bool IsNull() const noexcept;
-			void Clear() noexcept;
 
 			bool Create(const String& uri);
 			bool Create(const FSPath& path);
@@ -98,6 +91,7 @@ namespace kxf
 			{
 				return Create(String(uri));
 			}
+			void Clear() noexcept;
 
 			bool IsReference() const noexcept;
 			URI& Resolve(const URI& base, FlagSet<URIFlag> flags = {});

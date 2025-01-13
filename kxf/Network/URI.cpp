@@ -77,9 +77,9 @@ namespace
 	}
 }
 
-namespace kxf::Private
+namespace kxf
 {
-	class URIObject final
+	class URIImpl final
 	{
 		private:
 			UriUriW m_URIData = {};
@@ -100,17 +100,17 @@ namespace kxf::Private
 			}
 
 		public:
-			URIObject() noexcept
+			URIImpl() noexcept
 			{
 				ZeroBuffer();
 			}
-			URIObject(const URIObject&) = delete;
-			URIObject(URIObject&& other) noexcept
+			URIImpl(const URIImpl&) = delete;
+			URIImpl(URIImpl&& other) noexcept
 			{
 				std::memcpy(&m_URIData, &other.m_URIData, sizeof(m_URIData));
 				other.ZeroBuffer();
 			}
-			~URIObject() noexcept
+			~URIImpl() noexcept
 			{
 				Destroy();
 			}
@@ -181,12 +181,12 @@ namespace kxf::Private
 
 				return hash;
 			}
-			bool IsSameAs(const URIObject& other) const noexcept
+			bool IsSameAs(const URIImpl& other) const noexcept
 			{
 				return this == &other || ::uriEqualsUriW(&m_URIData, &other.m_URIData);
 			}
 
-			bool Resolve(const URIObject& base, FlagSet<URIFlag> flags) noexcept
+			bool Resolve(const URIImpl& base, FlagSet<URIFlag> flags) noexcept
 			{
 				UriUriW result;
 				if (::uriAddBaseUriW(&result, &m_URIData, &base.m_URIData) == URI_SUCCESS)
@@ -198,7 +198,7 @@ namespace kxf::Private
 				}
 				return false;
 			}
-			bool MakeReference(const URIObject& base, FlagSet<URIFlag> flags) noexcept
+			bool MakeReference(const URIImpl& base, FlagSet<URIFlag> flags) noexcept
 			{
 				UriUriW result;
 				if (::uriRemoveBaseUriW(&result, &m_URIData, &base.m_URIData, flags.Contains(URIFlag::DomainRootRelative)) == URI_SUCCESS)
@@ -340,8 +340,8 @@ namespace kxf::Private
 			}
 
 		public:
-			URIObject& operator=(const URIObject&) = delete;
-			URIObject& operator=(URIObject&& other) noexcept
+			URIImpl& operator=(const URIImpl&) = delete;
+			URIImpl& operator=(URIImpl&& other) noexcept
 			{
 				if (this != &other)
 				{
@@ -386,14 +386,10 @@ namespace kxf
 	{
 		return !m_URI.IsConstructed();
 	}
-	void URI::Clear() noexcept
-	{
-		m_URI.Destroy();
-	}
 
 	bool URI::Create(const String& uri)
 	{
-		if (m_URI.AlignAndConstruct() && m_URI->Create(uri, true))
+		if (m_URI.ConstructAligned() && m_URI->Create(uri, true))
 		{
 			return true;
 		}
@@ -426,6 +422,10 @@ namespace kxf
 	bool URI::Create(const wxURI& uri)
 	{
 		return Create(uri.BuildURI());
+	}
+	void URI::Clear() noexcept
+	{
+		m_URI.Destroy();
 	}
 
 	bool URI::IsReference() const noexcept
@@ -558,7 +558,7 @@ namespace kxf
 
 			if (other.m_URI)
 			{
-				m_URI.AlignAndConstruct(std::move(*other.m_URI));
+				m_URI.ConstructAligned(std::move(*other.m_URI));
 				other.Clear();
 			}
 		}
