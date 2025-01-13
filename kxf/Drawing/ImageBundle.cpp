@@ -4,7 +4,9 @@
 #include "kxf/System/SystemInformation.h"
 #include "kxf/Application/IGUIApplication.h"
 #include "kxf-gui/Widgets/ITopLevelWidget.h"
+
 #include <wx/iconbndl.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {

@@ -1,14 +1,13 @@
 #pragma once
 #include "Common.h"
+#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/Drawing/IImage2D.h"
-#include <wx/bitmap.h>
-#include "kxf/Win32/UndefMacros.h"
+#include "kxf/Drawing/IGDIObject.h"
 class wxDC;
+class wxBitmap;
 
 namespace kxf
 {
-	class BitmapImage;
-
 	class GDIContext;
 	class GDICursor;
 	class GDIIcon;
@@ -16,12 +15,12 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API GDIBitmap: public RTTI::DynamicImplementation<GDIBitmap, IGDIObject, IImage2D>
+	class KXF_API GDIBitmap final: public RTTI::DynamicImplementation<GDIBitmap, IGDIObject, IImage2D>
 	{
 		kxf_RTTI_DeclareIID(GDIBitmap, {0xd4c3e7be, 0xf0fd, 0x4c38, {0xa1, 0x94, 0x16, 0xb3, 0x9, 0xa, 0x34, 0xb5}});
 
 		private:
-			wxBitmap m_Bitmap;
+			UninitializedStorage<wxBitmap, 32, 0> m_Bitmap;
 
 		private:
 			std::optional<String> GetOption(const String& name) const override
@@ -44,15 +43,8 @@ namespace kxf
 			void Initialize();
 
 		public:
-			GDIBitmap()
-			{
-				Initialize();
-			}
-			GDIBitmap(const wxBitmap& other)
-				:m_Bitmap(other)
-			{
-				Initialize();
-			}
+			GDIBitmap();
+			GDIBitmap(const wxBitmap& other);
 
 			GDIBitmap(const GDIIcon& other);
 			GDIBitmap(const GDICursor& other);
@@ -64,21 +56,15 @@ namespace kxf
 			GDIBitmap(const Size& size, const wxDC& dc);
 			GDIBitmap(const char* xbm, const Size& size, ColorDepth depth = ColorDepthDB::BPP1);
 
-			virtual ~GDIBitmap() = default;
+			~GDIBitmap();
 
 		public:
 			// IGDIObject
-			bool IsNull() const override
-			{
-				return !m_Bitmap.IsOk();
-			}
-			bool IsSameAs(const IGDIObject& other) const override
-			{
-				return m_Bitmap.GetHandle() == other.GetHandle();
-			}
+			bool IsNull() const override;
+			bool IsSameAs(const IGDIObject& other) const override;
 			std::shared_ptr<IGDIObject> CloneGDIObject() const override
 			{
-				return std::make_shared<GDIBitmap>(m_Bitmap);
+				return std::make_shared<GDIBitmap>(*m_Bitmap);
 			}
 
 			void* GetHandle() const override;
@@ -86,40 +72,17 @@ namespace kxf
 			void AttachHandle(void* handle) override;
 
 			// IImage2D
-			bool IsSameAs(const IImage2D& other) const override
-			{
-				if (this == &other)
-				{
-					return true;
-				}
-				else if (auto bitmap = other.QueryInterface<GDIBitmap>())
-				{
-					return m_Bitmap.IsSameAs(bitmap->m_Bitmap);
-				}
-				return false;
-			}
+			bool IsSameAs(const IImage2D& other) const override;
 			std::shared_ptr<IImage2D> CloneImage2D() const override
 			{
-				return std::make_shared<GDIBitmap>(m_Bitmap);
+				return std::make_shared<GDIBitmap>(*m_Bitmap);
 			}
 
-			Size GetSize() const override
-			{
-				return m_Bitmap.IsOk() ? Size(m_Bitmap.GetSize()) : Size::UnspecifiedSize();
-			}
-			ColorDepth GetColorDepth() const override
-			{
-				return m_Bitmap.GetDepth();
-			}
-			UniversallyUniqueID GetFormat() const override
-			{
-				return ImageFormat::BMP;
-			}
+			Size GetSize() const override;
+			ColorDepth GetColorDepth() const override;
+			UniversallyUniqueID GetFormat() const override;
 
-			void Create(const Size& size) override
-			{
-				m_Bitmap.Create(size, *ColorDepthDB::BPP32);
-			}
+			bool Create(const Size& size) override;
 			bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos);
 			bool Save(IOutputStream& stream, const UniversallyUniqueID& format) const;
 
@@ -128,34 +91,22 @@ namespace kxf
 			// GDIBitmap
 			wxBitmap& AsWXBitmap() noexcept
 			{
-				return m_Bitmap;
+				return *m_Bitmap;
 			}
 			const wxBitmap& AsWXBitmap() const noexcept
 			{
-				return m_Bitmap;
+				return *m_Bitmap;
 			}
 
 			GDICursor ToGDICursor(const Point& hotSpot = Point::UnspecifiedPosition()) const;
 			GDIIcon ToGDIIcon() const;
 
-			GDIBitmap GetSubBitmap(const Rect& rect) const
-			{
-				return m_Bitmap.GetSubBitmap(rect);
-			}
-			GDIBitmap ConvertToDisabled(Angle brightness = Angle::FromNormalized(1)) const
-			{
-				return m_Bitmap.ConvertToDisabled(static_cast<uint8_t>(brightness.ToNormalized() * 255));
-			}
+			GDIBitmap GetSubBitmap(const Rect& rect) const;
+			GDIBitmap ConvertToDisabled(Angle brightness = Angle::FromNormalized(1)) const;
 			GDIBitmap GetScaled(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const;
 
-			void UpdateAlpha()
-			{
-				m_Bitmap.MSWUpdateAlpha();
-			}
-			void ForceAlpha()
-			{
-				m_Bitmap.UseAlpha(true);
-			}
+			void ForceAlpha();
+			void UpdateAlpha();
 
 		public:
 			explicit operator bool() const noexcept
@@ -167,12 +118,6 @@ namespace kxf
 				return IsNull();
 			}
 
-			GDIBitmap& operator=(const GDIBitmap& other)
-			{
-				m_Bitmap = other.m_Bitmap;
-				Initialize();
-
-				return *this;
-			}
+			GDIBitmap& operator=(const GDIBitmap& other);
 	};
 }

@@ -4,47 +4,120 @@
 #include "GDIIcon.h"
 #include "Private.h"
 #include "kxf/Drawing/BitmapImage.h"
+#include "kxf/wxWidgets/MapDrawing.h"
+
+#include <wx/bitmap.h>
+#include <wx/cursor.h>
+#include <wx/image.h>
+#include <wx/icon.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf
 {
 	// GDICursor
-	GDICursor::GDICursor(const GDIIcon& other)
-		:m_Cursor(other.ToGDICursor().m_Cursor)
+	GDICursor::GDICursor()
 	{
+		m_Cursor.ConstructAligned();
+	}
+	GDICursor::GDICursor(const wxCursor& other)
+	{
+		m_Cursor.ConstructAligned(other);
+	}
+
+	GDICursor::GDICursor(const GDIIcon& other)
+	{
+		m_Cursor.ConstructAligned(*other.ToGDICursor().m_Cursor);
 	}
 	GDICursor::GDICursor(const GDIBitmap& other)
-		:m_Cursor(other.ToGDICursor().m_Cursor)
 	{
+		m_Cursor.ConstructAligned(*other.ToGDICursor().m_Cursor);
 	}
 	GDICursor::GDICursor(const GDICursor& other)
-		:m_Cursor(other.m_Cursor), m_HotSpot(other.m_HotSpot)
+		:m_HotSpot(other.m_HotSpot)
 	{
+		m_Cursor.ConstructAligned(*other.m_Cursor);
 	}
 	GDICursor::GDICursor(const BitmapImage& other)
-		:m_Cursor(other.ToWXCursor())
 	{
+		m_Cursor.ConstructAligned(other.ToWXCursor());
+	}
+
+	GDICursor::~GDICursor()
+	{
+		m_Cursor.Destroy();
 	}
 
 	// IGDIObject
+	bool GDICursor::IsNull() const
+	{
+		return !m_Cursor.IsConstructed() || !m_Cursor->IsOk();
+	}
+	bool GDICursor::IsSameAs(const IGDIObject& other) const
+	{
+		if (this == &other)
+		{
+			return true;
+		}
+		else if (auto ptr = other.QueryInterface<GDICursor>())
+		{
+			return m_Cursor->IsSameAs(*ptr->m_Cursor);
+		}
+		else
+		{
+			return m_Cursor->GetHandle() == other.GetHandle();
+		}
+	}
+
 	void* GDICursor::GetHandle() const
 	{
-		return m_Cursor.GetHandle();
+		return m_Cursor->GetHandle();
 	}
 	void* GDICursor::DetachHandle()
 	{
-		return Drawing::Private::DetachGDIImageHandle(m_Cursor);
+		return Drawing::Private::DetachGDIImageHandle(*m_Cursor);
 	}
 	void GDICursor::AttachHandle(void* handle)
 	{
-		m_Cursor = {};
-		Drawing::Private::AttachIconHandle(m_Cursor, handle, [&]()
+		*m_Cursor = wxCursor();
+
+		if (handle)
 		{
-			m_Cursor = wxStockCursor::wxCURSOR_ARROW;
-			return true;
-		});
+			Drawing::Private::AttachIconHandle(*m_Cursor, handle, [&]()
+			{
+				*m_Cursor = wxStockCursor::wxCURSOR_ARROW;
+				return true;
+			});
+		}
 	}
 
-	void GDICursor::Create(const Size& size)
+	// IImage2D
+	bool GDICursor::IsSameAs(const IImage2D& other) const
+	{
+		if (this == &other)
+		{
+			return true;
+		}
+		else if (auto ptr = other.QueryInterface<GDICursor>())
+		{
+			return m_Cursor->IsSameAs(*ptr->m_Cursor);
+		}
+		return false;
+	}
+
+	Size GDICursor::GetSize() const
+	{
+		return m_Cursor->IsOk() ? Size(m_Cursor->GetSize()) : Size::UnspecifiedSize();
+	}
+	ColorDepth GDICursor::GetColorDepth() const
+	{
+		return m_Cursor->GetDepth();
+	}
+	UniversallyUniqueID GDICursor::GetFormat() const
+	{
+		return ImageFormat::CUR;
+	}
+
+	bool GDICursor::Create(const Size& size)
 	{
 		BitmapImage image(size);
 		if (m_HotSpot.IsFullySpecified())
@@ -52,10 +125,10 @@ namespace kxf
 			image.SetOption(ImageOption::Cursor::HotSpotX, m_HotSpot.GetX());
 			image.SetOption(ImageOption::Cursor::HotSpotY, m_HotSpot.GetY());
 		}
-		m_Cursor = wxCursor(image.AsWXImage());
-	}
+		*m_Cursor = wxCursor(image.AsWXImage());
 
-	// IImage2D
+		return m_Cursor->IsOk();
+	}
 	bool GDICursor::Load(IInputStream& stream, const UniversallyUniqueID& format, size_t index)
 	{
 		BitmapImage image;
@@ -67,14 +140,14 @@ namespace kxf
 
 		if (image.Load(stream, format))
 		{
-			m_Cursor = wxCursor(image.AsWXImage());
-			return m_Cursor.IsOk();
+			*m_Cursor = wxCursor(image.AsWXImage());
+			return m_Cursor->IsOk();
 		}
 		return false;
 	}
 	bool GDICursor::Save(IOutputStream& stream, const UniversallyUniqueID& format) const
 	{
-		if (m_Cursor.IsOk() && format != ImageFormat::Any && format != ImageFormat::None)
+		if (m_Cursor->IsOk() && format != ImageFormat::Any && format != ImageFormat::None)
 		{
 			if (auto image = ToBitmapImage())
 			{
@@ -115,10 +188,10 @@ namespace kxf
 
 	BitmapImage GDICursor::ToBitmapImage(const Size& size, InterpolationQuality interpolationQuality) const
 	{
-		if (m_Cursor.IsOk())
+		if (m_Cursor->IsOk())
 		{
-			BitmapImage image = m_Cursor;
-			if (!size.IsFullySpecified() || m_Cursor.GetSize() == size)
+			BitmapImage image = *m_Cursor;
+			if (!size.IsFullySpecified() || m_Cursor->GetSize() == size)
 			{
 				return image;
 			}
@@ -136,15 +209,15 @@ namespace kxf
 	}
 	GDIBitmap GDICursor::ToGDIBitmap(const Size& size, InterpolationQuality interpolationQuality) const
 	{
-		if (m_Cursor.IsOk())
+		if (m_Cursor->IsOk())
 		{
-			if (!size.IsFullySpecified() || m_Cursor.GetSize() == size)
+			if (!size.IsFullySpecified() || m_Cursor->GetSize() == size)
 			{
-				return wxBitmap(m_Cursor);
+				return wxBitmap(*m_Cursor);
 			}
 			else
 			{
-				BitmapImage image = m_Cursor;
+				BitmapImage image = *m_Cursor;
 				image.Rescale(size, interpolationQuality);
 				return image.ToWXBitmap();
 			}
@@ -154,12 +227,20 @@ namespace kxf
 
 	Point GDICursor::GetHotSpot() const
 	{
-		return Point(m_Cursor.GetHotSpot());
+		return Point(m_Cursor->GetHotSpot());
 	}
 	void GDICursor::SetHotSpot(Point hotSpot)
 	{
 		// TODO: Update the hotspot on the cursor in memory
 		m_HotSpot = std::move(hotSpot);
+	}
+
+	GDICursor& GDICursor::operator=(const GDICursor& other)
+	{
+		*m_Cursor = *other.m_Cursor;
+		m_HotSpot = other.m_HotSpot;
+
+		return *this;
 	}
 }
 
@@ -167,6 +248,6 @@ namespace kxf::Drawing
 {
 	GDICursor GetStockCursor(StockCursor cursor)
 	{
-		return wxCursor(ToWxStockCursor(cursor));
+		return wxCursor(wxWidgets::MapStockCursor(cursor));
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "IBitmapImage.h"
+#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/Serialization/BinarySerializer.h"
 class wxIcon;
 class wxImage;
@@ -18,7 +19,7 @@ namespace kxf
 			static size_t GetImageCount(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any);
 
 		private:
-			std::unique_ptr<wxImage> m_Image;
+			UninitializedStorage<wxImage, 32, 0> m_Image;
 
 		public:
 			BitmapImage();
@@ -34,7 +35,6 @@ namespace kxf
 			BitmapImage(const Size& size, wxMemoryBuffer& rgb, wxMemoryBuffer& alpha);
 
 			BitmapImage(const BitmapImage& other);
-			BitmapImage(BitmapImage&&) noexcept;
 
 			~BitmapImage();
 
@@ -45,7 +45,7 @@ namespace kxf
 			std::shared_ptr<IImage2D> CloneImage2D() const override;
 
 			// IImage2D: Create, save and load
-			void Create(const Size& size);
+			bool Create(const Size& size);
 			bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos);
 			bool Save(IOutputStream& stream, const UniversallyUniqueID& format) const;
 
@@ -170,7 +170,6 @@ namespace kxf
 			}
 
 			BitmapImage& operator=(const BitmapImage& other);
-			BitmapImage& operator=(BitmapImage&&) noexcept;
 	};
 }
 

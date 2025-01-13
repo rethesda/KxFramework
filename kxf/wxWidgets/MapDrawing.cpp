@@ -2,6 +2,7 @@
 #include "MapDrawing.h"
 #include "kxf/Drawing/Font.h"
 #include "kxf/Drawing/ImageDefines.h"
+#include <wx/gdicmn.h>
 #include <wx/font.h>
 #include <wx/fontutil.h>
 #include <wx/dc.h>
@@ -792,5 +793,14 @@ namespace kxf::wxWidgets
 		font.SetStrikethrough(other.GetStyle().Contains(FontStyle::Strikethrough));
 
 		return font;
+	}
+
+	wxStockCursor MapStockCursor(Drawing::StockCursor cursorType) noexcept
+	{
+		return static_cast<wxStockCursor>(cursorType);
+	}
+	Drawing::StockCursor MapStockCursor(wxStockCursor cursorType) noexcept
+	{
+		return static_cast<Drawing::StockCursor>(cursorType);
 	}
 }

@@ -3,10 +3,12 @@
 #include "kxf/IO/IStream.h"
 #include "kxf/wxWidgets/MapDrawing.h"
 #include "kxf/wxWidgets/StreamWrapper.h"
+
 #include <wx/bitmap.h>
 #include <wx/cursor.h>
 #include <wx/image.h>
 #include <wx/icon.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -75,70 +77,79 @@ namespace kxf
 		return wxImage::GetImageCount(warpper, wxWidgets::MapImageFormat(format));
 	}
 
-	BitmapImage::BitmapImage() = default;
+	BitmapImage::BitmapImage()
+	{
+		m_Image.ConstructAligned();
+	}
 	BitmapImage::BitmapImage(const wxIcon& other)
 	{
+		m_Image.ConstructAligned();
+
 		if (other.IsOk())
 		{
 			wxBitmap bitmap(other, wxBitmapTransparency::wxBitmapTransparency_Always);
-			m_Image = std::make_unique<wxImage>(bitmap.ConvertToImage());
+			*m_Image = bitmap.ConvertToImage();
 		}
 	}
 	BitmapImage::BitmapImage(const wxImage& other)
-		:m_Image(std::make_unique<wxImage>(other))
 	{
+		m_Image.ConstructAligned(other);
 	}
 	BitmapImage::BitmapImage(const wxBitmap& other)
 	{
+		m_Image.ConstructAligned();
+
 		if (other.IsOk())
 		{
-			m_Image = std::make_unique<wxImage>(other.ConvertToImage());
+			*m_Image = other.ConvertToImage();
 		}
 	}
 	BitmapImage::BitmapImage(const wxCursor& other)
 	{
+		m_Image.ConstructAligned();
+
 		if (other.IsOk())
 		{
 			wxBitmap bitmap(other);
-			m_Image = std::make_unique<wxImage>(bitmap.ConvertToImage());
+			*m_Image = bitmap.ConvertToImage();
 		}
 	}
 
 	BitmapImage::BitmapImage(const Size& size)
-		:m_Image(std::make_unique<wxImage>(size.GetWidth(), size.GetHeight(), false))
 	{
+		m_Image.ConstructAligned(size.GetWidth(), size.GetHeight(), false);
 	}
 	BitmapImage::BitmapImage(const Size& size, uint8_t* rgb)
-		:m_Image(std::make_unique<wxImage>(size.GetWidth(), size.GetHeight(), rgb, true))
 	{
+		m_Image.ConstructAligned(size.GetWidth(), size.GetHeight(), rgb, true);
 	}
 	BitmapImage::BitmapImage(const Size& size, uint8_t* rgb, uint8_t* alpha)
-		:m_Image(std::make_unique<wxImage>(size.GetWidth(), size.GetHeight(), rgb, alpha, true))
 	{
+		m_Image.ConstructAligned(size.GetWidth(), size.GetHeight(), rgb, alpha, true);
 	}
 	BitmapImage::BitmapImage(const Size& size, wxMemoryBuffer& rgb)
-		:m_Image(std::make_unique<wxImage>(size.GetWidth(), size.GetHeight(), static_cast<unsigned char*>(rgb.release()), false))
 	{
+		m_Image.ConstructAligned(size.GetWidth(), size.GetHeight(), static_cast<unsigned char*>(rgb.release()), false);
 	}
 	BitmapImage::BitmapImage(const Size& size, wxMemoryBuffer& rgb, wxMemoryBuffer& alpha)
-		:m_Image(std::make_unique<wxImage>(size.GetWidth(), size.GetHeight(), static_cast<unsigned char*>(rgb.release()), static_cast<unsigned char*>(alpha.release()), false))
 	{
+		m_Image.ConstructAligned(size.GetWidth(), size.GetHeight(), static_cast<unsigned char*>(rgb.release()), static_cast<unsigned char*>(alpha.release()), false);
 	}
 
 	BitmapImage::BitmapImage(const BitmapImage& other)
 	{
-		if (other)
-		{
-			m_Image = std::make_unique<wxImage>(*other.m_Image);
-		}
+		m_Image.ConstructAligned(*other.m_Image);
 	}
-	BitmapImage::BitmapImage(BitmapImage&&) noexcept = default;
-	BitmapImage::~BitmapImage() = default;
+
+	BitmapImage::~BitmapImage()
+	{
+		m_Image.Destroy();
+	}
 
 	// IImage2D
 	bool BitmapImage::IsNull() const
 	{
-		return !m_Image || !m_Image->IsOk();
+		return !m_Image.IsConstructed() || !m_Image->IsOk();
 	}
 	bool BitmapImage::IsSameAs(const IImage2D& other) const
 	{
@@ -146,9 +157,9 @@ namespace kxf
 		{
 			return true;
 		}
-		else if (auto image = other.QueryInterface<BitmapImage>())
+		else if (auto ptr = other.QueryInterface<BitmapImage>())
 		{
-			return m_Image == image->m_Image || m_Image->IsSameAs(*image->m_Image);
+			return m_Image->IsSameAs(*ptr->m_Image);
 		}
 		return false;
 	}
@@ -162,17 +173,12 @@ namespace kxf
 	}
 
 	// IImage2D: Create, save and load
-	void BitmapImage::Create(const Size& size)
+	bool BitmapImage::Create(const Size& size)
 	{
-		m_Image = std::make_unique<wxImage>(size, false);
+		return m_Image->Create(size, false);
 	}
 	bool BitmapImage::Load(IInputStream& stream, const UniversallyUniqueID& format, size_t index)
 	{
-		if (!m_Image)
-		{
-			m_Image = std::make_unique<wxImage>();
-		}
-
 		wxWidgets::InputStreamWrapperWx warpper(stream);
 		return m_Image->LoadFile(warpper, wxWidgets::MapImageFormat(format), index == IImage2D::npos ? -1 : static_cast<int>(index));
 	}
@@ -556,11 +562,11 @@ namespace kxf
 	}
 	bool BitmapImage::IsSameAs(const BitmapImage& other) const
 	{
-		return this == &other || m_Image == other.m_Image || (m_Image && other.m_Image && m_Image->IsSameAs(*other.m_Image));
+		return this == &other || (m_Image && other.m_Image && m_Image->IsSameAs(*other.m_Image));
 	}
 	BitmapImage BitmapImage::Clone() const
 	{
-		if (m_Image && m_Image->IsOk())
+		if (m_Image.IsConstructed() && m_Image->IsOk())
 		{
 			return m_Image->Copy();
 		}
@@ -928,17 +934,10 @@ namespace kxf
 
 	BitmapImage& BitmapImage::operator=(const BitmapImage& other)
 	{
-		if (other)
-		{
-			m_Image = std::make_unique<wxImage>(*other.m_Image);
-		}
-		else
-		{
-			m_Image = nullptr;
-		}
+		*m_Image = *other.m_Image;
+
 		return *this;
 	}
-	BitmapImage& BitmapImage::operator=(BitmapImage&&) noexcept = default;
 }
 
 namespace kxf

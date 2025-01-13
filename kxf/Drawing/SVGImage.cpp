@@ -30,43 +30,96 @@ namespace
 
 namespace kxf
 {
-	void SVGImage::AllocExclusive()
-	{
-		auto svg = std::make_shared<lunasvg::SVGDocument>();
-		svg->loadFromData(m_Document->toString());
+	class SVGImageImpl final: public lunasvg::SVGDocument {};
+}
 
-		m_Document = std::move(svg);
-	}
-
-	std::shared_ptr<IImage2D> SVGImage::CloneImage2D() const
+namespace kxf
+{
+	// SVGImage
+	void SVGImage::CopyFrom(const SVGImage& other)
 	{
-		if (m_Document)
+		if (this != &other)
 		{
-			auto clone = std::make_shared<SVGImage>(*this);
-			clone->AllocExclusive();
-
-			return clone;
+			if (!other.IsNull())
+			{
+				m_Document->loadFromData(other.m_Document->toString());
+				m_DPI = other.m_DPI;
+			}
+			else
+			{
+				*m_Document = {};
+			}
 		}
-		return nullptr;
+	}
+	void SVGImage::MoveFrom(SVGImage& other) noexcept
+	{
+		static_assert(std::is_standard_layout_v<lunasvg::SVGDocument>, "standard layout expected");
+
+		if (this != &other)
+		{
+			m_Document.Destroy();
+			m_Document.Construct();
+			m_Document.GetBuffer().MoveBuffer(other.m_Document.GetBuffer());
+
+			m_DPI = std::exchange(other.m_DPI, -1);
+		}
 	}
 
-	// IImage2D: Create, save and load
-	void SVGImage::Create(const Size& size)
+	SVGImage::SVGImage()
 	{
-		m_Document = std::make_shared<lunasvg::SVGDocument>();
+		m_Document.Construct();
+	}
+	SVGImage::SVGImage(const SVGImage& other)
+	{
+		m_Document.Construct();
+		CopyFrom(other);
+	}
+	SVGImage::SVGImage(SVGImage&& other) noexcept
+	{
+		MoveFrom(other);
+
+		if (!m_Document.IsConstructed())
+		{
+			m_Document.Construct();
+		}
+	}
+	SVGImage::~SVGImage()
+	{
+		m_Document.Destroy();
+	}
+
+	// IImage2D
+	bool SVGImage::IsNull() const
+	{
+		return !m_Document.IsConstructed();
+	}
+	bool SVGImage::IsSameAs(const IImage2D& other) const
+	{
+		if (this == &other)
+		{
+			return true;
+		}
+		else if (auto ptr = other.QueryInterface<SVGImage>())
+		{
+			return m_Document->impl() == ptr->m_Document->impl() || m_Document->toString() == ptr->m_Document->toString();
+		}
+		return false;
+	}
+
+	bool SVGImage::Create(const Size& size)
+	{
+		// Nothing to do
+		return true;
 	}
 	bool SVGImage::Load(IInputStream& stream, const UniversallyUniqueID& format, size_t index)
 	{
-		m_Document = nullptr;
+		*m_Document = {};
 
 		if ((format == ImageFormat::SVG || format == ImageFormat::Any) && (index == 0 || index == npos))
 		{
 			IO::InputStreamReader reader(stream);
-
-			auto document = std::make_shared<lunasvg::SVGDocument>();
-			if (document->loadFromData(reader.ReadStringUTF8(stream.GetSize().ToBytes()).ToUTF8()))
+			if (m_Document->loadFromData(reader.ReadStringUTF8(stream.GetSize().ToBytes()).ToUTF8()))
 			{
-				m_Document = std::move(document);
 				return true;
 			}
 		}
@@ -89,13 +142,19 @@ namespace kxf
 		return false;
 	}
 
-	// IImage2D: Properties
 	Size SVGImage::GetSize() const
 	{
 		return m_Document ? Size(m_Document->documentWidth(ToSVGDPI(m_DPI)), m_Document->documentHeight(ToSVGDPI(m_DPI))) : Size::UnspecifiedSize();
 	}
+	ColorDepth SVGImage::GetColorDepth() const
+	{
+		return ColorDepthDB::BPP32;
+	}
+	UniversallyUniqueID SVGImage::GetFormat() const
+	{
+		return ImageFormat::SVG;
+	}
 
-	// IImage2D: Options
 	std::optional<int> SVGImage::GetOptionInt(const String& name) const
 	{
 		if (m_Document)
@@ -134,7 +193,6 @@ namespace kxf
 		}
 	}
 
-	// IImage2D: Conversion
 	BitmapImage SVGImage::ToBitmapImage(const Size& size, InterpolationQuality interpolationQuality) const
 	{
 		if (m_Document)
@@ -183,21 +241,6 @@ namespace kxf
 		}
 		return {};
 	}
-
-	SVGImage& SVGImage::operator=(const SVGImage& other)
-	{
-		m_Document = other.m_Document;
-		m_DPI = other.m_DPI;
-
-		return *this;
-	}
-	SVGImage& SVGImage::operator=(SVGImage&& other) noexcept
-	{
-		m_Document = std::move(other.m_Document);
-		m_DPI = std::move(other.m_DPI);
-
-		return *this;
-	}
 }
 
 namespace kxf
@@ -211,7 +254,7 @@ namespace kxf
 		std::string buffer;
 		auto read = Serialization::ReadObject(stream, buffer);
 
-		value.m_Document = std::make_shared<lunasvg::SVGDocument>();
+		*value.m_Document = {};
 		value.m_Document->loadFromData(buffer);
 		return read;
 	}

@@ -4,6 +4,7 @@
 #include "kxf/Drawing/ImageDefines.h"
 #include "kxf/Drawing/AffineMatrix.h"
 #include "kxf/Drawing/FontMetrics.h"
+#include "kxf/Drawing/GDIRenderer/GDICursor.h"
 
 enum wxPenCap;
 enum wxPenJoin;
@@ -19,6 +20,7 @@ enum wxFontFamily;
 enum wxFontEncoding;
 enum wxFontSymbolicSize;
 
+enum wxStockCursor;
 enum wxBitmapType;
 class wxFont;
 class wxAffineMatrix2D;
@@ -85,4 +87,7 @@ namespace kxf::wxWidgets
 	FontMetrics MapFontMetrics(const wxFontMetrics& metricsWx) noexcept;
 
 	wxFont MapFont(const Font& other);
+
+	wxStockCursor MapStockCursor(Drawing::StockCursor cursorType) noexcept;
+	Drawing::StockCursor MapStockCursor(wxStockCursor cursorType) noexcept;
 }

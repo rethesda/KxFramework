@@ -1,9 +1,11 @@
 #include "kxf-pch.h"
 #include "Font.h"
 #include "kxf/wxWidgets/MapDrawing.h"
+
 #include <wx/font.h>
 #include <wx/fontutil.h>
 #include <wx/dcscreen.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {

@@ -31,7 +31,7 @@ namespace kxf
 			virtual std::shared_ptr<IImage2D> CloneImage2D() const = 0;
 
 			// Create, save and load
-			virtual void Create(const Size& size) = 0;
+			virtual bool Create(const Size& size) = 0;
 			virtual bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos) = 0;
 			virtual bool Save(IOutputStream& stream, const UniversallyUniqueID& format) const = 0;
 
