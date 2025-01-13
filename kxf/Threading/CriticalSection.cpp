@@ -1,6 +1,10 @@
 #include "kxf-pch.h"
 #include "CriticalSection.h"
+#include "kxf/Log/ScopedLogger.h"
+#include "kxf/System/Win32Error.h"
+
 #include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf
 {
@@ -12,7 +16,10 @@ namespace kxf
 	CriticalSection::CriticalSection(uint32_t spinCount) noexcept
 	{
 		m_CritSec.Construct();
-		::InitializeCriticalSectionAndSpinCount(&m_CritSec, spinCount);
+		if (!::InitializeCriticalSectionAndSpinCount(&m_CritSec, spinCount))
+		{
+			Log::Error("InitializeCriticalSectionAndSpinCount failed: {}", Win32Error::GetLastError());
+		}
 	}
 	CriticalSection::~CriticalSection() noexcept
 	{

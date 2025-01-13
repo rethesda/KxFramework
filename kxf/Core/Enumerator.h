@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "IEnumerator.h"
 #include "OptionalRef.h"
-#include "AlignedStorage.h"
+#include "UninitializedStorage.h"
 
 namespace kxf::Private
 {
@@ -110,7 +110,7 @@ namespace kxf
 
 		private:
 			std::move_only_function<TValueContainer(IEnumerator&)> m_MoveNext;
-			AlignedStorage<TBufferValue> m_CurrentValue;
+			UninitializedStorage<TBufferValue> m_CurrentValue;
 
 			EnumeratorInstruction m_CurrentInstruction = EnumeratorInstruction::Terminate;
 			EnumeratorInstruction m_NextInstruction = EnumeratorInstruction::Continue;

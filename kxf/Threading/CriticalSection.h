@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "LockGuard.h"
-#include "kxf/Core/AlignedStorage.h"
+#include "kxf/Core/UninitializedStorage.h"
 struct _RTL_CRITICAL_SECTION;
 
 namespace kxf
@@ -18,7 +18,7 @@ namespace kxf
 				void* LockSemaphore;
 				size_t SpinCount;
 			};
-			AlignedStorage<_RTL_CRITICAL_SECTION, sizeof(CritSec), alignof(CritSec)> m_CritSec;
+			UninitializedStorage<_RTL_CRITICAL_SECTION, sizeof(CritSec), alignof(CritSec)> m_CritSec;
 
 		public:
 			CriticalSection() noexcept;

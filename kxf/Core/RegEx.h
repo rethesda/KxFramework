@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "String.h"
 #include "CallbackFunction.h"
-#include "AlignedStorage.h"
+#include "UninitializedStorage.h"
 class wxRegEx;
 
 namespace kxf
@@ -35,7 +35,7 @@ namespace kxf
 			static String EscapeMeta(const String& value);
 
 		private:
-			AlignedStorage<wxRegEx, sizeof(void*), alignof(void*)> m_RegEx;
+			UninitializedStorage<wxRegEx, sizeof(void*), alignof(void*)> m_RegEx;
 
 		private:
 			void MoveFrom(RegEx& other) noexcept;

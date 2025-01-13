@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "kxf/Core/String.h"
 #include "kxf/Core/NativeUUID.h"
-#include "kxf/Core/AlignedStorage.h"
+#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/Serialization/BinarySerializer.h"
 #include "kxf/DateTime/DateTime.h"
 #include "HResult.h"
@@ -44,7 +44,7 @@ namespace kxf
 		friend struct BinarySerializer<VariantProperty>;
 
 		private:
-			AlignedStorage<tagPROPVARIANT, 24, alignof(uint64_t)> m_PropVariant;
+			UninitializedStorage<tagPROPVARIANT, 24, alignof(uint64_t)> m_PropVariant;
 
 		private:
 			HResult DoClear() noexcept;

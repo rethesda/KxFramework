@@ -3,7 +3,7 @@
 #include "FSActionEvent.h"
 #include "Private/NativeFSUtility.h"
 #include "kxf/Application/ICoreApplication.h"
-#include "kxf/Core/AlignedObjectStorage.h"
+#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/Core/Enumerator.h"
 #include "kxf/System/DynamicLibrary.h"
 #include "kxf/System/SystemInformation.h"
@@ -34,7 +34,7 @@ namespace
 			{
 				// Some search on Google says that 'FILE_ID_DESCRIPTOR' isn't always 24. it *is* 24 for me on both x64 and x86
 				// and it seems to work fine with the size of 24. Still I'm going to make it bigger, just in case.
-				AlignedObjectStorage<FILE_ID_DESCRIPTOR, 64, alignof(FILE_ID_DESCRIPTOR)> fileIDDescriptor;
+				GuardedUninitializedStorage<FILE_ID_DESCRIPTOR, 64, alignof(FILE_ID_DESCRIPTOR)> fileIDDescriptor;
 				fileIDDescriptor->dwSize = fileIDDescriptor.size();
 
 				if (System::IsWindowsVersionOrGreater(NamedSystemRelease::Windows8))

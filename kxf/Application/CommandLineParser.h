@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/AlignedStorage.h"
+#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/DateTime/DateTime.h"
 class wxCmdLineParser;
 
@@ -120,7 +120,7 @@ namespace kxf
 			void MoveFrom(CommandLineParser& other) noexcept;
 
 		private:
-			AlignedStorage<wxCmdLineParser, sizeof(void*), alignof(void*)> m_Parser;
+			UninitializedStorage<wxCmdLineParser, sizeof(void*), alignof(void*)> m_Parser;
 
 		public:
 			CommandLineParser();

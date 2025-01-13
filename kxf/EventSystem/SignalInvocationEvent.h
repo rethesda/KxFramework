@@ -1,6 +1,5 @@
 #pragma once
 #include "BasicEvent.h"
-#include "kxf/Core/AlignedStorage.h"
 #include "kxf/Utility/TypeTraits.h"
 #include "kxf/Utility/Memory.h"
 

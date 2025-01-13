@@ -531,7 +531,7 @@
     <ClInclude Include="kxf\Compression\SevenZip\Archive.h">
       <Filter>kxf\Compression\SevenZip</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Core\AlignedStorage.h">
+    <ClInclude Include="kxf\Core\UninitializedStorage.h">
       <Filter>kxf\Core</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Threading\CriticalSection.h">
@@ -899,12 +899,6 @@
     </ClInclude>
     <ClInclude Include="kxf\System\HandlePtr.h">
       <Filter>kxf\System</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Core\AlignedBuffer.h">
-      <Filter>kxf\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Core\AlignedObjectStorage.h">
-      <Filter>kxf\Core</Filter>
     </ClInclude>
     <ClInclude Include="kxf\wxWidgets\EventTag.h">
       <Filter>kxf\wxWidgets</Filter>

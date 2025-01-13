@@ -301,9 +301,7 @@
     <ClInclude Include="kxf\EventSystem\SignalExecutor.h" />
     <ClInclude Include="kxf\EventSystem\SignalInvocationEvent.h" />
     <ClInclude Include="kxf\FileSystem\NullFileSystem.h" />
-    <ClInclude Include="kxf\Core\AlignedBuffer.h" />
-    <ClInclude Include="kxf\Core\AlignedStorage.h" />
-    <ClInclude Include="kxf\Core\AlignedObjectStorage.h" />
+    <ClInclude Include="kxf\Core\UninitializedStorage.h" />
     <ClInclude Include="kxf\Core\CombinedVariableCollection.h" />
     <ClInclude Include="kxf\Core\DynamicVariableCollection.h" />
     <ClInclude Include="kxf\Core\ErrorCode.h" />
