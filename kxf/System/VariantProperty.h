@@ -39,7 +39,7 @@ namespace kxf
 
 namespace kxf
 {
-	class VariantProperty final
+	class KXF_API VariantProperty final
 	{
 		friend struct BinarySerializer<VariantProperty>;
 

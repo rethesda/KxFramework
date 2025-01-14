@@ -40,18 +40,6 @@
     <Filter Include="kxf\Drawing\Private">
       <UniqueIdentifier>{d0521874-4a25-4cdf-b542-c5159ced03de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="kxf\Compression\SevenZip">
-      <UniqueIdentifier>{e925ebf1-8615-496c-8539-4d57df6010b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="kxf\Compression\SevenZip\Private">
-      <UniqueIdentifier>{3e4e5918-a4e0-4d0e-8dd9-d971bab2c7f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="kxf\Compression\SevenZip\Private\&lt;Callbacks&gt;">
-      <UniqueIdentifier>{cefcf3af-f989-4dca-bbb8-ae79f80f2972}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="kxf\Compression\SevenZip\Private\&lt;Streams&gt;">
-      <UniqueIdentifier>{4cd40067-8aaf-42f0-9ad0-fa76e583456c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="kxf\IO">
       <UniqueIdentifier>{de7b204d-217c-4b3d-ac55-74c08fc3930b}</UniqueIdentifier>
     </Filter>
@@ -252,15 +240,6 @@
     <ClInclude Include="kxf\Compression\Common.h">
       <Filter>kxf\Compression</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Compression\IArchive.h">
-      <Filter>kxf\Compression</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\ZLibStream.h">
-      <Filter>kxf\Compression</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\LZ4Stream.h">
-      <Filter>kxf\Compression</Filter>
-    </ClInclude>
     <ClInclude Include="kxf\System\Private\BeginIncludeCOM.h">
       <Filter>kxf\System\Private</Filter>
     </ClInclude>
@@ -338,9 +317,6 @@
     </ClInclude>
     <ClInclude Include="kxf\Utility\Memory.h">
       <Filter>kxf\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\ArchiveEvent.h">
-      <Filter>kxf\Compression</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Drawing\Common.h">
       <Filter>kxf\Drawing</Filter>
@@ -495,50 +471,11 @@
     <ClInclude Include="kxf\Core\LocallyUniqueID.h">
       <Filter>kxf\Core</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Common.h">
-      <Filter>kxf\Compression\SevenZip</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\GUIDs.h">
-      <Filter>kxf\Compression\SevenZip\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\Utility.h">
-      <Filter>kxf\Compression\SevenZip\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\InStreamWrapper.h">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Streams&gt;</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\OutStreamWrapper.h">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Streams&gt;</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\ArchiveExtractCallback.h">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Callbacks&gt;</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\ArchiveOpenCallback.h">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Callbacks&gt;</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\ArchiveUpdateCallback.h">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Callbacks&gt;</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\WithEvtHandler.h">
-      <Filter>kxf\Compression\SevenZip\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Private\PasswordHandler.h">
-      <Filter>kxf\Compression\SevenZip\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Library.h">
-      <Filter>kxf\Compression\SevenZip</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip\Archive.h">
-      <Filter>kxf\Compression\SevenZip</Filter>
-    </ClInclude>
     <ClInclude Include="kxf\Core\UninitializedStorage.h">
       <Filter>kxf\Core</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Threading\CriticalSection.h">
       <Filter>kxf\Threading</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\IArchiveCallbacks.h">
-      <Filter>kxf\Compression</Filter>
     </ClInclude>
     <ClInclude Include="kxf\IO\Common.h">
       <Filter>kxf\IO</Filter>
@@ -605,9 +542,6 @@
     </ClInclude>
     <ClInclude Include="kxf\Serialization.hpp">
       <Filter>kxf/&lt;Modules&gt;</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Compression\SevenZip.h">
-      <Filter>kxf\Compression</Filter>
     </ClInclude>
     <ClInclude Include="kxf\EventSystem\EventID.h">
       <Filter>kxf\EventSystem</Filter>
@@ -1326,6 +1260,9 @@
     <ClInclude Include="kxf\System\UserCredentials.h">
       <Filter>kxf\System</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\Compression\Compression.h">
+      <Filter>kxf\Compression</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf\EventSystem\EventBuilder.cpp">
@@ -1360,12 +1297,6 @@
     </ClCompile>
     <ClCompile Include="kxf\FileSystem\RecycleBin.cpp">
       <Filter>kxf\FileSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\ZLibStream.cpp">
-      <Filter>kxf\Compression</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\LZ4Stream.cpp">
-      <Filter>kxf\Compression</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Core\Version.cpp">
       <Filter>kxf\Core</Filter>
@@ -1471,36 +1402,6 @@
     </ClCompile>
     <ClCompile Include="kxf\Core\LocallyUniqueID.cpp">
       <Filter>kxf\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Common.cpp">
-      <Filter>kxf\Compression\SevenZip</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Private\Utility.cpp">
-      <Filter>kxf\Compression\SevenZip\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Private\InStreamWrapper.cpp">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Streams&gt;</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Private\OutStreamWrapper.cpp">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Streams&gt;</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Private\ArchiveExtractCallback.cpp">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Callbacks&gt;</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Private\ArchiveOpenCallback.cpp">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Callbacks&gt;</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Private\ArchiveUpdateCallback.cpp">
-      <Filter>kxf\Compression\SevenZip\Private\&lt;Callbacks&gt;</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Private\PasswordHandler.cpp">
-      <Filter>kxf\Compression\SevenZip\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Library.cpp">
-      <Filter>kxf\Compression\SevenZip</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Compression\SevenZip\Archive.cpp">
-      <Filter>kxf\Compression\SevenZip</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Threading\CriticalSection.cpp">
       <Filter>kxf\Threading</Filter>
@@ -1909,6 +1810,9 @@
     </ClCompile>
     <ClCompile Include="kxf\EventSystem\IdleEvent.cpp">
       <Filter>kxf\EventSystem\&lt;Events&gt;</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\EventSystem\IWithEvtHandler.cpp">
+      <Filter>kxf\EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

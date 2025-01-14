@@ -133,11 +133,11 @@
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)kxf\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)kxf-gui\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)kxf\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)kxf-gui\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release Static'">
@@ -153,11 +153,11 @@
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">$(ProjectDir)kxf\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">$(ProjectDir)kxf-gui\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">$(ProjectDir)kxf\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">$(ProjectDir)kxf-gui\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -173,11 +173,11 @@
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)kxf\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)kxf-gui\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)kxf\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)kxf-gui\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

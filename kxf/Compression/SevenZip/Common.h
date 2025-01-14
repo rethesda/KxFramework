@@ -1,5 +1,6 @@
 #pragma once
 #include "../Common.h"
+#include "../Compression.h"
 #include "kxf/Core/String.h"
 #include "kxf/Core/Version.h"
 #include "kxf/Core/NativeUUID.h"
@@ -53,11 +54,11 @@ namespace kxf::SevenZip
 
 namespace kxf::SevenZip
 {
-	String GetLibraryName();
-	Version GetLibraryVersion();
+	KXF_API_COMPRESSION String GetLibraryName();
+	KXF_API_COMPRESSION Version GetLibraryVersion();
 
-	NativeUUID GetAlgorithmID(CompressionFormat format) noexcept;
-	String GetNameByFormat(CompressionFormat format);
-	String GetExtensionByFormat(CompressionFormat format);
-	CompressionFormat GetFormatByExtension(const String& extension);
+	KXF_API_COMPRESSION NativeUUID GetAlgorithmID(CompressionFormat format) noexcept;
+	KXF_API_COMPRESSION String GetNameByFormat(CompressionFormat format);
+	KXF_API_COMPRESSION String GetExtensionByFormat(CompressionFormat format);
+	KXF_API_COMPRESSION CompressionFormat GetFormatByExtension(const String& extension);
 }

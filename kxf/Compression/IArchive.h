@@ -7,7 +7,7 @@
 
 namespace kxf
 {
-	class KXF_API IArchive: public RTTI::Interface<IArchive>
+	class KXF_API_COMPRESSION IArchive: public RTTI::Interface<IArchive>
 	{
 		kxf_RTTI_DeclareIID(IArchive, {0xb4327a42, 0x17a7, 0x44db, {0x84, 0xb, 0xc3, 0x24, 0x5b, 0x29, 0xca, 0xe8}});
 
@@ -48,7 +48,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API IArchiveExtract: public RTTI::Interface<IArchiveExtract>
+	class KXF_API_COMPRESSION IArchiveExtract: public RTTI::Interface<IArchiveExtract>
 	{
 		kxf_RTTI_DeclareIID(IArchiveExtract, {0x105f744b, 0x904d, 0x4822, {0xb4, 0x7a, 0x57, 0x8b, 0x3e, 0xd, 0x95, 0xe6}});
 
@@ -83,7 +83,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API IArchiveUpdate: public RTTI::Interface<IArchiveUpdate>
+	class KXF_API_COMPRESSION IArchiveUpdate: public RTTI::Interface<IArchiveUpdate>
 	{
 		kxf_RTTI_DeclareIID(IArchiveUpdate, {0xcf9bb9ac, 0x6519, 0x49d4, {0xa3, 0xb4, 0xcd, 0x63, 0x17, 0x52, 0xe1, 0x55}});
 
@@ -107,7 +107,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API IArchiveProperties: public RTTI::Interface<IArchiveProperties>
+	class KXF_API_COMPRESSION IArchiveProperties: public RTTI::Interface<IArchiveProperties>
 	{
 		kxf_RTTI_DeclareIID(IArchiveProperties, {0x8ecede61, 0x7542, 0x4164, {0x99, 0x7c, 0xd6, 0x72, 0x57, 0x24, 0x94, 0x26}});
 

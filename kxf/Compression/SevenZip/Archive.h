@@ -14,7 +14,7 @@ namespace kxf::SevenZip::Private::Callback
 
 namespace kxf::SevenZip
 {
-	class Archive: public RTTI::Implementation
+	class KXF_API_COMPRESSION Archive: public RTTI::Implementation
 		<
 			Archive,
 			IArchive,

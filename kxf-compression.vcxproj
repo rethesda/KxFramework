@@ -28,12 +28,12 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{E09DC1A8-1672-4EC5-B57F-E4FE9E6A8B92}</ProjectGuid>
+    <ProjectGuid>{2222ECA1-5662-489A-9DB1-83671E30A775}</ProjectGuid>
     <RootNamespace>kxf</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <OverrideVcpkgTriplet>false</OverrideVcpkgTriplet>
     <OverrideVcpkgTripletName>none</OverrideVcpkgTripletName>
-    <ProjectName>kxf-crypto</ProjectName>
+    <ProjectName>kxf-compression</ProjectName>
     <EnableStdModules>false</EnableStdModules>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
@@ -104,12 +104,12 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>kxf-pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)kxf-crypto\+PCH\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)kxf-compression\+PCH\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>KXF_LIBRARY;KXF_LIBRARY_CRYPTO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>KXF_LIBRARY;KXF_LIBRARY_COMPRESSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -124,9 +124,9 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4251;4244</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4251;4244</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4251;4244;4267;4275</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4251;4244;4267;4275</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -137,40 +137,40 @@
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)kxf-crypto\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)kxf-compression\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)kxf-crypto\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)kxf-compression\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release Static'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">4251;4244</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">4251;4244</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">4251;4244;4267;4275</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">4251;4244;4267;4275</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">$(ProjectDir)kxf-crypto\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">$(ProjectDir)kxf-compression\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">$(ProjectDir)kxf-crypto\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">$(ProjectDir)kxf-compression\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4251;4244</DisableSpecificWarnings>
-      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4251;4244</DisableSpecificWarnings>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4251;4244;4267;4275</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4251;4244;4267;4275</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -181,30 +181,41 @@
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)kxf-crypto\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)kxf-compression\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)kxf-crypto\+Resources\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)kxf-compression\+Resources\</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="kxf-crypto\+PCH\kxf-pch.h" />
-    <ClInclude Include="kxf-crypto\+Resources\kxf-resources.h" />
-    <ClInclude Include="kxf-crypto\Common.hpp" />
-    <ClInclude Include="kxf-crypto\Crypto\Common.h" />
-    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_CRC32.h" />
-    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_OpenSSL.h" />
-    <ClInclude Include="kxf-crypto\Crypto\HashCalculator_xxHash.h" />
-    <ClInclude Include="kxf-crypto\pch.hpp" />
-    <ClInclude Include="kxf\Crypto\Common.h" />
-    <ClInclude Include="kxf\Crypto\Crypto.h" />
-    <ClInclude Include="kxf\Crypto\Encoding.h" />
-    <ClInclude Include="kxf\Crypto\Hash.h" />
-    <ClInclude Include="kxf\Crypto\IHashCalculator.h" />
+    <ClInclude Include="kxf-compression\+PCH\kxf-pch.h" />
+    <ClInclude Include="kxf-compression\+Resources\kxf-resources.h" />
+    <ClInclude Include="kxf-compression\Common.hpp" />
+    <ClInclude Include="kxf-compression\pch.hpp" />
+    <ClInclude Include="kxf\Compression\ArchiveEvent.h" />
+    <ClInclude Include="kxf\Compression\Common.h" />
+    <ClInclude Include="kxf\Compression\Compression.h" />
+    <ClInclude Include="kxf\Compression\IArchive.h" />
+    <ClInclude Include="kxf\Compression\IArchiveCallbacks.h" />
+    <ClInclude Include="kxf\Compression\LZ4Stream.h" />
+    <ClInclude Include="kxf\Compression\SevenZip.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Archive.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Common.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Library.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\ArchiveExtractCallback.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\ArchiveOpenCallback.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\ArchiveUpdateCallback.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\GUIDs.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\InStreamWrapper.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\OutStreamWrapper.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\PasswordHandler.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\Utility.h" />
+    <ClInclude Include="kxf\Compression\SevenZip\Private\WithEvtHandler.h" />
+    <ClInclude Include="kxf\Compression\ZLibStream.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="kxf-crypto\+PCH\kxf-pch.cpp">
+    <ClCompile Include="kxf-compression\+PCH\kxf-pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -212,12 +223,28 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="kxf\Crypto\Crypto.cpp" />
-    <ClCompile Include="kxf\Crypto\Encoding.cpp" />
-    <ClCompile Include="kxf\Crypto\Hash.cpp" />
+    <ClCompile Include="kxf\Compression\LZ4Stream.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Archive.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Common.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Library.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Private\ArchiveExtractCallback.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Private\ArchiveOpenCallback.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Private\ArchiveUpdateCallback.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Private\InStreamWrapper.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Private\OutStreamWrapper.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Private\PasswordHandler.cpp" />
+    <ClCompile Include="kxf\Compression\SevenZip\Private\Utility.cpp" />
+    <ClCompile Include="kxf\Compression\ZLibStream.cpp">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release Static|Win32'">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release Static|x64'">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="kxf-crypto\+Resources\kxf-resources.rc" />
+    <ResourceCompile Include="kxf-compression\+Resources\kxf-resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

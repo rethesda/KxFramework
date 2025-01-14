@@ -5,7 +5,7 @@
 
 namespace kxf::SevenZip
 {
-	class KXF_API Library final
+	class KXF_API_COMPRESSION Library final
 	{
 		public:
 			static Library& GetInstance()

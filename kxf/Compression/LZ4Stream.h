@@ -6,8 +6,8 @@
 
 namespace kxf::Compression::LZ4
 {
-	KXF_API String GetLibraryName();
-	KXF_API Version GetLibraryVersion();
+	KXF_API_COMPRESSION String GetLibraryName();
+	KXF_API_COMPRESSION Version GetLibraryVersion();
 
 	inline constexpr size_t CompressBound(size_t sourceSize) noexcept
 	{
@@ -16,16 +16,16 @@ namespace kxf::Compression::LZ4
 		return sourceSize > LZ4_MAX_INPUT_SIZE ? 0 : sourceSize + (sourceSize / 255) + 16;
 	}
 
-	KXF_API size_t Compress(const void* sourceBuffer, size_t sourceSize, void* destinationBuffer, size_t destinationSize);
-	KXF_API std::vector<uint8_t> Compress(const void* sourceBuffer, size_t sourceSize);
+	KXF_API_COMPRESSION size_t Compress(const void* sourceBuffer, size_t sourceSize, void* destinationBuffer, size_t destinationSize);
+	KXF_API_COMPRESSION std::vector<uint8_t> Compress(const void* sourceBuffer, size_t sourceSize);
 
-	KXF_API size_t Decompress(const void* sourceBuffer, size_t sourceSize, void* destinationBuffer, size_t destinationSize);
-	KXF_API std::vector<uint8_t> Decompress(const void* sourceBuffer, size_t sourceSize);
+	KXF_API_COMPRESSION size_t Decompress(const void* sourceBuffer, size_t sourceSize, void* destinationBuffer, size_t destinationSize);
+	KXF_API_COMPRESSION std::vector<uint8_t> Decompress(const void* sourceBuffer, size_t sourceSize);
 }
 
 namespace kxf
 {
-	class KXF_API LZ4BaseStream
+	class KXF_API_COMPRESSION LZ4BaseStream
 	{
 		protected:
 			constexpr static const size_t ms_BlockSize = 1024 * 8;
@@ -81,7 +81,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API LZ4InputStream: public LZ4BaseStream, public InputStreamDelegate
+	class KXF_API_COMPRESSION LZ4InputStream final: public LZ4BaseStream, public InputStreamDelegate
 	{
 		public:
 			using DictionaryBuffer = std::vector<uint8_t>;
@@ -127,7 +127,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API LZ4OutputStream: public LZ4BaseStream, public OutputStreamDelegate
+	class KXF_API_COMPRESSION LZ4OutputStream final: public LZ4BaseStream, public OutputStreamDelegate
 	{
 		private:
 			int m_Acceleration = 0;

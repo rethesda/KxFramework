@@ -6,7 +6,7 @@
 
 namespace kxf
 {
-	class KXF_API ArchiveEvent: public FSActionEvent
+	class KXF_API_COMPRESSION ArchiveEvent: public FSActionEvent
 	{
 		public:
 			kxf_EVENT_MEMBER(ArchiveEvent, IdentifyFormat);
