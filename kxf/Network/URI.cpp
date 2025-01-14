@@ -129,14 +129,18 @@ namespace kxf
 			{
 				Destroy();
 
-				if (::uriParseSingleUriW(&m_URIData, uri.wc_str(), nullptr) == URI_SUCCESS)
+				if (!uri.IsEmpty())
 				{
-					if (makeOwner)
+					auto result = ::uriParseSingleUriW(&m_URIData, uri.wc_str(), nullptr);
+					if (result == URI_SUCCESS)
 					{
-						auto result = ::uriMakeOwnerW(&m_URIData);
-						return result == URI_SUCCESS || result == URI_TRUE;
+						if (makeOwner)
+						{
+							result = ::uriMakeOwnerW(&m_URIData);
+							return result == URI_SUCCESS || result == URI_TRUE;
+						}
+						return true;
 					}
-					return true;
 				}
 				return false;
 			}
@@ -145,8 +149,7 @@ namespace kxf
 				int requiredSize = 0;
 				if (::uriToStringCharsRequiredW(&m_URIData, &requiredSize) == URI_SUCCESS)
 				{
-					std::wstring buffer;
-					buffer.resize(requiredSize);
+					std::wstring buffer(requiredSize, 0);
 
 					int written = 0;
 					if (::uriToStringW(buffer.data(), &m_URIData, requiredSize + 1, &written) == URI_SUCCESS)
@@ -373,11 +376,11 @@ namespace kxf
 	}
 	String URI::Unescape(const String& source, LineBreakFormat lineBreakFormat, FlagSet<URIFlag> flags)
 	{
-		auto buffer = source.str();
-		if (const wchar_t* outputTerminator = ::uriUnescapeInPlaceExW(buffer.data(), flags.Contains(URIFlag::SpacePlus), MapLineBreakFormat(lineBreakFormat)))
+		auto buffer = source.ToUTF8();
+		if (auto outputTerminator = ::uriUnescapeInPlaceExA(buffer.data(), flags.Contains(URIFlag::SpacePlus), MapLineBreakFormat(lineBreakFormat)))
 		{
 			buffer.resize(outputTerminator - buffer.data());
-			return buffer;
+			return String::FromUTF8(buffer);
 		}
 		return {};
 	}
