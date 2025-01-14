@@ -386,6 +386,10 @@ namespace kxf
 	{
 		return !m_URI.IsConstructed();
 	}
+	void URI::Clear() noexcept
+	{
+		m_URI.Destroy();
+	}
 
 	bool URI::Create(const String& uri)
 	{
@@ -401,31 +405,21 @@ namespace kxf
 	}
 	bool URI::Create(const FSPath& path)
 	{
-		String pathString = path.GetFullPath();
+		if (path)
+		{
+			String fullPath = path.GetFullPath();
 
-		std::wstring buffer;
-		if (path.IsAbsolute())
-		{
-			buffer.resize(8 + 3 * pathString.length() + 1);
-		}
-		else
-		{
-			buffer.resize(3 * pathString.length() + 1);
-		}
-
-		if (::uriWindowsFilenameToUriStringW(pathString.wc_str(), buffer.data()) == URI_SUCCESS)
-		{
-			return Create(String(std::move(buffer)));
+			std::wstring buffer(8 + 3 * fullPath.length() + 1, 0);
+			if (::uriWindowsFilenameToUriStringW(fullPath.wc_str(), buffer.data()) == URI_SUCCESS)
+			{
+				return Create(String(std::move(buffer)));
+			}
 		}
 		return false;
 	}
 	bool URI::Create(const wxURI& uri)
 	{
 		return Create(uri.BuildURI());
-	}
-	void URI::Clear() noexcept
-	{
-		m_URI.Destroy();
 	}
 
 	bool URI::IsReference() const noexcept
@@ -464,6 +458,20 @@ namespace kxf
 	String URI::BuildUnescapedURI(LineBreakFormat lineBreakFormat, FlagSet<URIFlag> flags) const
 	{
 		return m_URI ? Unescape(m_URI->BuildURI(), lineBreakFormat, flags) : NullString;
+	}
+	FSPath URI::ToFSPath() const
+	{
+		if (m_URI && m_URI->GetScheme() == kxfS("file"))
+		{
+			auto uri = m_URI->BuildURI();
+
+			std::wstring buffer(uri.length() + 1, 0);
+			if (::uriUriStringToWindowsFilenameW(uri.wc_str(), buffer.data()) == URI_SUCCESS)
+			{
+				return String(std::move(buffer));
+			}
+		}
+		return {};
 	}
 
 	bool URI::HasScheme() const noexcept

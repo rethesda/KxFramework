@@ -75,6 +75,7 @@ namespace kxf
 
 		public:
 			bool IsNull() const noexcept;
+			void Clear() noexcept;
 
 			bool Create(const String& uri);
 			bool Create(const FSPath& path);
@@ -91,7 +92,6 @@ namespace kxf
 			{
 				return Create(String(uri));
 			}
-			void Clear() noexcept;
 
 			bool IsReference() const noexcept;
 			URI& Resolve(const URI& base, FlagSet<URIFlag> flags = {});
@@ -100,6 +100,7 @@ namespace kxf
 
 			String BuildURI() const;
 			String BuildUnescapedURI(LineBreakFormat lineBreakFormat = LineBreakFormat::None, FlagSet<URIFlag> flags = {}) const;
+			FSPath ToFSPath() const;
 
 		public:
 			bool HasScheme() const noexcept;
