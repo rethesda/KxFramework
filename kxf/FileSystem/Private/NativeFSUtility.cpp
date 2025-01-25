@@ -126,7 +126,7 @@ namespace kxf::FileSystem::Private
 		}
 
 		// Assign path
-		fileItem.SetFullPath(std::move(path));
+		fileItem.SetPath(std::move(path));
 
 		return fileItem;
 	}
@@ -196,7 +196,7 @@ namespace kxf::FileSystem::Private
 	{
 		for (const FileItem& item: fileSystem.EnumItems(source, {}, flags|FSActionFlag::Recursive))
 		{
-			FSPath target = destination / item.GetFullPath().GetAfter(source);
+			FSPath target = destination / item.GetPath().GetAfter(source);
 			if (item.IsDirectory())
 			{
 				if (!func.Invoke(source, target, 0, 0).ShouldTerminate())

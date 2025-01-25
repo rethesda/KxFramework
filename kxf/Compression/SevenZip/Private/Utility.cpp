@@ -102,7 +102,7 @@ namespace kxf::SevenZip::Private
 			// Get name of file
 			if (HResult(archive.GetProperty(fileIndex, kpidPath, &property)))
 			{
-				fileItem.SetFullPath(property.ToString().value_or(NullString));
+				fileItem.SetPath(property.ToString().value_or(NullString));
 
 				// Attributes
 				if (FAILED(archive.GetProperty(fileIndex, kpidAttrib, &property)))

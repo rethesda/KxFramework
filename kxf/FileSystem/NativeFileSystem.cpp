@@ -203,7 +203,7 @@ namespace kxf::FileSystem::Private
 				// Make final path relative if needed
 				if (m_Flags.Contains(FSActionFlag::RelativePath))
 				{
-					fileItem.SetFullPath(fileItem.GetFullPath().GetAfter(GetRootPath()));
+					fileItem.SetPath(fileItem.GetPath().GetAfter(GetRootPath()));
 				}
 				return fileItem;
 			};
@@ -549,7 +549,7 @@ namespace kxf
 					std::vector<String> directories;
 					for (const FileItem& item: EnumItems(path, {}, FSActionFlag::Recursive))
 					{
-						String filePath = item.GetFullPath().GetFullPathTryNS(FSPathNamespace::Win32File);
+						String filePath = item.GetPath().GetFullPathTryNS(FSPathNamespace::Win32File);
 						if (item.IsDirectory())
 						{
 							if (!DoRemoveDirectory(filePath))

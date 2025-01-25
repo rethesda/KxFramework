@@ -76,7 +76,6 @@ namespace kxf
 	enum class FileAttribute: uint32_t
 	{
 		None = 0,
-		Invalid = std::numeric_limits<uint32_t>::max(),
 
 		Hidden = 1 << 0,
 		Archive = 1 << 1,
@@ -94,6 +93,7 @@ namespace kxf
 		RecallOnDataAccess = 1 << 13,
 
 		Normal = std::numeric_limits<uint32_t>::max() >> 1,
+		Invalid = std::numeric_limits<uint32_t>::max()
 	};
 	kxf_FlagSet_Declare(FileAttribute);
 

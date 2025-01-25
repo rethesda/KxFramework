@@ -59,20 +59,24 @@ namespace kxf
 			// General
 			FileItem& Refresh(const IFileSystem& fileSystem);
 			
-			bool IsValid() const noexcept
+			bool IsNull() const noexcept
 			{
-				return m_Path && m_Attributes != FileAttribute::Invalid;
+				return m_Path.IsNull() || m_Attributes == FileAttribute::Invalid;
 			}
 			bool IsNormalItem() const noexcept
 			{
-				return IsValid() && !IsReparsePoint() && !IsCurrentOrParentDirectoryRef();
+				return !IsNull() && !IsReparsePoint() && !IsCurrentOrParentDirectoryRef();
 			}
 			bool IsCurrentOrParentDirectoryRef() const noexcept
 			{
-				if (m_Path.GetLength() >= 1 && m_Path.GetLength() <= 2)
+				auto length = m_Path.GetLength();
+				if (length == 1)
 				{
-					const String name = m_Path.GetName();
-					return name == kxfS("..") || name == kxfS('.');
+					return m_Path.GetName() == kxfS('.');
+				}
+				else if (length == 2)
+				{
+					return m_Path.GetName() == kxfS("..");
 				}
 				return false;
 			}
@@ -147,13 +151,13 @@ namespace kxf
 			}
 
 			// Path and name
-			FSPath GetFullPath() const noexcept
+			FSPath GetPath() const noexcept
 			{
 				return m_Path;
 			}
-			FileItem& SetFullPath(FSPath fullPath) noexcept
+			FileItem& SetPath(FSPath path) noexcept
 			{
-				m_Path = std::move(fullPath);
+				m_Path = std::move(path);
 				return *this;
 			}
 
@@ -163,7 +167,7 @@ namespace kxf
 			}
 			FileItem& SetSource(FSPath source) noexcept
 			{
-				String name = m_Path.GetName();
+				auto name = m_Path.GetName();
 				m_Path = std::move(source);
 				m_Path.SetName(std::move(name));
 
@@ -236,11 +240,11 @@ namespace kxf
 
 			explicit operator bool() const noexcept
 			{
-				return IsValid();
+				return !IsNull();
 			}
 			bool operator!() const noexcept
 			{
-				return !IsValid();
+				return IsNull();
 			}
 	};
 }

@@ -157,7 +157,7 @@ namespace
 		private:
 			std::optional<FileItem> DoItem(IEnumerator& enumerator, FileItem item, const FSPath& directory, std::vector<FSPath>& childDirectories)
 			{
-				FSPath fullPath = item.GetFullPath();
+				FSPath fullPath = item.GetPath();
 				FSPath containingDirectory = fullPath.GetBefore(directory);
 				if (containingDirectory == directory)
 				{
@@ -525,7 +525,7 @@ namespace kxf::SevenZip
 			{
 				if (FileItem item = Private::GetArchiveItem(*m_Data.InArchive, luid.ToInt()))
 				{
-					return EnumItems(item.GetFullPath(), {}, flags);
+					return EnumItems(item.GetPath(), {}, flags);
 				}
 			}
 		}
