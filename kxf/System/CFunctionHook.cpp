@@ -10,7 +10,7 @@
 
 namespace kxf::LogCategory
 {
-	KX_DefineLogModuleCategory(kxf, Detours);
+	kxf_DefineLogModuleCategory(kxf, Detours);
 }
 
 namespace kxf
