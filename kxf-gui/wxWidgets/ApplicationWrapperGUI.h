@@ -1,6 +1,6 @@
 #pragma once
 #include "kxf/wxWidgets/ApplicationWrapper.h"
-#include "kxf/Application/IGUIApplication.h"
+#include "kxf-gui/Application/IGUIApplication.h"
 
 namespace kxf::wxWidgets
 {

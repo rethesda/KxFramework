@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "ICoreApplication.h"
+#include "kxf/Application/ICoreApplication.h"
 
 namespace kxf
 {

@@ -203,7 +203,6 @@
     <ClInclude Include="kxf\Application\CoreApplication.h" />
     <ClInclude Include="kxf\Application\ICoreApplication.h" />
     <ClInclude Include="kxf\Application\IEventLoop.h" />
-    <ClInclude Include="kxf\Application\IGUIApplication.h" />
     <ClInclude Include="kxf\Application\Private\CommonEventLoop.h" />
     <ClInclude Include="kxf\Application\Private\Utility.h" />
     <ClInclude Include="kxf\Application\Private\Win32CommonEventLoop.h" />

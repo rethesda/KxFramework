@@ -1194,6 +1194,9 @@
     <ClInclude Include="kxf-gui\+Resources\kxf-resources.h">
       <Filter>kxf-gui/+Resources</Filter>
     </ClInclude>
+    <ClInclude Include="kxf-gui\Application\IGUIApplication.h">
+      <Filter>kxf-gui\Application</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-gui\+PCH\kxf-pch.cpp">

@@ -3,7 +3,7 @@
 #include "ITopLevelWidget.h"
 #include "IWidget.h"
 #include "kxf/EventSystem/IEvtHandler.h"
-#include "kxf/Application/IGUIApplication.h"
+#include "kxf-gui/Application/IGUIApplication.h"
 
 namespace kxf
 {

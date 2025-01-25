@@ -8,7 +8,7 @@ class wxNativeFontInfo;
 
 namespace kxf
 {
-	class KXF_API Font
+	class KXF_API Font final
 	{
 		friend struct BinarySerializer<Font>;
 

@@ -62,10 +62,10 @@ namespace kxf
 
 	void EventBroadcastReceiver::StopPropagation(IEvent& event)
 	{
-		std::shared_ptr<IWidgetEvent> commandEvent;
-		if (event.QueryInterface(commandEvent))
+		std::shared_ptr<IWidgetEvent> widgetEvent;
+		if (event.QueryInterface(widgetEvent))
 		{
-			commandEvent->StopPropagation();
+			widgetEvent->StopPropagation();
 		}
 	}
 }

@@ -185,6 +185,7 @@
     <ClInclude Include="kxf-gui\+Resources\kxf-resources.h" />
     <ClInclude Include="kxf-gui\Application\Common.h" />
     <ClInclude Include="kxf-gui\Application\GUIApplication.h" />
+    <ClInclude Include="kxf-gui\Application\IGUIApplication.h" />
     <ClInclude Include="kxf-gui\Application\Private\Win32GUIEventLoop.h" />
     <ClInclude Include="kxf-gui\Common.hpp" />
     <ClInclude Include="kxf-gui\Drawing\ArtProvider.h" />
