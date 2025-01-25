@@ -12,7 +12,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API MemoryInputStream: public RTTI::Implementation<MemoryInputStream, IInputStream, IMemoryStream>
+	class KXF_API MemoryInputStream final: public RTTI::Implementation<MemoryInputStream, IInputStream, IMemoryStream>
 	{
 		private:
 			MemoryStreamBuffer m_StreamBuffer;
@@ -56,7 +56,7 @@ namespace kxf
 			}
 			MemoryInputStream(IInputStream& stream, DataSize size = {})
 			{
-				m_StreamBuffer.CreateStorage(stream, size ? size.ToBytes() : 0);
+				m_StreamBuffer.CreateStorage(stream, static_cast<size_t>(size ? size.ToBytes() : 0));
 				m_StreamBuffer.SetStorageFixed();
 			}
 
@@ -172,7 +172,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API MemoryOutputStream: public RTTI::Implementation<MemoryInputStream, IOutputStream, IMemoryStream, IReadableOutputStream>
+	class KXF_API MemoryOutputStream final: public RTTI::Implementation<MemoryInputStream, IOutputStream, IMemoryStream, IReadableOutputStream>
 	{
 		private:
 			MemoryStreamBuffer m_StreamBuffer;
