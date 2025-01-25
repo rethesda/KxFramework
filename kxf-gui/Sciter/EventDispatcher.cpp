@@ -519,33 +519,28 @@ namespace kxf::Sciter
 				eventID = BehaviorEvent::EvtButtonPress;
 				break;
 			}
-			case BEHAVIOR_EVENTS::BUTTON_STATE_CHANGED:
-			{
-				eventID = BehaviorEvent::EvtButtonStateChanged;
-				break;
-			}
 
 			// Edit
-			case BEHAVIOR_EVENTS::EDIT_VALUE_CHANGING:
+			case BEHAVIOR_EVENTS::VALUE_CHANGING:
 			{
-				eventID = BehaviorEvent::EvtEditValueChanging;
+				eventID = BehaviorEvent::EvtValueChanging;
 				break;
 			}
-			case BEHAVIOR_EVENTS::EDIT_VALUE_CHANGED:
+			case BEHAVIOR_EVENTS::VALUE_CHANGED:
 			{
-				eventID = BehaviorEvent::EvtEditValueChanged;
+				eventID = BehaviorEvent::EvtValueChanged;
 				break;
 			}
 
-			// Select
-			case BEHAVIOR_EVENTS::SELECT_SELECTION_CHANGED:
+			// Selection
+			case BEHAVIOR_EVENTS::SELECTION_CHANGING:
 			{
-				eventID = BehaviorEvent::EvtSelectValueChanged;
+				eventID = BehaviorEvent::EvtSelectionChanging;
 				break;
 			}
-			case BEHAVIOR_EVENTS::SELECT_STATE_CHANGED:
+			case BEHAVIOR_EVENTS::SELECTION_CHANGED:
 			{
-				eventID = BehaviorEvent::EvtSelectStateChanged;
+				eventID = BehaviorEvent::EvtSelectionChanged;
 				break;
 			}
 
@@ -691,23 +686,6 @@ namespace kxf::Sciter
 				break;
 			}
 
-			// Generic
-			case BEHAVIOR_EVENTS::CLICK:
-			{
-				eventID = BehaviorEvent::EvtGenericClick;
-				break;
-			}
-			case BEHAVIOR_EVENTS::CHANGE:
-			{
-				eventID = BehaviorEvent::EvtGenericChange;
-				break;
-			}
-			case BEHAVIOR_EVENTS::HYPERLINK_CLICK:
-			{
-				eventID = BehaviorEvent::EvtHyperlinkClick;
-				break;
-			}
-
 			// Expand/Collapse
 			case BEHAVIOR_EVENTS::ELEMENT_EXPANDED:
 			{
@@ -743,6 +721,11 @@ namespace kxf::Sciter
 				eventID = BehaviorEvent::EvtActivateChild;
 				break;
 			}
+			case BEHAVIOR_EVENTS::HYPERLINK_CLICK:
+			{
+				eventID = BehaviorEvent::EvtHyperlinkClick;
+				break;
+			}
 
 			case BEHAVIOR_EVENTS::VISUAL_STATUS_CHANGED:
 			{
@@ -757,11 +740,6 @@ namespace kxf::Sciter
 			case BEHAVIOR_EVENTS::CONTENT_CHANGED:
 			{
 				eventID = BehaviorEvent::EvtContentChanged;
-				break;
-			}
-			case BEHAVIOR_EVENTS::UI_STATE_CHANGED:
-			{
-				eventID = BehaviorEvent::EvtUIStateChanged;
 				break;
 			}
 		};

@@ -9,15 +9,14 @@ namespace kxf::Sciter
 			// Button
 			kxf_EVENT_MEMBER(BehaviorEvent, ButtonClick);
 			kxf_EVENT_MEMBER(BehaviorEvent, ButtonPress);
-			kxf_EVENT_MEMBER(BehaviorEvent, ButtonStateChanged);
 
 			// Edit
-			kxf_EVENT_MEMBER(BehaviorEvent, EditValueChanging);
-			kxf_EVENT_MEMBER(BehaviorEvent, EditValueChanged);
+			kxf_EVENT_MEMBER(BehaviorEvent, ValueChanging);
+			kxf_EVENT_MEMBER(BehaviorEvent, ValueChanged);
 
-			// Select
-			kxf_EVENT_MEMBER(BehaviorEvent, SelectValueChanged);
-			kxf_EVENT_MEMBER(BehaviorEvent, SelectStateChanged);
+			// Selection
+			kxf_EVENT_MEMBER(BehaviorEvent, SelectionChanging);
+			kxf_EVENT_MEMBER(BehaviorEvent, SelectionChanged);
 
 			// Popup
 			kxf_EVENT_MEMBER(BehaviorEvent, PopupReady);
@@ -57,11 +56,6 @@ namespace kxf::Sciter
 			kxf_EVENT_MEMBER(BehaviorEvent, PaginationPage);
 			kxf_EVENT_MEMBER(BehaviorEvent, PaginationEnd);
 
-			// Generic
-			kxf_EVENT_MEMBER(BehaviorEvent, GenericClick);
-			kxf_EVENT_MEMBER(BehaviorEvent, GenericChange);
-			kxf_EVENT_MEMBER(BehaviorEvent, HyperlinkClick);
-
 			// Expand/Collapse
 			kxf_EVENT_MEMBER(BehaviorEvent, ElementExpanded);
 			kxf_EVENT_MEMBER(BehaviorEvent, ElementCollapsed);
@@ -73,11 +67,11 @@ namespace kxf::Sciter
 			// Misc
 			kxf_EVENT_MEMBER(BehaviorEvent, Animation);
 			kxf_EVENT_MEMBER(BehaviorEvent, ActivateChild);
+			kxf_EVENT_MEMBER(BehaviorEvent, HyperlinkClick);
 
 			kxf_EVENT_MEMBER(BehaviorEvent, VisualStatusChanged);
 			kxf_EVENT_MEMBER(BehaviorEvent, DisabledStatusChanged);
 			kxf_EVENT_MEMBER(BehaviorEvent, ContentChanged);
-			kxf_EVENT_MEMBER(BehaviorEvent, UIStateChanged);
 
 		protected:
 			String m_EventName;
