@@ -1,8 +1,12 @@
 #pragma once
 #include "Common.h"
 #include "IVectorImage.h"
-#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/Serialization/BinarySerializer.h"
+
+namespace lunasvg
+{
+	class Document;
+}
 
 namespace kxf
 {
@@ -13,12 +17,15 @@ namespace kxf
 		friend struct BinarySerializer<SVGImage>;
 
 		private:
-			UninitializedStorage<class SVGImageImpl, sizeof(void*), alignof(void*)> m_Document;
+			std::shared_ptr<lunasvg::Document> m_Document;
 			int m_DPI = -1;
 
 		private:
 			void CopyFrom(const SVGImage& other);
 			void MoveFrom(SVGImage& other) noexcept;
+
+			std::string Serialize() const;
+			bool Deserialize(const std::string& svgData);
 
 		public:
 			SVGImage();
@@ -30,10 +37,7 @@ namespace kxf
 			// IImage2D
 			bool IsNull() const;
 			bool IsSameAs(const IImage2D& other) const override;
-			std::shared_ptr<IImage2D> CloneImage2D() const override
-			{
-				return std::make_shared<SVGImage>(*this);
-			}
+			std::shared_ptr<IImage2D> CloneImage2D() const override;
 
 			bool Create(const Size& size);
 			bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos);
