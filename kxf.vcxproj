@@ -134,8 +134,8 @@
       <SubSystem Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Windows</SubSystem>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">comctl32.dll;comdlg32.dll;msimg32.dll;gdi32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
-      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">comctl32.dll;comdlg32.dll;msimg32.dll;gdi32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
+      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">msimg32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
+      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">msimg32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
@@ -180,8 +180,8 @@
       <SubSystem Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Windows</SubSystem>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">delayimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">comctl32.dll;comdlg32.dll;msimg32.dll;gdi32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
-      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">comctl32.dll;comdlg32.dll;msimg32.dll;gdi32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
+      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">msimg32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
+      <DelayLoadDLLs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">msimg32.dll;uxtheme.dll;winspool.drv</DelayLoadDLLs>
     </Link>
     <ResourceCompile>
       <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(TargetName).resources\%(Filename).res</ResourceOutputFileName>
@@ -283,6 +283,7 @@
     <ClInclude Include="kxf\EventSystem\IEventFilter.h" />
     <ClInclude Include="kxf\EventSystem\IEvtHandler.h" />
     <ClInclude Include="kxf\EventSystem\IWithEvtHandler.h" />
+    <ClInclude Include="kxf\EventSystem\KeyEvent.h" />
     <ClInclude Include="kxf\EventSystem\Private\EventWaitInfo.h" />
     <ClInclude Include="kxf\EventSystem\SignalExecutor.h" />
     <ClInclude Include="kxf\EventSystem\SignalInvocationEvent.h" />
@@ -445,6 +446,7 @@
     <ClInclude Include="kxf\wxWidgets\ApplicationWrapperConsole.h" />
     <ClInclude Include="kxf\wxWidgets\ClientObject.h" />
     <ClInclude Include="kxf\wxWidgets\Common.h" />
+    <ClInclude Include="kxf\wxWidgets\Setup-IncludeImage.h" />
     <ClInclude Include="kxf\wxWidgets\MapConstants.h" />
     <ClInclude Include="kxf\wxWidgets\EventLoopWrapper.h" />
     <ClInclude Include="kxf\wxWidgets\EventTag.h" />
@@ -456,6 +458,7 @@
     <ClInclude Include="kxf\wxWidgets\MapDrawing.h" />
     <ClInclude Include="kxf\wxWidgets\MapEventSystem.h" />
     <ClInclude Include="kxf\wxWidgets\MapIO.h" />
+    <ClInclude Include="kxf\wxWidgets\MouseKeyboardState.h" />
     <ClInclude Include="kxf\wxWidgets\RTTI.h" />
     <ClInclude Include="kxf\wxWidgets\Setup-IncludeBasic.h" />
     <ClInclude Include="kxf\wxWidgets\Setup-IncludeWarnings.h" />
@@ -618,6 +621,7 @@
     <ClCompile Include="kxf\EventSystem\EvtHandler.cpp" />
     <ClCompile Include="kxf\EventSystem\IdleEvent.cpp" />
     <ClCompile Include="kxf\EventSystem\IWithEvtHandler.cpp" />
+    <ClCompile Include="kxf\EventSystem\KeyEvent.cpp" />
     <ClCompile Include="kxf\FileSystem\IFileSystem.cpp" />
     <ClCompile Include="kxf\FileSystem\Private\NativeFSUtility.cpp" />
     <ClCompile Include="kxf\Core\CombinedVariableCollection.cpp" />
@@ -708,6 +712,7 @@
     <ClCompile Include="kxf\wxWidgets\MapDrawing.cpp" />
     <ClCompile Include="kxf\wxWidgets\MapEventSystem.cpp" />
     <ClCompile Include="kxf\wxWidgets\MapIO.cpp" />
+    <ClCompile Include="kxf\wxWidgets\MouseKeyboardState.cpp" />
     <ClCompile Include="kxf\wxWidgets\Setup.cpp" />
     <ClCompile Include="kxf\wxWidgets\StandardLocalization.cpp" />
     <ClCompile Include="kxf\wxWidgets\StreamWrapper.cpp" />

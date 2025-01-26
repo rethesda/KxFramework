@@ -1260,6 +1260,15 @@
     <ClInclude Include="kxf\Drawing\ImageBundle.h">
       <Filter>kxf\Drawing</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\wxWidgets\MouseKeyboardState.h">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\wxWidgets\Setup-IncludeImage.h">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf\EventSystem\KeyEvent.h">
+      <Filter>kxf\EventSystem\&lt;Events&gt;</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf\EventSystem\EventBuilder.cpp">
@@ -1810,6 +1819,12 @@
     </ClCompile>
     <ClCompile Include="kxf\Drawing\ImageBundle.cpp">
       <Filter>kxf\Drawing</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\wxWidgets\MouseKeyboardState.cpp">
+      <Filter>kxf\wxWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\EventSystem\KeyEvent.cpp">
+      <Filter>kxf\EventSystem\&lt;Events&gt;</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

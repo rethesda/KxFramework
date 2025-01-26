@@ -1,6 +1,7 @@
 #include "kxf-pch.h"
 #include "ShellLink.h"
 #include "Private/Shell.h"
+#include "kxf/EventSystem/KeyEvent.h"
 #include "kxf/Utility/Memory.h"
 
 #include <wx/event.h>
@@ -153,30 +154,35 @@ namespace kxf
 		return m_ShellLink->SetShowCmd(Shell::Private::MapSHWindowCommand(command).value_or(SW_SHOWNORMAL));
 	}
 
-	wxKeyEvent ShellLink::GetHotKey() const noexcept
+	KeyEvent ShellLink::GetHotKey() const noexcept
 	{
-		wxKeyEvent keyState;
+		KeyEvent keyState;
 
 		WORD hotKeys = 0;
 		if (HResult(m_ShellLink->GetHotkey(&hotKeys)))
 		{
 			Utility::CompositeInteger<BYTE> hotKeyData(hotKeys);
-			keyState.m_keyCode = hotKeyData.GetLow();
-
+			auto keyCode = hotKeyData.GetLow();
 			auto modifiers = hotKeyData.GetHigh();
-			keyState.m_controlDown = modifiers & HOTKEYF_CONTROL;
-			keyState.m_altDown = modifiers & HOTKEYF_ALT;
-			keyState.m_shiftDown = modifiers & HOTKEYF_SHIFT;
-		}
-		return keyState;
-	}
-	HResult ShellLink::SetHotKey(const wxKeyEvent& keyState) noexcept
-	{
-		FlagSet<BYTE> modifiers;
-		modifiers.Add(HOTKEYF_CONTROL, keyState.ControlDown());
-		modifiers.Add(HOTKEYF_ALT, keyState.AltDown());
-		modifiers.Add(HOTKEYF_SHIFT, keyState.ShiftDown());
 
-		return m_ShellLink->SetHotkey(*Utility::CompositeInteger(*modifiers, static_cast<BYTE>(keyState.GetKeyCode())));
+			FlagSet<KeyModifier> keyModifiers;
+			keyModifiers.Add(KeyModifier::Ctrl, modifiers & HOTKEYF_CONTROL);
+			keyModifiers.Add(KeyModifier::Alt, modifiers & HOTKEYF_ALT);
+			keyModifiers.Add(KeyModifier::Shift, modifiers & HOTKEYF_SHIFT);
+
+			return KeyEvent(FromInt<KeyCode>(keyCode), KeyboardState(keyModifiers));
+		}
+		return {};
+	}
+	HResult ShellLink::SetHotKey(const KeyEvent& keyState) noexcept
+	{
+		auto keyboardState = keyState.GetKeyboardState();
+
+		FlagSet<BYTE> modifiers;
+		modifiers.Add(HOTKEYF_CONTROL, keyboardState.IsCtrlDown());
+		modifiers.Add(HOTKEYF_ALT, keyboardState.IsAltDown());
+		modifiers.Add(HOTKEYF_SHIFT, keyboardState.IsShiftDown());
+
+		return m_ShellLink->SetHotkey(*Utility::CompositeInteger(*modifiers, ToInt<BYTE>(keyState.GetKeyCode())));
 	}
 }

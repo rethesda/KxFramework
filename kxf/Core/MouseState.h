@@ -17,8 +17,8 @@ namespace kxf
 
 		public:
 			constexpr MouseState() noexcept = default;
-			constexpr MouseState(FlagSet<MouseButton> buttons) noexcept
-				:m_Buttons(buttons)
+			constexpr MouseState(FlagSet<MouseButton> buttons, Point position = Point::UnspecifiedPosition()) noexcept
+				:m_Buttons(buttons), m_Position(position)
 			{
 			}
 			MouseState(const wxMouseState& state) noexcept;

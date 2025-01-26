@@ -28,7 +28,7 @@ namespace kxf::Private
 	}
 	void BasicWindowWidgetBase::SetIconPack(const ImageBundle& icon)
 	{
-		GetWxWindow()->SetIcons(icon.ToWxIconBundle());
+		GetWxWindow()->SetIcons(icon.ToWXIconBundle());
 	}
 
 	String BasicWindowWidgetBase::GetTitle() const

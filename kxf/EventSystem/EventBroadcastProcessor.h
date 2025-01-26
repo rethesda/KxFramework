@@ -103,12 +103,9 @@ namespace kxf
 			EventSystem::BroadcastReceiverHandler m_EvtHandler;
 			EventBroadcastProcessor& m_Processor;
 
-		private:
-			bool PreProcessEvent(IEvent& event);
-			void PostProcessEvent(IEvent& event);
-			void FinalPostProcessEvent(IEvent& event);
-
-			void StopPropagation(IEvent& event);
+		protected:
+			virtual bool PreProcessEvent(IEvent& event);
+			virtual void PostProcessEvent(IEvent& event);
 
 		protected:
 			IEvtHandler& GetEvtHandler()

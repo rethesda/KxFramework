@@ -1,7 +1,6 @@
 #include "kxf-pch.h"
 #include "EventBroadcastProcessor.h"
 #include "kxf/Core/Enumerator.h"
-#include "kxf-gui/Widgets/IWidgetEvent.h"
 
 namespace kxf::EventSystem
 {
@@ -47,25 +46,11 @@ namespace kxf
 
 	bool EventBroadcastReceiver::PreProcessEvent(IEvent& event)
 	{
-		StopPropagation(event);
 		return m_Processor.PreProcessEvent(event);
 	}
 	void EventBroadcastReceiver::PostProcessEvent(IEvent& event)
 	{
 		m_Processor.PostProcessEvent(event);
-	}
-	void EventBroadcastReceiver::FinalPostProcessEvent(IEvent& event)
-	{
 		event.Skip();
-		StopPropagation(event);
-	}
-
-	void EventBroadcastReceiver::StopPropagation(IEvent& event)
-	{
-		std::shared_ptr<IWidgetEvent> widgetEvent;
-		if (event.QueryInterface(widgetEvent))
-		{
-			widgetEvent->StopPropagation();
-		}
 	}
 }

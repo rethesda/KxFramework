@@ -1,7 +1,6 @@
 #pragma once
 #include "kxf/System/SystemWindow.h"
 #include "kxf/System/SystemWindow/AnonymousSystemWindow.h"
-#include "kxf-gui/Widgets/Private/AnonymousNativeWindow.h"
 
 namespace kxf
 {

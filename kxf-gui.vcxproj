@@ -200,6 +200,8 @@
     <ClInclude Include="kxf-gui\Drawing\IArtProvider.h" />
     <ClInclude Include="kxf-gui\Drawing\IRendererNative.h" />
     <ClInclude Include="kxf-gui\Drawing\WithImageList.h" />
+    <ClInclude Include="kxf-gui\EventSystem\Common.h" />
+    <ClInclude Include="kxf-gui\EventSystem\GUIEventBroadcastProcessor.h" />
     <ClInclude Include="kxf-gui\pch.hpp" />
     <ClInclude Include="kxf-gui\Sciter\Common.h" />
     <ClInclude Include="kxf-gui\Sciter\CommonDefs.h" />
@@ -546,6 +548,7 @@
     <ClCompile Include="kxf-gui\Drawing\GraphicsRenderer.cpp" />
     <ClCompile Include="kxf-gui\Drawing\IRendererNative.cpp" />
     <ClCompile Include="kxf-gui\Drawing\WxRenderer\WxGraphicsBrush.cpp" />
+    <ClCompile Include="kxf-gui\EventSystem\GUIEventBroadcastProcessor.cpp" />
     <ClCompile Include="kxf-gui\Sciter\Common.cpp" />
     <ClCompile Include="kxf-gui\Sciter\Controls\Label.cpp" />
     <ClCompile Include="kxf-gui\Sciter\Element.cpp" />

@@ -1,6 +1,8 @@
 #pragma once
 #include "Common.h"
 
+// Including this here to avoid WinSock2 errors
+#include "kxf/Win32/Include-Network.h"
 #include <Windows.h>
 #include <wx/gdicmn.h>
 #include <wx/msw/gdiimage.h>

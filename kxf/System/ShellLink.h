@@ -3,8 +3,12 @@
 #include "COM.h"
 #include "HResult.h"
 #include "kxf/FileSystem/FSPath.h"
-class wxKeyEvent;
 struct IShellLinkW;
+
+namespace kxf
+{
+	class KeyEvent;
+}
 
 namespace kxf
 {
@@ -45,8 +49,8 @@ namespace kxf
 			FlagSet<SHWindowCommand> GetShowCommand() const noexcept;
 			HResult SetShowCommand(FlagSet<SHWindowCommand> command) noexcept;
 
-			wxKeyEvent GetHotKey() const noexcept;
-			HResult SetHotKey(const wxKeyEvent& keyState) noexcept;
+			KeyEvent GetHotKey() const noexcept;
+			HResult SetHotKey(const KeyEvent& keyState) noexcept;
 
 		public:
 			explicit operator bool() const noexcept

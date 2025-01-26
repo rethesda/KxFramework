@@ -192,7 +192,7 @@ namespace kxf
 		return {};
 	}
 
-	wxIconBundle ImageBundle::ToWxIconBundle() const
+	wxIconBundle ImageBundle::ToWXIconBundle() const
 	{
 		wxIconBundle iconBundle;
 		for (auto& image: m_Items)

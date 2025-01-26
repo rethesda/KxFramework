@@ -44,7 +44,7 @@ namespace kxf::Localization
 
 	CallbackResult<void> SearchPackages(const IFileSystem& fileSystem, const FSPath& directory, CallbackFunction<Locale, FileItem, String> func)
 	{
-		Utility::UnorderedSetNoCase<String> extensions;
+		Utility::UnorderedSetIC<String> extensions;
 		for (auto&& classInfo: RTTI::GetClassInfo<ILocalizationPackage>().EnumDerivedClasses())
 		{
 			if (auto instance = classInfo.CreateObjectInstance<ILocalizationPackage>())

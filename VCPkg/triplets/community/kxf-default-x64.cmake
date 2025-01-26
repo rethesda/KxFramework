@@ -7,6 +7,7 @@ if(PORT STREQUAL "sciter-js" OR PORT STREQUAL "kxvfs")
 endif()
 
 if(PORT STREQUAL "wxwidgets")
+	set(WXWIDGETS_LIMIT_GUI ON)
 	set(WXWIDGETS_USE_STL ON)
 	set(WXWIDGETS_USE_STD_CONTAINERS ON)
 endif()

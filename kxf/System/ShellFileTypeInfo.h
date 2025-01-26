@@ -10,7 +10,7 @@ namespace kxf
 	{
 		private:
 			std::unique_ptr<wxFileTypeInfo> m_FileTypeInfo;
-			Utility::UnorderedMapNoCase<String, bool> m_URLProtocolMap;
+			Utility::UnorderedMapIC<String, bool> m_URLProtocolMap;
 
 		public:
 			ShellFileTypeInfo() = default;

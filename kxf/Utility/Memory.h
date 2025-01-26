@@ -5,7 +5,7 @@
 
 namespace kxf::Utility
 {
-	KXF_API void SecureZeroMemory(void* ptr, size_t size) noexcept;
+	void SecureZeroMemory(void* ptr, size_t size) noexcept;
 
 	template<class T, class... Args>
 	requires(std::is_constructible_v<T, Args...>)

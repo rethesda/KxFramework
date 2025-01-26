@@ -5,6 +5,8 @@
 #include "kxf/wxWidgets/ApplicationWrapper.h"
 #include <wx/init.h>
 #include <wx/except.h>
+
+#include <Windows.h>
 #include "kxf/Win32/UndefMacros.h"
 
 namespace kxf

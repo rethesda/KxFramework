@@ -1,13 +1,13 @@
 #include "kxf-pch.h"
 #include "MouseState.h"
+#include "kxf/wxWidgets/MouseKeyboardState.h"
 #include <wx/mousestate.h>
-#include <wx/utils.h>
 
 namespace kxf
 {
 	MouseState MouseState::GetCurrent() noexcept
 	{
-		return ::wxGetMouseState();
+		return wxWidgets::GetMouseState();
 	}
 
 	MouseState::MouseState(const wxMouseState& state) noexcept

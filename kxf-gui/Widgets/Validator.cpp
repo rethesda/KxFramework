@@ -2,6 +2,8 @@
 #include "Validator.h"
 
 #include <wx/spinctrl.h>
+#include <wx/spinbutt.h>
+#include <wx/generic/spinctlg.h>
 #include "kxf/Win32/UndefMacros.h"
 
 namespace
@@ -49,7 +51,7 @@ namespace
 
 namespace kxf::UI::Private
 {
-	void GetValidatorControlValue(const wxValidator& validator, wxString& value, int& position, XChar& character)
+	void GetValidatorControlValue(const wxValidator& validator, wxString& value, int& position, wxChar& character)
 	{
 		// Look in "common/valnum.cpp" at line 166 (v3.1.3).
 		/*

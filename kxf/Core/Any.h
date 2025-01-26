@@ -82,7 +82,7 @@ namespace kxf
 				}
 				else if constexpr(std::is_integral_v<T> || std::is_enum_v<T>)
 				{
-					using TIntType = Utility::UnderlyingTypeEx_t<T>;
+					using TIntType = Utility::any_underlying_type_t<T>;
 
 					// Convert to an integer
 					if constexpr(std::is_signed_v<TIntType>)

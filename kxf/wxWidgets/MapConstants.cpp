@@ -3,6 +3,17 @@
 #include <wx/defs.h>
 #include <wx/event.h>
 
+#if !wxUSE_GUI
+enum wxKeyCategoryFlags
+{
+	WXK_CATEGORY_ARROW = 1,
+	WXK_CATEGORY_PAGING = 2,
+	WXK_CATEGORY_JUMP = 4,
+	WXK_CATEGORY_TAB = 8,
+	WXK_CATEGORY_CUT = 16
+};
+#endif
+
 namespace kxf
 {
 	static_assert(ToInt(StdID::WX_AUTO_LOWEST) == wxID_AUTO_LOWEST);

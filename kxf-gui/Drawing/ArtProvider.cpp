@@ -30,7 +30,7 @@ namespace
 			}
 			wxIconBundle CreateIconBundle(const wxString& id, const wxString& clientID) override
 			{
-				return m_Provider.GetImageBundle(kxf::String(id), clientID.IsEmpty() ? wxART_OTHER : clientID).ToWxIconBundle();
+				return m_Provider.GetImageBundle(kxf::String(id), clientID.IsEmpty() ? wxART_OTHER : clientID).ToWXIconBundle();
 			}
 	};
 }

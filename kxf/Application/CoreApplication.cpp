@@ -17,6 +17,9 @@
 #include "kxf/wxWidgets/EvtHandlerWrapper.h"
 #include "kxf/wxWidgets/Setup.h"
 
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+
 namespace
 {
 	enum

@@ -163,14 +163,17 @@ namespace kxf::wxWidgets
 
 			bool IsAllowed() const override
 			{
+				#if wxUSE_GUI
 				if (m_Event->IsKindOf(wxCLASSINFO(wxNotifyEvent)))
 				{
 					return static_cast<const wxNotifyEvent&>(*m_Event).IsAllowed();
 				}
+				#endif
 				return true;
 			}
 			void Allow(bool allow = true) override
 			{
+				#if wxUSE_GUI
 				if (m_Event->IsKindOf(wxCLASSINFO(wxNotifyEvent)))
 				{
 					wxNotifyEvent& notifyEvent = static_cast<wxNotifyEvent&>(*m_Event);
@@ -183,6 +186,7 @@ namespace kxf::wxWidgets
 						notifyEvent.Veto();
 					}
 				}
+				#endif
 			}
 
 			// IWithEvent

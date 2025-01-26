@@ -1,10 +1,12 @@
 #pragma once
 #include "Common.h"
+#include <wx/validate.h>
 #include <wx/valnum.h>
+#include <wx/valgen.h>
 
 namespace kxf::UI::Private
 {
-	KXF_API void GetValidatorControlValue(const wxValidator& validator, wxString& value, int& position, XChar& character);
+	KXF_API void GetValidatorControlValue(const wxValidator& validator, wxString& value, int& position, wxChar& character);
 }
 
 namespace kxf::UI
@@ -16,7 +18,7 @@ namespace kxf::UI
 			using Base = wxIntegerValidator<T>;
 
 		protected:
-			bool IsCharOk(const wxString& value, int position, XChar character) const override
+			bool IsCharOk(const wxString& value, int position, wxChar character) const override
 			{
 				UI::Private::GetValidatorControlValue(*this, const_cast<wxString&>(value), position, character);
 				return Base::IsCharOk(value, position, character);
@@ -42,7 +44,7 @@ namespace kxf::UI
 			using Base = wxFloatingPointValidator<T>;
 
 		protected:
-			bool IsCharOk(const wxString& value, int position, XChar character) const override
+			bool IsCharOk(const wxString& value, int position, wxChar character) const override
 			{
 				UI::Private::GetValidatorControlValue(*this, const_cast<wxString&>(value), position, character);
 				return Base::IsCharOk(value, position, character);
@@ -59,5 +61,9 @@ namespace kxf::UI
 			{
 				return new FloatingPointValidator(*this);
 			}
+	};
+
+	class GenericValidator: public wxGenericValidator
+	{
 	};
 }

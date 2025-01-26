@@ -1,0 +1,35 @@
+diff --git a/src/msw/event.cpp b/src/msw/event.cpp
+index 327f7e669fa1672873c783d59600967832a4c0ef..391e687070fdf96d0f0ba6b05152a58d663754a2 100644
+--- a/src/msw/spinbutt.cpp
++++ b/src/msw/spinbutt.cpp
+@@ -28,6 +28,7 @@
+ #if wxUSE_SPINBTN
+ 
+ #include "wx/spinbutt.h"
++#include "wx/dynlib.h"
+ 
+ #include "wx/msw/private.h"
+ 
+@@ -104,7 +105,21 @@ bool wxSpinButton::Create(wxWindow *parent,
+         wstyle |= UDS_WRAP;
+ 
+     // create the UpDown control.
+-    m_hWnd = (WXHWND)CreateUpDownControl
++	static wxDynamicLibrary dllComCtl32(wxT("comctl32.dll"));
++	if (!dllComCtl32.IsLoaded())
++	{
++		wxLogLastError(wxT("Failed to load comctl32.dll"));
++		return false;
++	}
++	
++	auto func = reinterpret_cast<decltype(::CreateUpDownControl)*>(dllComCtl32.GetSymbol(wxT("CreateUpDownControl")));
++	if (!func)
++	{
++		wxLogLastError(wxT("Failed to load CreateUpDownControl from comctl32.dll"));
++		return false;
++	}
++	
++	m_hWnd = (WXHWND)func
+                      (
+                        wstyle,
+                        x, y, width, height,

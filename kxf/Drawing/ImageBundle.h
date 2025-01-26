@@ -62,7 +62,7 @@ namespace kxf
 				return {};
 			}
 
-			wxIconBundle ToWxIconBundle() const;
+			wxIconBundle ToWXIconBundle() const;
 
 		public:
 			explicit operator bool() const noexcept

@@ -105,11 +105,113 @@ namespace
 		return {};
 	}
 }
+namespace
+{
+	class KnownColorInfo final
+	{
+		private:
+			kxf::StringView m_Name;
+			kxf::Color m_Color;
+
+		public:
+			constexpr KnownColorInfo(kxf::StringView name, const kxf::PackedRGB<uint8_t>& rgb) noexcept
+				:m_Name(name), m_Color(rgb)
+			{
+			}
+
+		public:
+			constexpr kxf::StringView GetName() const noexcept
+			{
+				return m_Name;
+			}
+			constexpr kxf::Color GetColor() const noexcept
+			{
+				return m_Color;
+			}
+	};
+
+	constexpr KnownColorInfo g_KnownColors[] =
+	{
+		{kxfS("AQUAMARINE"), {112, 219, 147}},
+		{kxfS("BLACK"), {0, 0, 0}},
+		{kxfS("BLUE"), {0, 0, 255}},
+		{kxfS("BLUE VIOLET"), {159, 95, 159}},
+		{kxfS("BROWN"), {165, 42, 42}},
+		{kxfS("CADET BLUE"), {95, 159, 159}},
+		{kxfS("CORAL"), {255, 127, 0}},
+		{kxfS("CORNFLOWER BLUE"), {66, 66, 111}},
+		{kxfS("CYAN"), {0, 255, 255}},
+		{kxfS("DARK GRAY"), {47, 47, 47}},
+
+		{kxfS("DARK GREEN"), {47, 79, 47}},
+		{kxfS("DARK OLIVE GREEN"), {79, 79, 47}},
+		{kxfS("DARK ORCHID"), {153, 50, 204}},
+		{kxfS("DARK SLATE BLUE"), {107, 35, 142}},
+		{kxfS("DARK SLATE GRAY"), {47, 79, 79}},
+		{kxfS("DARK TURQUOISE"), {112, 147, 219}},
+		{kxfS("DIM GRAY"), {84, 84, 84}},
+		{kxfS("FIREBRICK"), {142, 35, 35}},
+		{kxfS("FOREST GREEN"), {35, 142, 35}},
+		{kxfS("GOLD"), {204, 127, 50}},
+		{kxfS("GOLDENROD"), {219, 219, 112}},
+		{kxfS("GRAY"), {128, 128, 128}},
+		{kxfS("GREEN"), {0, 255, 0}},
+		{kxfS("GREEN YELLOW"), {147, 219, 112}},
+		{kxfS("INDIAN RED"), {79, 47, 47}},
+		{kxfS("KHAKI"), {159, 159, 95}},
+		{kxfS("LIGHT BLUE"), {191, 216, 216}},
+		{kxfS("LIGHT GRAY"), {192, 192, 192}},
+		{kxfS("LIGHT STEEL BLUE"), {143, 143, 188}},
+		{kxfS("LIME GREEN"), {50, 204, 50}},
+		{kxfS("LIGHT MAGENTA"), {255, 119, 255}},
+		{kxfS("MAGENTA"), {255, 0, 255}},
+		{kxfS("MAROON"), {142, 35, 107}},
+		{kxfS("MEDIUM AQUAMARINE"), {50, 204, 153}},
+		{kxfS("MEDIUM GRAY"), {100, 100, 100}},
+		{kxfS("MEDIUM BLUE"), {50, 50, 204}},
+		{kxfS("MEDIUM FOREST GREEN"), {107, 142, 35}},
+		{kxfS("MEDIUM GOLDENROD"), {234, 234, 173}},
+		{kxfS("MEDIUM ORCHID"), {147, 112, 219}},
+		{kxfS("MEDIUM SEA GREEN"), {66, 111, 66}},
+		{kxfS("MEDIUM SLATE BLUE"), {127, 0, 255}},
+		{kxfS("MEDIUM SPRING GREEN"), {127, 255, 0}},
+		{kxfS("MEDIUM TURQUOISE"), {112, 219, 219}},
+		{kxfS("MEDIUM VIOLET RED"), {219, 112, 147}},
+		{kxfS("MIDNIGHT BLUE"), {47, 47, 79}},
+		{kxfS("NAVY"), {35, 35, 142}},
+		{kxfS("ORANGE"), {204, 50, 50}},
+		{kxfS("ORANGE RED"), {255, 0, 127}},
+		{kxfS("ORCHID"), {219, 112, 219}},
+		{kxfS("PALE GREEN"), {143, 188, 143}},
+		{kxfS("PINK"), {255, 192, 203}},
+		{kxfS("PLUM"), {234, 173, 234}},
+		{kxfS("PURPLE"), {176, 0, 255}},
+		{kxfS("RED"), {255, 0, 0}},
+		{kxfS("SALMON"), {111, 66, 66}},
+		{kxfS("SEA GREEN"), {35, 142, 107}},
+		{kxfS("SIENNA"), {142, 107, 35}},
+		{kxfS("SKY BLUE"), {50, 153, 204}},
+		{kxfS("SLATE BLUE"), {0, 127, 255}},
+		{kxfS("SPRING GREEN"), {0, 255, 127}},
+		{kxfS("STEEL BLUE"), {35, 107, 142}},
+		{kxfS("TAN"), {219, 147, 112}},
+		{kxfS("THISTLE"), {216, 191, 216}},
+		{kxfS("TURQUOISE"), {173, 234, 234}},
+		{kxfS("VIOLET"), {79, 47, 79}},
+		{kxfS("VIOLET RED"), {204, 50, 153}},
+		{kxfS("WHEAT"), {216, 216, 191}},
+		{kxfS("WHITE"), {255, 255, 255}},
+		{kxfS("YELLOW"), {255, 255, 0}},
+		{kxfS("YELLOW GREEN"), {153, 204, 50}}
+	};
+}
 
 namespace kxf
 {
 	Color Color::FromString(const String& value, ColorSpace* colorSpace)
 	{
+		Utility::SetIfNotNull(colorSpace, ColorSpace::None);
+
 		if (!value.IsEmpty())
 		{
 			if (value.front() == '#')
@@ -154,13 +256,24 @@ namespace kxf
 				}
 			}
 		}
-
-		Utility::SetIfNotNull(colorSpace, ColorSpace::None);
 		return {};
 	}
 	Color Color::FromColorName(const String& name)
 	{
+		auto it = std::find_if(std::begin(g_KnownColors), std::end(g_KnownColors), [&](const KnownColorInfo& colorInfo)
+		{
+			return name.IsSameAs(colorInfo.GetName(), StringActionFlag::IgnoreCase);
+		});
+		if (it != std::end(g_KnownColors))
+		{
+			return it->GetColor();
+		}
+
+		#if wxUSE_GUI
 		return wxTheColourDatabase->Find(name);
+		#else
+		return {};
+		#endif
 	}
 
 	Color::Color(const wxColour& other) noexcept
@@ -211,7 +324,20 @@ namespace kxf
 	String Color::GetColorName() const
 	{
 		const auto fixed8 = GetFixed8();
+		auto it = std::find_if(std::begin(g_KnownColors), std::end(g_KnownColors), [&](const KnownColorInfo& colorInfo)
+		{
+			return colorInfo.GetColor().GetFixed8() == fixed8;
+		});
+		if (it != std::end(g_KnownColors))
+		{
+			return it->GetName();
+		}
+
+		#if wxUSE_GUI
 		return wxTheColourDatabase->FindName(wxColour(fixed8.Red, fixed8.Green, fixed8.Blue, wxALPHA_OPAQUE));
+		#else
+		return {};
+		#endif
 	}
 
 	std::strong_ordering Color::operator<=>(const wxColour& other) const noexcept

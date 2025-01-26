@@ -34,7 +34,8 @@ namespace kxf::Utility
 			}
 
 		public:
-			template<class T> requires(!std::is_rvalue_reference_v<T> && std::is_class_v<T>)
+			template<class T>
+			requires(!std::is_rvalue_reference_v<T> && std::is_class_v<T>)
 			constexpr decltype(auto) operator()(T&& ptr) const noexcept
 			{
 				return ptr.get();
@@ -82,7 +83,8 @@ namespace kxf::Utility
 			}
 
 		public:
-			template<class T> requires(!std::is_rvalue_reference_v<T>)
+			template<class T>
+			requires(!std::is_rvalue_reference_v<T>)
 			constexpr decltype(auto) operator()(T&& ptr) const noexcept
 			{
 				return *ptr;

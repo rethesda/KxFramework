@@ -132,7 +132,7 @@ namespace kxf
 	{
 		public:
 			using TEnum = TEnum_;
-			using TInt = Utility::UnderlyingTypeEx_t<TEnum_>;
+			using TInt = Utility::any_underlying_type_t<TEnum_>;
 
 		private:
 			TEnum m_Value = static_cast<TEnum>(0);

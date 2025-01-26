@@ -94,8 +94,11 @@ namespace kxf
 		{
 			int argc = m_ArgC;
 			m_NativeAppInitialized = app->Initialize(argc, m_ArgVW);
-
-			if (!m_NativeAppInitialized)
+			if (m_NativeAppInitialized)
+			{
+				::InitCommonControls();
+			}
+			else
 			{
 				return false;
 			}

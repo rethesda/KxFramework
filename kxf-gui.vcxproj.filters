@@ -151,6 +151,9 @@
     <Filter Include="kxf-gui\Drawing\WxRenderer">
       <UniqueIdentifier>{40e8b9db-7715-4956-b08c-75e9284d1b46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="kxf-gui\EventSystem">
+      <UniqueIdentifier>{238d68c3-1200-47b4-8e1b-bcb9998d5416}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kxf-gui\pch.hpp">
@@ -1197,6 +1200,12 @@
     <ClInclude Include="kxf-gui\Application\IGUIApplication.h">
       <Filter>kxf-gui\Application</Filter>
     </ClInclude>
+    <ClInclude Include="kxf-gui\EventSystem\Common.h">
+      <Filter>kxf-gui\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="kxf-gui\EventSystem\GUIEventBroadcastProcessor.h">
+      <Filter>kxf-gui\EventSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-gui\+PCH\kxf-pch.cpp">
@@ -1867,6 +1876,9 @@
     </ClCompile>
     <ClCompile Include="kxf-gui\Drawing\GDIRenderer\GDIGraphicsBrush.cpp">
       <Filter>kxf-gui\Drawing\GDIRenderer\&lt;GraphicsRenderer&gt;</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf-gui\EventSystem\GUIEventBroadcastProcessor.cpp">
+      <Filter>kxf-gui\EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
