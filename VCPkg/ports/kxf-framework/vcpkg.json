@@ -23,7 +23,8 @@
 			"features": [
 				"non-http",
 				"http2",
-				"openssl"
+				"openssl",
+				"websockets"
 			]
 		},
 		"sciter-js",
