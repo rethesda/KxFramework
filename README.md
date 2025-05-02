@@ -11,9 +11,9 @@ You'll need [Visual Studio 2022](https://visualstudio.microsoft.com) and [VCPkg]
 - Download and build following packages for both x86 (`kxf-default-x86`) and x64 (`kxf-default-x64`) targets.
 	- [wxWidgets](https://www.wxwidgets.org) - `wxwidgets[fonts,media,sound,webview]`
 	- [Sciter-JS](https://github.com/c-smile/sciter-js-sdk) - `sciter-js` (see notes).
-	- [libcurl](https://curl.haxx.se) - `curl[non-http,http2,openssl]`
+	- [libcurl](https://curl.haxx.se) - `curl[non-http,http2,openssl,websockets]`
 	- [OpenSSL](https://www.openssl.org) - `openssl` and `openssl-windows`. Should be downloaded as a dependency for libcurl, but it's used directly as well.
-	- [WebSocket++](https://github.com/zaphoyd/websocketpp) - `websocketpp`
+	- ~~[WebSocket++](https://github.com/zaphoyd/websocketpp) - `websocketpp`.~~ Removed from VCPkg now, awaiting replacement.
 	- [Gumbo HTML5 Parser](https://github.com/google/gumbo-parser) - `gumbo`
 	- [libffi](https://github.com/libffi/libffi) - `libffi`
 	- [LZ4](https://github.com/lz4/lz4) - `lz4`
