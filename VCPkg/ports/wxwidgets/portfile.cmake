@@ -231,3 +231,8 @@ file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 
 file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/docs/licence.txt")
+
+# Copy private headers
+file(COPY ${SOURCE_PATH}/include/wx/private DESTINATION ${CURRENT_PACKAGES_DIR}/include/wx FILES_MATCHING PATTERN *.h)
+file(COPY ${SOURCE_PATH}/include/wx/msw/private DESTINATION ${CURRENT_PACKAGES_DIR}/include/wx/msw FILES_MATCHING PATTERN *.h)
+file(COPY ${SOURCE_PATH}/include/wx/generic/private DESTINATION ${CURRENT_PACKAGES_DIR}/include/wx/generic FILES_MATCHING PATTERN *.h)
