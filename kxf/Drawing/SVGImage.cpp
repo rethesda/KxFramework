@@ -3,7 +3,7 @@
 #include "BitmapImage.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/IO/StreamReaderWriter.h"
-#include <lunasvg.h>
+#include <lunasvg/lunasvg.h>
 
 namespace
 {
@@ -60,7 +60,7 @@ namespace kxf
 	// IImage2D
 	bool SVGImage::IsNull() const
 	{
-		return m_Document == nullptr || m_Document->rootElement().isNull();
+		return !m_Document || !m_Document->rootElement();
 	}
 	bool SVGImage::IsSameAs(const IImage2D& other) const
 	{
@@ -176,17 +176,9 @@ namespace kxf
 
 			if (const auto sourceData = svgBitmap.data())
 			{
-				// If we have no size specified set it to the SVG's default size
-				Geometry::BasicSize<size_t> actualSize = {svgBitmap.width(), svgBitmap.height()};
-				if (size.IsFullySpecified())
-				{
-					actualSize.SetWidth(size.GetWidth());
-					actualSize.SetHeight(size.GetHeight());
-				}
-
 				static_assert(sizeof(PackedRGBA<uint8_t>) == 4 && alignof(PackedRGBA<uint8_t>) == alignof(uint8_t));
 
-				BitmapImage image(actualSize);
+				BitmapImage image(Size(svgBitmap.width(), svgBitmap.height()));
 				image.SetPixelDataRGBA(reinterpret_cast<const PackedRGBA<uint8_t>*>(sourceData));
 				return image;
 			}
@@ -199,8 +191,8 @@ namespace kxf
 	{
 		if (!IsNull())
 		{
-			auto box = m_Document->rootElement().getBBox();
-			return RectD(box.x, box.y, box.w, box.h).ConvertCeil<Rect>();
+			auto box = m_Document->boundingBox();
+			return RectF(box.x, box.y, box.w, box.h).ConvertCeil<Rect>();
 		}
 		return {};
 	}
