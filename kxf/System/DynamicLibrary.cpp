@@ -22,8 +22,6 @@
 
 namespace
 {
-	EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-
 	using namespace kxf;
 
 	HMODULE AsHMODULE(void* handle) noexcept
@@ -155,10 +153,8 @@ namespace
 
 namespace kxf
 {
-	DynamicLibrary DynamicLibrary::GetCurrentModule() noexcept
+	DynamicLibrary DynamicLibrary::GetCompiledModule() noexcept
 	{
-		// Retrieve the HMODULE for the current DLL or EXE using this symbol that the linker provides for every module
-
 		DynamicLibrary library;
 		library.m_Handle = reinterpret_cast<void*>(&__ImageBase);
 		library.m_ShouldUnload = false;

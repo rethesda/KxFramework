@@ -15,7 +15,7 @@ namespace
 
 	HMODULE GetCurrentModule() noexcept
 	{
-		return reinterpret_cast<HMODULE>(kxf::DynamicLibrary::GetCurrentModule().GetHandle());
+		return reinterpret_cast<HMODULE>(kxf::DynamicLibrary::GetCompiledModule().GetHandle());
 	}
 }
 

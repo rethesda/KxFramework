@@ -211,7 +211,7 @@ namespace kxf
 		{
 			return name;
 		}
-		return DynamicLibrary::GetCurrentModule().GetFilePath().GetName();
+		return DynamicLibrary::GetCompiledModule().GetFilePath().GetName();
 	}
 	void CoreApplication::SetName(const String& name)
 	{

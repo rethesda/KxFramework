@@ -5,6 +5,9 @@
 #include "kxf/FileSystem/FSPath.h"
 #include "kxf/Localization/Locale.h"
 
+// Retrieve the HMODULE for the current DLL or EXE using this symbol that the linker provides for every module
+extern "C" struct _IMAGE_DOS_HEADER __ImageBase;
+
 namespace kxf
 {
 	class GDIIcon;
@@ -38,7 +41,17 @@ namespace kxf
 			class SearchDirectory;
 
 		public:
-			static DynamicLibrary GetCurrentModule() noexcept;
+			template<class = void>
+			static DynamicLibrary GetCallingModule() noexcept
+			{
+				DynamicLibrary library;
+				library.m_Handle = reinterpret_cast<void*>(&__ImageBase);
+				library.m_ShouldUnload = false;
+
+				return library;
+			}
+
+			static DynamicLibrary GetCompiledModule() noexcept;
 			static DynamicLibrary GetExecutingModule() noexcept;
 			static DynamicLibrary GetLoadedModule(const String& name) noexcept;
 

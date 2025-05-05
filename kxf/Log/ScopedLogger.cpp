@@ -213,7 +213,7 @@ namespace kxf
 					message.Sep();
 				}
 			}
-			message << DynamicLibrary::GetCurrentModule().GetFilePath().GetName();
+			message << DynamicLibrary::GetCompiledModule().GetFilePath().GetName();
 
 			message.Write(*this);
 		}
@@ -232,7 +232,7 @@ namespace kxf
 				message << "Log closed for thread " << m_Thread.GetID();
 				message.Sep();
 			}
-			message << DynamicLibrary::GetCurrentModule().GetFilePath().GetName();
+			message << DynamicLibrary::GetCompiledModule().GetFilePath().GetName();
 
 			message.Write(*this);
 		}

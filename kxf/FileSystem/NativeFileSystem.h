@@ -20,7 +20,7 @@ namespace kxf
 			friend class kxf::FileSystem::Private::NativeDirectoryEnumerator;
 
 		public:
-			static FSPath GetCurrentModuleRootDirectory();
+			static FSPath GetCompiledModuleRootDirectory();
 			static FSPath GetExecutingModuleRootDirectory();
 			static FSPath GetExecutingModuleWorkingDirectory();
 			static bool SetExecutingModuleWorkingDirectory(const FSPath& directory);

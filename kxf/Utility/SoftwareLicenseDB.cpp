@@ -62,7 +62,7 @@ namespace
 {
 	kxf::String LoadLicense(const kxf::String& name, kxf::IEncodingConverter& encodingConverter = kxf::EncodingConverter_WhateverWorks)
 	{
-		auto buffer = kxf::DynamicLibrary::GetCurrentModule().GetResource(kxfS("SOFTWARELICENSEDB"), name);
+		auto buffer = kxf::DynamicLibrary::GetCompiledModule().GetResource(kxfS("SOFTWARELICENSEDB"), name);
 		if (!buffer.empty())
 		{
 			return encodingConverter.ToWideChar(buffer);
