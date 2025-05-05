@@ -129,9 +129,10 @@ namespace kxf::Utility
 				return &m_Value;
 			}
 
-			constexpr void SwapParts() noexcept
+			constexpr CompositeInteger& SwapParts() noexcept
 			{
 				std::swap(m_Value.Low, m_Value.High);
+				return *this;
 			}
 			constexpr TLow GetLow() const noexcept
 			{
