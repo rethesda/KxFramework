@@ -1,9 +1,10 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "System.h"
 #include "kxf/Utility/ScopeGuard.h"
+
 #include <Windows.h>
 #include <TlHelp32.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::System::Private
 {
@@ -30,7 +31,7 @@ namespace kxf::System::Private
 		}
 		return {};
 	}
-	size_t EnumWindows(std::function<CallbackCommand(void*, uint32_t, uint32_t)> func, std::optional<uint32_t> pid, std::optional<uint32_t> tid)
+	CallbackResult<size_t> EnumWindows(CallbackFunction<void*, uint32_t, uint32_t> func, std::optional<uint32_t> pid, std::optional<uint32_t> tid)
 	{
 		struct CallContext final
 		{
@@ -59,15 +60,15 @@ namespace kxf::System::Private
 				if ((!context.PID || context.PID == pid) && (!context.TID || context.TID == tid))
 				{
 					context.Count++;
-					return std::invoke(context.Callback, windowHandle, pid, tid) == CallbackCommand::Continue;
+					return !context.Callback.Invoke(windowHandle, pid, tid).ShouldTerminate();
 				}
 			}
 			return TRUE;
 		}, reinterpret_cast<LPARAM>(&context));
 
-		return context.Count;
+		return func.Finalize(context.Count);
 	}
-	size_t EnumThreads(std::function<CallbackCommand(uint32_t, uint32_t)> func, std::optional<uint32_t> pid, std::optional<uint32_t> tid)
+	CallbackResult<size_t> EnumThreads(CallbackFunction<uint32_t, uint32_t> func, std::optional<uint32_t> pid, std::optional<uint32_t> tid)
 	{
 		HANDLE snapshotHandle = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
 		if (snapshotHandle && snapshotHandle != INVALID_HANDLE_VALUE)
@@ -88,10 +89,10 @@ namespace kxf::System::Private
 				{
 					if (entry.dwSize >= FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(entry.th32OwnerProcessID))
 					{
-						if (invokeCallback && (!pid || pid == entry.th32OwnerProcessID) && (!tid || tid == entry.th32ThreadID))
+						if ((!pid || pid == entry.th32OwnerProcessID) && (!tid || tid == entry.th32ThreadID))
 						{
 							count++;
-							if (std::invoke(func, entry.th32OwnerProcessID, entry.th32ThreadID) == CallbackCommand::Terminate)
+							if (invokeCallback && func.Invoke(entry.th32OwnerProcessID, entry.th32ThreadID).ShouldTerminate())
 							{
 								invokeCallback = false;
 							}
@@ -100,10 +101,11 @@ namespace kxf::System::Private
 					entry.dwSize = sizeof(entry);
 				}
 				while (::Thread32Next(snapshotHandle, &entry));
-				return count;
+
+				return func.Finalize(count);
 			}
 		}
-		return 0;
+		return {};
 	}
 
 	String ResourceTypeToName(size_t id)

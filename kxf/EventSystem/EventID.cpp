@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "EventID.h"
 #include <wx/event.h>
 
@@ -155,13 +155,11 @@ namespace kxf
 		return NullString;
 	}
 
-	#ifdef __WXWINDOWS__
-	bool EventID::IsWxWidgetsID() const noexcept
+	bool EventID::IsWXID() const noexcept
 	{
-		int64_t id = AsInt();
+		auto id = AsInt();
 		return id >= wxEVT_FIRST && id <= g_LastWxEventID;
 	}
-	#endif
 }
 
 namespace kxf::EventSystem

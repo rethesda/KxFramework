@@ -1,18 +1,16 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "TaskScheduler.h"
 
 #include <taskschd.h>
 #include <wincred.h>
-#pragma comment(lib, "taskschd.lib")
-#pragma comment(lib, "comsupp.lib")
-#pragma comment(lib, "credui.lib")
+#include "kxf/Win32/LinkLibs-COM.h"
+#include "kxf/Win32/LinkLibs-System.h"
 
 #include "Private/BeginIncludeCOM.h"
 namespace
 {
-	Kx_MakeWinUnicodeCallWrapper(FormatMessage);
+	kxf_MakeWinUnicodeCallWrapper(FormatMessage);
 }
-#include <comdef.h>
 #include "Private/EndIncludeCOM.h"
 
 namespace

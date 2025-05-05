@@ -1,13 +1,16 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "CFunctionHook.h"
 #include "kxf/Log/ScopedLogger.h"
 #include "kxf/Log/Categories.h"
+
+#include <Windows.h>
 #include <detours/detours.h>
 #include <detours/detver.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::LogCategory
 {
-	KX_DefineLogModuleCategory(kxf, Detours);
+	kxf_DefineLogModuleCategory(kxf, Detours);
 }
 
 namespace kxf

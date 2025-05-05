@@ -3,8 +3,9 @@
 #include "kxf/Compression/ArchiveEvent.h"
 #include "kxf/System/HResult.h"
 #include "kxf/Utility/Common.h"
-#include <7zip/CPP/7zip/IPassword.h>
 
+#include <7zip/CPP/7zip/IPassword.h>
+#include "kxf/Win32/UndefMacros.h"
 #undef True
 #undef False
 

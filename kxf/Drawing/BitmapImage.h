@@ -1,38 +1,32 @@
 #pragma once
 #include "Common.h"
 #include "IBitmapImage.h"
+#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/Serialization/BinarySerializer.h"
+class wxIcon;
 class wxImage;
+class wxBitmap;
+class wxCursor;
 class wxMemoryBuffer;
 
 namespace kxf
 {
-	class GDICursor;
-	class GDIBitmap;
-	class GDIIcon;
-}
-
-namespace kxf
-{
-	class KX_API BitmapImage final: public RTTI::DynamicImplementation<BitmapImage, IBitmapImage>
+	class KXF_API BitmapImage final: public RTTI::DynamicImplementation<BitmapImage, IBitmapImage>
 	{
-		KxRTTI_DeclareIID(BitmapImage, {0x84c3ee9b, 0x62dc, 0x4d8c, {0x8c, 0x94, 0xd1, 0xbc, 0xaf, 0x68, 0xfb, 0xc1}});
+		kxf_RTTI_DeclareIID(BitmapImage, {0x84c3ee9b, 0x62dc, 0x4d8c, {0x8c, 0x94, 0xd1, 0xbc, 0xaf, 0x68, 0xfb, 0xc1}});
 
 		public:
 			static size_t GetImageCount(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any);
 
 		private:
-			std::unique_ptr<wxImage> m_Image;
+			UninitializedStorage<wxImage, 32, 0> m_Image;
 
 		public:
-			BitmapImage() = default;
+			BitmapImage();
+			BitmapImage(const wxIcon& other);
 			BitmapImage(const wxImage& other);
-			BitmapImage(const BitmapImage& other);
-			BitmapImage(BitmapImage&&) noexcept = default;
-
-			BitmapImage(const GDIIcon& other);
-			BitmapImage(const GDIBitmap& other);
-			BitmapImage(const GDICursor& other);
+			BitmapImage(const wxBitmap& other);
+			BitmapImage(const wxCursor& other);
 
 			BitmapImage(const Size& size);
 			BitmapImage(const Size& size, uint8_t* rgb);
@@ -40,16 +34,18 @@ namespace kxf
 			BitmapImage(const Size& size, wxMemoryBuffer& rgb);
 			BitmapImage(const Size& size, wxMemoryBuffer& rgb, wxMemoryBuffer& alpha);
 
+			BitmapImage(const BitmapImage& other);
+
 			~BitmapImage();
 
 		public:
 			// IImage2D
 			bool IsNull() const;
 			bool IsSameAs(const IImage2D& other) const override;
-			std::unique_ptr<IImage2D> CloneImage2D() const override;
+			std::shared_ptr<IImage2D> CloneImage2D() const override;
 
 			// IImage2D: Create, save and load
-			void Create(const Size& size);
+			bool Create(const Size& size);
 			bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos);
 			bool Save(IOutputStream& stream, const UniversallyUniqueID& format) const;
 
@@ -105,13 +101,6 @@ namespace kxf
 			bool IsSameAs(const BitmapImage& other) const;
 			BitmapImage Clone() const;
 
-			// BitmapImage: Conversion
-			const wxImage& ToWxImage() const noexcept;
-			wxImage& ToWxImage() noexcept;
-
-			GDICursor ToGDICursor(const Point& hotSpot = Point::UnspecifiedPosition()) const;
-			GDIIcon ToGDIIcon() const;
-
 			// BitmapImage: Pixel data
 			const uint8_t* GetRawData() const;
 			uint8_t* GetRawData();
@@ -146,7 +135,12 @@ namespace kxf
 			BitmapImage& Rescale(const Size& size, InterpolationQuality interpolationQuality);
 
 			// BitmapImage: Conversion
-			GDIBitmap ToGDIBitmap(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const;
+			wxImage& AsWXImage() noexcept;
+			const wxImage& AsWXImage() const noexcept;
+
+			wxIcon ToWXIcon(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const;
+			wxCursor ToWXCursor(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const;
+			wxBitmap ToWXBitmap(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const;
 			BitmapImage ConvertToDisabled(Angle brightness = Angle::FromNormalized(1)) const;
 			BitmapImage ConvertToMonochrome(const PackedRGB<uint8_t>& makeWhite) const;
 			BitmapImage ConvertToGrayscale(const PackedRGB<float>& weight = ColorWeight::CCIR_601) const;
@@ -176,14 +170,13 @@ namespace kxf
 			}
 
 			BitmapImage& operator=(const BitmapImage& other);
-			BitmapImage& operator=(BitmapImage&& other) noexcept = default;
 	};
 }
 
 namespace kxf
 {
 	template<>
-	struct KX_API BinarySerializer<BitmapImage> final
+	struct KXF_API BinarySerializer<BitmapImage> final
 	{
 		uint64_t Serialize(IOutputStream& stream, const BitmapImage& value) const;
 		uint64_t Deserialize(IInputStream& stream, BitmapImage& value) const;

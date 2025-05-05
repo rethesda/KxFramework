@@ -1,6 +1,8 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Memory.h"
+
 #include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::Utility
 {

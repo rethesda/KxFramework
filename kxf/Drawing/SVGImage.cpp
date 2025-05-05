@@ -1,10 +1,9 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "SVGImage.h"
 #include "BitmapImage.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/IO/StreamReaderWriter.h"
-#include "kxf/Core/DateTime.h"
-#include <lunasvg/svgdocument.h>
+#include <lunasvg/lunasvg.h>
 
 namespace
 {
@@ -14,47 +13,76 @@ namespace
 	{
 		return dpi > 0;
 	}
-	constexpr double ToSVGDPI(int dpi) noexcept
-	{
-		return IsValidDPI(dpi) ? dpi : g_DefaultDPI;
-	}
-
-	int FromSVGTime(double time) noexcept
-	{
-		return static_cast<int>(time * 1000.0);
-	}
-	double ToSVGTime(int time)
-	{
-		return time / 1000.0;
-	}
 }
 
 namespace kxf
 {
-	void SVGImage::AllocExclusive()
+	// SVGImage
+	void SVGImage::CopyFrom(const SVGImage& other)
 	{
-		auto svg = std::make_shared<lunasvg::SVGDocument>();
-		svg->loadFromData(m_Document->toString());
-
-		m_Document = std::move(svg);
+		if (this != &other)
+		{
+			m_Document = other.m_Document;
+			m_DPI = other.m_DPI;
+		}
+	}
+	void SVGImage::MoveFrom(SVGImage& other) noexcept
+	{
+		if (this != &other)
+		{
+			m_Document = std::move(other.m_Document);
+			m_DPI = std::exchange(other.m_DPI, -1);
+		}
 	}
 
-	std::unique_ptr<IImage2D> SVGImage::CloneImage2D() const
+	std::string SVGImage::Serialize() const
 	{
-		if (m_Document)
-		{
-			auto clone = std::make_unique<SVGImage>(*this);
-			clone->AllocExclusive();
+		// TODO: Find a way to serialize this as XML
+		return {};
+	}
+	bool SVGImage::Deserialize(const std::string& svgData)
+	{
+		m_Document = lunasvg::Document::loadFromData(svgData);
+		return m_Document != nullptr;
+	}
 
-			return clone;
+	SVGImage::SVGImage() = default;
+	SVGImage::SVGImage(const SVGImage& other)
+	{
+		CopyFrom(other);
+	}
+	SVGImage::SVGImage(SVGImage&& other) noexcept
+	{
+		MoveFrom(other);
+	}
+	SVGImage::~SVGImage() = default;
+
+	// IImage2D
+	bool SVGImage::IsNull() const
+	{
+		return !m_Document || !m_Document->rootElement();
+	}
+	bool SVGImage::IsSameAs(const IImage2D& other) const
+	{
+		if (this == &other)
+		{
+			return true;
 		}
+		else if (auto ptr = other.QueryInterface<SVGImage>())
+		{
+			return m_Document == ptr->m_Document;
+		}
+		return false;
+	}
+	std::shared_ptr<IImage2D> SVGImage::CloneImage2D() const
+	{
 		return nullptr;
 	}
 
-	// IImage2D: Create, save and load
-	void SVGImage::Create(const Size& size)
+	bool SVGImage::Create(const Size& size)
 	{
-		m_Document = std::make_shared<lunasvg::SVGDocument>();
+		// Nothing to do
+		return true;
 	}
 	bool SVGImage::Load(IInputStream& stream, const UniversallyUniqueID& format, size_t index)
 	{
@@ -63,24 +91,18 @@ namespace kxf
 		if ((format == ImageFormat::SVG || format == ImageFormat::Any) && (index == 0 || index == npos))
 		{
 			IO::InputStreamReader reader(stream);
-
-			auto document = std::make_shared<lunasvg::SVGDocument>();
-			if (document->loadFromData(reader.ReadStringUTF8(stream.GetSize().ToBytes()).ToUTF8()))
-			{
-				m_Document = std::move(document);
-				return true;
-			}
+			return Deserialize(reader.ReadStringUTF8(stream.GetSize().ToBytes()).ToUTF8());
 		}
 		return false;
 	}
 	bool SVGImage::Save(IOutputStream& stream, const UniversallyUniqueID& format) const
 	{
-		if (m_Document && format != ImageFormat::None)
+		if (!IsNull() && format != ImageFormat::None)
 		{
 			if (format == ImageFormat::SVG || format == ImageFormat::Any)
 			{
-				IO::OutputStreamWriter writer(stream);
-				writer.WriteStringUTF8(String::FromUTF8(m_Document->toString()));
+				auto svgData = Serialize();
+				return stream.WriteAll(svgData.data(), svgData.size());
 			}
 			else if (BitmapImage bitmap = SVGImage::ToBitmapImage(SVGImage::GetSize()))
 			{
@@ -90,16 +112,29 @@ namespace kxf
 		return false;
 	}
 
-	// IImage2D: Properties
 	Size SVGImage::GetSize() const
 	{
-		return m_Document ? Size(m_Document->documentWidth(ToSVGDPI(m_DPI)), m_Document->documentHeight(ToSVGDPI(m_DPI))) : Size::UnspecifiedSize();
+		if (!IsNull())
+		{
+			return SizeD(m_Document->width(), m_Document->height()).ConvertCeil<Size>();
+		}
+		else
+		{
+			return Size::UnspecifiedSize();
+		}
+	}
+	ColorDepth SVGImage::GetColorDepth() const
+	{
+		return ColorDepthDB::BPP32;
+	}
+	UniversallyUniqueID SVGImage::GetFormat() const
+	{
+		return ImageFormat::SVG;
 	}
 
-	// IImage2D: Options
 	std::optional<int> SVGImage::GetOptionInt(const String& name) const
 	{
-		if (m_Document)
+		if (!IsNull())
 		{
 			if (name == ImageOption::Resolution || name == ImageOption::DPI)
 			{
@@ -108,18 +143,6 @@ namespace kxf
 					return m_DPI;
 				}
 			}
-			else if (name == ImageOption::SVG::HasAnimation)
-			{
-				return m_Document->hasAnimation() ? 1 : 0;
-			}
-			else if (name == ImageOption::SVG::AnimationDuration)
-			{
-				return FromSVGTime(m_Document->animationDuration());
-			}
-			else if (name == ImageOption::SVG::CurrentTime)
-			{
-				return FromSVGTime(m_Document->currentTime());
-			}
 		}
 		return {};
 	}
@@ -127,19 +150,16 @@ namespace kxf
 	{
 		if (name == ImageOption::Resolution || name == ImageOption::DPI)
 		{
-			m_DPI = value;
-		}
-		else if (name == ImageOption::SVG::CurrentTime)
-		{
-			m_Document->setCurrentTime(ToSVGTime(value), true);
+			m_DPI = IsValidDPI(value) ? value : -1;
 		}
 	}
 
-	// IImage2D: Conversion
 	BitmapImage SVGImage::ToBitmapImage(const Size& size, InterpolationQuality interpolationQuality) const
 	{
-		if (m_Document)
+		if (!IsNull())
 		{
+			constexpr auto backgroundColor = Drawing::GetStockColor(StockColor::Transparent);
+
 			lunasvg::Bitmap svgBitmap;
 			if (size.IsFullySpecified())
 			{
@@ -147,26 +167,18 @@ namespace kxf
 				{
 					return {};
 				}
-				svgBitmap = m_Document->renderToBitmap(size.GetWidth(), size.GetHeight(), ToSVGDPI(m_DPI));
+				svgBitmap = m_Document->renderToBitmap(size.GetWidth(), size.GetHeight(), backgroundColor.GetRGBA());
 			}
 			else
 			{
-				svgBitmap = m_Document->renderToBitmap(0, 0, ToSVGDPI(m_DPI));
+				svgBitmap = m_Document->renderToBitmap(0, 0, backgroundColor.GetRGBA());
 			}
 
 			if (const auto sourceData = svgBitmap.data())
 			{
-				// If we have no size specified set it to the SVG's default size
-				Geometry::BasicSize<size_t> actualSize = {svgBitmap.width(), svgBitmap.height()};
-				if (size.IsFullySpecified())
-				{
-					actualSize.SetWidth(size.GetWidth());
-					actualSize.SetHeight(size.GetHeight());
-				}
-
 				static_assert(sizeof(PackedRGBA<uint8_t>) == 4 && alignof(PackedRGBA<uint8_t>) == alignof(uint8_t));
 
-				BitmapImage image(actualSize);
+				BitmapImage image(Size(svgBitmap.width(), svgBitmap.height()));
 				image.SetPixelDataRGBA(reinterpret_cast<const PackedRGBA<uint8_t>*>(sourceData));
 				return image;
 			}
@@ -177,27 +189,12 @@ namespace kxf
 	// IVectorImage
 	Rect SVGImage::GetBoundingBox() const
 	{
-		if (m_Document)
+		if (!IsNull())
 		{
-			auto box = m_Document->getBBox(ToSVGDPI(m_DPI));
-			return RectD(box.x, box.y, box.width, box.height).ConvertCeil<Rect>();
+			auto box = m_Document->boundingBox();
+			return RectF(box.x, box.y, box.w, box.h).ConvertCeil<Rect>();
 		}
 		return {};
-	}
-
-	SVGImage& SVGImage::operator=(const SVGImage& other)
-	{
-		m_Document = other.m_Document;
-		m_DPI = other.m_DPI;
-
-		return *this;
-	}
-	SVGImage& SVGImage::operator=(SVGImage&& other) noexcept
-	{
-		m_Document = std::move(other.m_Document);
-		m_DPI = std::move(other.m_DPI);
-
-		return *this;
 	}
 }
 
@@ -205,15 +202,14 @@ namespace kxf
 {
 	uint64_t BinarySerializer<SVGImage>::Serialize(IOutputStream& stream, const SVGImage& value) const
 	{
-		return value.m_Document ? Serialization::WriteObject(stream, value.m_Document->toString()) : Serialization::WriteObject(stream, std::string());
+		return Serialization::WriteObject(stream, value.Serialize());
 	}
 	uint64_t BinarySerializer<SVGImage>::Deserialize(IInputStream& stream, SVGImage& value) const
 	{
 		std::string buffer;
 		auto read = Serialization::ReadObject(stream, buffer);
+		value.Deserialize(buffer);
 
-		value.m_Document = std::make_shared<lunasvg::SVGDocument>();
-		value.m_Document->loadFromData(buffer);
 		return read;
 	}
 }

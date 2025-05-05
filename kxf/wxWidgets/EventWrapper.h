@@ -1,16 +1,19 @@
 #pragma once
 #include "Common.h"
 #include "IWithEvent.h"
+#include "kxf/Core/OptionalPtr.h"
+#include "kxf/DateTime/TimeSpan.h"
+#include "kxf/DateTime/TimeClock.h"
 #include "kxf/EventSystem/IEvent.h"
 #include "kxf/EventSystem/IEvtHandler.h"
 #include "kxf/EventSystem/Private/EventWaitInfo.h"
-#include "kxf/Core/OptionalPtr.h"
 #include <wx/object.h>
 #include <wx/event.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {
-	class KX_API EventWrapper: public RTTI::Implementation<EventWrapper, IEvent, IWithEvent>, private IEventInternal
+	class KXF_API EventWrapper: public RTTI::Implementation<EventWrapper, IEvent, IWithEvent>, private IEventInternal
 	{
 		private:
 			optional_ptr<wxEvent> m_Event;
@@ -160,14 +163,17 @@ namespace kxf::wxWidgets
 
 			bool IsAllowed() const override
 			{
+				#if wxUSE_GUI
 				if (m_Event->IsKindOf(wxCLASSINFO(wxNotifyEvent)))
 				{
 					return static_cast<const wxNotifyEvent&>(*m_Event).IsAllowed();
 				}
+				#endif
 				return true;
 			}
 			void Allow(bool allow = true) override
 			{
+				#if wxUSE_GUI
 				if (m_Event->IsKindOf(wxCLASSINFO(wxNotifyEvent)))
 				{
 					wxNotifyEvent& notifyEvent = static_cast<wxNotifyEvent&>(*m_Event);
@@ -180,6 +186,7 @@ namespace kxf::wxWidgets
 						notifyEvent.Veto();
 					}
 				}
+				#endif
 			}
 
 			// IWithEvent

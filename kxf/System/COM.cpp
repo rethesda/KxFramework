@@ -1,11 +1,11 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "COM.h"
 #include "kxf/Utility/Common.h"
 
 #include <Windows.h>
 #include <combaseapi.h>
 #include <unknwn.h>
-#include "UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {

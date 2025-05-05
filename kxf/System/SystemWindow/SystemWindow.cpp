@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "SystemWindow.h"
 #include "../SystemThread/SystemThreadInfo.h"
 #include "../SystemProcess/SystemProcessInfo.h"
@@ -7,8 +7,9 @@
 #include "kxf/System/Win32Error.h"
 #include "kxf/Utility/String.h"
 #include "kxf/Utility/Drawing.h"
+
 #include <Windows.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -36,6 +37,15 @@ namespace kxf
 	{
 		return ::GetForegroundWindow();
 	}
+	SystemWindow SystemWindow::GetFocusedWindow()
+	{
+		return ::GetFocus();
+	}
+	SystemWindow SystemWindow::GetActiveWindow()
+	{
+		return ::GetActiveWindow();
+	}
+
 	SystemWindow SystemWindow::GetWindowFromPoint(const Point& position)
 	{
 		return ::WindowFromPoint({position.GetX(), position.GetY()});
@@ -202,6 +212,10 @@ namespace kxf
 		return {};
 	}
 
+	bool SystemWindow::IsVisible() const
+	{
+		return m_Handle && ::IsWindowVisible(ToHWND(m_Handle));
+	}
 	bool SystemWindow::Show(SHWindowCommand command, bool async)
 	{
 		if (async)
@@ -234,6 +248,19 @@ namespace kxf
 				m_Handle = nullptr;
 				return true;
 			}
+		}
+		return false;
+	}
+
+	bool SystemWindow::IsEnabled() const
+	{
+		return m_Handle && ::IsWindowEnabled(ToHWND(m_Handle));
+	}
+	bool SystemWindow::SetEnabled(bool enable)
+	{
+		if (m_Handle)
+		{
+			return ::EnableWindow(ToHWND(m_Handle), enable ? TRUE : FALSE);
 		}
 		return false;
 	}

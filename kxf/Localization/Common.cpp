@@ -1,8 +1,8 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Common.h"
 #include "Locale.h"
 #include "ILocalizationPackage.h"
-#include "kxf/UI/WidgetID.h"
+#include "kxf-gui/Widgets/WidgetID.h"
 #include "kxf/Core/Enumerator.h"
 #include "kxf/System/DynamicLibrary.h"
 #include "kxf/wxWidgets/StandardLocalization.h"
@@ -37,14 +37,14 @@ namespace kxf::Localization
 	{
 		return wxWidgets::LocalizeLabelString(id);
 	}
-	String GetStandardString(WidgetID id)
+	String GetStandardString(const WidgetID& id)
 	{
 		return wxWidgets::LocalizeLabelString(id.GetValue());
 	}
 
 	CallbackResult<void> SearchPackages(const IFileSystem& fileSystem, const FSPath& directory, CallbackFunction<Locale, FileItem, String> func)
 	{
-		Utility::UnorderedSetNoCase<String> extensions;
+		Utility::UnorderedSetIC<String> extensions;
 		for (auto&& classInfo: RTTI::GetClassInfo<ILocalizationPackage>().EnumDerivedClasses())
 		{
 			if (auto instance = classInfo.CreateObjectInstance<ILocalizationPackage>())

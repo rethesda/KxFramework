@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <wx/string.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace std
 {

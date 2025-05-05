@@ -11,7 +11,6 @@ namespace kxf
 		ZLib,
 		GNU_GPLv3,
 		GNU_LGPLv3,
-
 		BSD2_Clause,
 		BSD3_Clause
 	};
@@ -19,14 +18,22 @@ namespace kxf
 
 namespace kxf
 {
-	class SoftwareLicenseDB final
+	class KXF_API SoftwareLicenseDB final
 	{
 		public:
 			static const SoftwareLicenseDB& Get();
 
+		private:
+			SoftwareLicenseDB() noexcept = default;
+			SoftwareLicenseDB(const SoftwareLicenseDB&) = delete;
+
 		public:
 			String GetName(SoftwareLicenseType licenseType) const;
 			String GetText(SoftwareLicenseType licenseType, const String& copyright = {}) const;
+
 			bool RequiresCopyrightString(SoftwareLicenseType licenseType) const;
+
+		public:
+			SoftwareLicenseDB& operator=(const SoftwareLicenseDB&) = delete;
 	};
 }

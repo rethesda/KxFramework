@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "INIDocument.h"
 #include "kxf/Core/ILibraryInfo.h"
 #include "kxf/IO/MemoryStream.h"
@@ -363,7 +363,7 @@ namespace kxf
 		}
 		if (index == npos)
 		{
-			index = value.ReverseFind(kxS("//"));
+			index = value.ReverseFind(kxfS("//"));
 			length = 2;
 		}
 

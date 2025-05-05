@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "WSPPWebResponse.h"
 #include "WSPPWebRequest.h"
 #include "kxf/IO/IStream.h"
@@ -92,7 +92,7 @@ namespace kxf
 		return {};
 	}
 
-	std::unique_ptr<IInputStream> WSPPWebResponse::GetStream() const
+	std::shared_ptr<IInputStream> WSPPWebResponse::GetStream() const
 	{
 		if (m_Request.m_ReceiveStream)
 		{

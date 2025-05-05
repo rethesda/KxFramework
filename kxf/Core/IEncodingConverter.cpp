@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "IEncodingConverter.h"
 #include "EncodingConverter/NativeEncodingConverter.h"
 #include "EncodingConverter/WhateverWorksEncodingConverter.h"
@@ -33,8 +33,8 @@ namespace kxf
 	IEncodingConverter& EncodingConverter_UTF32LE = g_EncodingConverter_UTF32LE;
 	IEncodingConverter& EncodingConverter_UTF32BE = g_EncodingConverter_UTF32BE;
 
-	std::unique_ptr<IEncodingConverter> GetNativeEncodingConverter(int codePage, FlagSet<uint32_t> flags)
+	std::shared_ptr<IEncodingConverter> GetNativeEncodingConverter(int codePage, FlagSet<uint32_t> flags)
 	{
-		return std::make_unique<NativeEncodingConverter>(codePage, flags);
+		return std::make_shared<NativeEncodingConverter>(codePage, flags);
 	}
 }

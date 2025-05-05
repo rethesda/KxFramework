@@ -4,9 +4,9 @@
 
 namespace kxf
 {
-	class IWebRequestSecurityOptions: public RTTI::Interface<IWebRequestSecurityOptions>
+	class KXF_API_NETWORK IWebRequestSecurityOptions: public RTTI::Interface<IWebRequestSecurityOptions>
 	{
-		KxRTTI_DeclareIID(IWebRequestSecurityOptions, {0xa6c7cb4d, 0x3695, 0x4d0d, {0xbb, 0xbf, 0xfa, 0x4d, 0xd7, 0x9f, 0x90, 0xc3}});
+		kxf_RTTI_DeclareIID(IWebRequestSecurityOptions, {0xa6c7cb4d, 0x3695, 0x4d0d, {0xbb, 0xbf, 0xfa, 0x4d, 0xd7, 0x9f, 0x90, 0xc3}});
 
 		public:
 			virtual bool SetUseSSL(WebRequestOption3 option) = 0;

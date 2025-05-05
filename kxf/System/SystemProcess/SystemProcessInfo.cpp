@@ -1,9 +1,10 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "SystemProcessInfo.h"
 #include "kxf/System/SystemProcess.h"
 #include "kxf/System/SystemInformation.h"
+
 #include <Windows.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf
 {
@@ -47,9 +48,14 @@ namespace kxf
 	}
 	String SystemProcessInfo::GetCommandLine() const
 	{
-		return Format("\"{}\" {}", m_ExecutablePath.GetFullPath(), m_Parameters);
+		if (!m_Parameters.IsEmpty())
+		{
+			return Format("\"{}\" {}", m_ExecutablePath.GetFullPath(), m_Parameters);
+		}
+		return m_ExecutablePath.GetFullPath();
 	}
-	std::unique_ptr<ISystemProcess> SystemProcessInfo::Spawn(EvtHandlerDelegate evtHandler, FlagSet<CreateSystemProcessFlag> flags)
+
+	std::shared_ptr<ISystemProcess> SystemProcessInfo::Spawn(EvtHandlerDelegate evtHandler, FlagSet<CreateSystemProcessFlag> flags)
 	{
 		return System::CreateProcess(*this, std::move(evtHandler), flags);
 	}

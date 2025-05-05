@@ -31,17 +31,17 @@ namespace kxf::RTTI
 }
 namespace kxf
 {
-	KxFlagSet_Declare(RTTI::ClassTrait);
+	kxf_FlagSet_Declare(RTTI::ClassTrait);
 }
 
 namespace kxf::RTTI
 {
-	class KX_API ClassInfo: public IObject
+	class KXF_API ClassInfo: public IObject
 	{
-		KxRTTI_DeclareIID(ClassInfo, {0xccefbb7f, 0xe63e, 0x4a32, {0x95, 0xfa, 0xce, 0x15, 0x13, 0xe3, 0x5c, 0xfc}});
+		kxf_RTTI_DeclareIID(ClassInfo, {0xccefbb7f, 0xe63e, 0x4a32, {0x95, 0xfa, 0xce, 0x15, 0x13, 0xe3, 0x5c, 0xfc}});
 
-		friend KX_API const ClassInfo* GetClassInfoByName(std::string_view) noexcept;
-		friend KX_API const ClassInfo* GetClassInfoByName(const kxf::String&) noexcept;
+		friend KXF_API const ClassInfo* GetClassInfoByName(std::string_view) noexcept;
+		friend KXF_API const ClassInfo* GetClassInfoByName(const kxf::String&) noexcept;
 
 		friend class Private::BaseClassesEnumerator;
 
@@ -76,25 +76,6 @@ namespace kxf::RTTI
 			virtual size_t DoGetBaseClass(const ClassInfo** classInfo, size_t index = std::numeric_limits<size_t>::max()) const noexcept = 0;
 			virtual std::shared_ptr<IObject> DoCreateObjectInstance() const = 0;
 			virtual IObject* DoCreateObjectInstanceAt(void* ptr, size_t size) const = 0;
-
-			template<class TResult>
-			static std::unique_ptr<TResult> DynamicCast(std::unique_ptr<IObject> ptr) noexcept
-			{
-				if constexpr(std::is_same_v<IObject, TResult>)
-				{
-					return ptr;
-				}
-				else if (ptr)
-				{
-					auto temp = ptr->QueryInterface<TResult>();
-					ptr.release();
-
-					// It's assumed that in this case 'QueryInterface' used 'assume_non_owned' to return
-					// the requested interface. This is a really dirty hack and it needs to be fixed.
-					return std::unique_ptr<TResult>(temp.get());
-				}
-				return nullptr;
-			}
 
 		protected:
 			ClassInfo(std::string_view name, size_t size, size_t alignment, FlagSet<ClassTrait> traits, const std::type_info& typeInfo) noexcept
@@ -351,7 +332,7 @@ namespace kxf::RTTI
 			}
 			IObject* DoCreateObjectInstanceAt(void* ptr, size_t size) const override
 			{
-				return Utility::AlignAndConstructAt<T>(ptr, size);
+				return Utility::ConstructAtAlignedWith<T>(ptr, size);
 			}
 
 		public:

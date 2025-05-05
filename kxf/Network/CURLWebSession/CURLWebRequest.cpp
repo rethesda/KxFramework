@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "CURLWebRequest.h"
 #include "CURLWebSession.h"
 #include "LibCURL.h"
@@ -324,7 +324,7 @@ namespace kxf
 			statusText.fill(0);
 
 			auto status = CURL::Private::EasyErrorCodeToString(statusCode);
-			std::strncpy(statusText.data(), status.data(), status.size());
+			std::copy_n(status.data(), status.size(), statusText.data());
 		}
 
 		// Get server response code
@@ -334,11 +334,11 @@ namespace kxf
 		// Decide what to do next
 		if (effectiveProtocol == CURLPROTO_HTTP || effectiveProtocol == CURLPROTO_HTTPS)
 		{
-			HTTPStatus httpStatus = responseStatus;
+			HTTPStatus httpStatus = responseStatus ? static_cast<HTTPStatusCode>(*responseStatus) : HTTPStatusCode::Unknown;
 			if (httpStatus == HTTPStatusCode::Unauthorized || httpStatus == HTTPStatusCode::ProxyAuthenticationRequired)
 			{
 				m_AuthChallenge.emplace(*this, httpStatus == HTTPStatusCode::ProxyAuthenticationRequired ? WebAuthChallengeSource::ProxyServer : WebAuthChallengeSource::TargetServer);
-				ChangeStateAndNotify(WebRequestState::Unauthorized, httpStatus.ToInt(), statusText.data());
+				ChangeStateAndNotify(WebRequestState::Unauthorized, httpStatus.GetValue(), statusText.data());
 
 				return;
 			}

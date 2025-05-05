@@ -13,9 +13,9 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API ISystemProcess: public RTTI::Interface<ISystemProcess>
+	class KXF_API ISystemProcess: public RTTI::Interface<ISystemProcess>
 	{
-		KxRTTI_DeclareIID(ISystemProcess, {0x3f3562cb, 0x5674, 0x4662, {0xa0, 0x45, 0x93, 0x28, 0x24, 0xfc, 0x33, 0x4c}});
+		kxf_RTTI_DeclareIID(ISystemProcess, {0x3f3562cb, 0x5674, 0x4662, {0xa0, 0x45, 0x93, 0x28, 0x24, 0xfc, 0x33, 0x4c}});
 
 		public:
 			virtual ~ISystemProcess() = default;
@@ -42,8 +42,8 @@ namespace kxf
 			virtual String GetExecutableParameters() const = 0;
 			virtual SHWindowCommand GetShowWindowCommand() const = 0;
 
-			virtual size_t EnumEnvironemntVariables(std::function<CallbackCommand(const String&, const String&)> func) const = 0;
-			virtual size_t EnumThreads(std::function<CallbackCommand(SystemThread)> func) const = 0;
-			virtual size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const = 0;
+			virtual CallbackResult<size_t> EnumEnvironemntVariables(CallbackFunction<const String&, const String&> func) const = 0;
+			virtual CallbackResult<size_t> EnumThreads(CallbackFunction<SystemThread> func) const = 0;
+			virtual CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const = 0;
 	};
 }

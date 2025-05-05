@@ -1,8 +1,10 @@
 #pragma once
 #include "Common.h"
-#include "IGDIObject.h"
-#include "../Private/Common.h"
-#include <wx/font.h>
+#include "kxf/Drawing/Geometry.h"
+#include "kxf/Drawing/IGDIObject.h"
+#include "kxf/Core/UninitializedStorage.h"
+class wxFont;
+class wxNativeFontInfo;
 
 namespace kxf
 {
@@ -11,75 +13,38 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API GDIFont: public RTTI::ExtendInterface<GDIFont, IGDIObject>
+	class KXF_API GDIFont: public RTTI::ExtendInterface<GDIFont, IGDIObject>
 	{
-		KxRTTI_DeclareIID(GDIFont, {0xbeb3a65c, 0xf639, 0x4e44, {0x80, 0x3a, 0x1b, 0x53, 0xf6, 0x9c, 0x61, 0xd8}});
+		kxf_RTTI_DeclareIID(GDIFont, {0xbeb3a65c, 0xf639, 0x4e44, {0x80, 0x3a, 0x1b, 0x53, 0xf6, 0x9c, 0x61, 0xd8}});
 
 		public:
-			static FontEncoding GetDefaultEncoding() noexcept
-			{
-				return Drawing::Private::MapFontEncoding(wxFont::GetDefaultEncoding());
-			}
-			static void SetDefaultEncoding(FontEncoding encoding) noexcept
-			{
-				wxFont::SetDefaultEncoding(Drawing::Private::MapFontEncoding(encoding));
-			}
+			static FontEncoding GetDefaultEncoding() noexcept;
+			static void SetDefaultEncoding(FontEncoding encoding) noexcept;
 
-			static int GetNumericWeightOf(FontWeight weight) noexcept
-			{
-				return wxFont::GetNumericWeightOf(Drawing::Private::MapFontWeight(weight));
-			}
+			static int GetNumericWeightOf(FontWeight weight) noexcept;
 
 		private:
-			wxFont m_Font;
+			UninitializedStorage<wxFont, 32, 0> m_Font;
 
 		public:
-			GDIFont() = default;
+			GDIFont();
 			GDIFont(const Font& other);
-			GDIFont(const wxFont& other)
-				:m_Font(other)
-			{
-			}
-			GDIFont(const wxNativeFontInfo& other)
-				:m_Font(other)
-			{
-			}
+			GDIFont(const GDIFont& other);
+			GDIFont(const wxFont& other);
+			GDIFont(const wxNativeFontInfo& other);
 
-			GDIFont(float pointSize, FontFamily family, FlagSet<FontStyle> style, FontWeight weight, const String& faceName = {}, FontEncoding encoding = FontEncoding::Default)
-				:m_Font(static_cast<int>(pointSize), Drawing::Private::MapFontFamily(family), Drawing::Private::MapFontStyle(style), Drawing::Private::MapFontWeight(weight), style.Contains(FontStyle::Underline), faceName, Drawing::Private::MapFontEncoding(encoding))
-			{
-				m_Font.SetFractionalPointSize(static_cast<double>(pointSize));
-				m_Font.SetStrikethrough(style.Contains(FontStyle::Strikethrough));
-			}
-			GDIFont(const Size& pixelSize, FontFamily family, FlagSet<FontStyle> style, FontWeight weight, const String& faceName = {}, FontEncoding encoding = FontEncoding::Default)
-				:m_Font(pixelSize, Drawing::Private::MapFontFamily(family), Drawing::Private::MapFontStyle(style), Drawing::Private::MapFontWeight(weight), style.Contains(FontStyle::Underline), faceName, Drawing::Private::MapFontEncoding(encoding))
-			{
-				m_Font.SetStrikethrough(style.Contains(FontStyle::Strikethrough));
-			}
+			GDIFont(float pointSize, FontFamily family, FlagSet<FontStyle> style, FontWeight weight, const String& faceName = {}, FontEncoding encoding = FontEncoding::Default);
+			GDIFont(const Size& pixelSize, FontFamily family, FlagSet<FontStyle> style, FontWeight weight, const String& faceName = {}, FontEncoding encoding = FontEncoding::Default);
 
-			virtual ~GDIFont() = default;
+			~GDIFont();
 
 		public:
 			// IGDIObject
-			bool IsNull() const override
+			bool IsNull() const override;
+			bool IsSameAs(const IGDIObject& other) const override;
+			std::shared_ptr<IGDIObject> CloneGDIObject() const override
 			{
-				return !m_Font.IsOk();
-			}
-			bool IsSameAs(const IGDIObject& other) const override
-			{
-				if (this == &other)
-				{
-					return true;
-				}
-				else if (auto font = other.QueryInterface<GDIFont>())
-				{
-					return m_Font == font->m_Font;
-				}
-				return false;
-			}
-			std::unique_ptr<IGDIObject> CloneGDIObject() const override
-			{
-				return std::make_unique<GDIFont>(m_Font);
+				return std::make_shared<GDIFont>(*m_Font);
 			}
 
 			void* GetHandle() const override;
@@ -87,129 +52,49 @@ namespace kxf
 			void AttachHandle(void* handle) override;
 
 			// GDIFont
-			const wxFont& ToWxFont() const noexcept
-			{
-				return m_Font;
-			}
-			wxFont& ToWxFont() noexcept
-			{
-				return m_Font;
-			}
+			String GetDescription() const;
+			GDIFont GetBaseFont() const;
 
-			String GetDescription() const
-			{
-				return m_Font.GetNativeFontInfoUserDesc();
-			}
-			GDIFont GetBaseFont() const
-			{
-				return m_Font.GetBaseFont();
-			}
+			String Serialize() const;
+			bool Deserialize(const String& serializedData);
 
-			String Serialize() const
-			{
-				return m_Font.GetNativeFontInfoDesc();
-			}
-			bool Deserialize(const String& serializedData)
-			{
-				return m_Font.SetNativeFontInfo(serializedData);
-			}
+			String GetFaceName() const;
+			bool SetFaceName(const String& faceName);
 
-			String GetFaceName() const
-			{
-				return m_Font.GetFaceName();
-			}
-			bool SetFaceName(const String& faceName)
-			{
-				return m_Font.SetFaceName(faceName);
-			}
+			float GetPointSize() const;
+			void SetPointSize(float pointSize);
 
-			float GetPointSize() const
-			{
-				return static_cast<float>(m_Font.GetFractionalPointSize());
-			}
-			void SetPointSize(float pointSize)
-			{
-				m_Font.SetFractionalPointSize(static_cast<double>(pointSize));
-			}
+			Size GetPixelSize() const;
+			void SetPixelSize(const Size& pixelSize);
 
-			Size GetPixelSize() const
-			{
-				return Size(m_Font.GetPixelSize());
-			}
-			void SetPixelSize(const Size& pixelSize)
-			{
-				m_Font.SetPixelSize(pixelSize);
-			}
+			void SetSymbolicSize(FontSymbolicSize size);
+			void SetSymbolicSizeRelativeTo(FontSymbolicSize size, int base);
+			void ScaleSzie(double scale);
 
-			void SetSymbolicSize(FontSymbolicSize size)
-			{
-				m_Font.SetSymbolicSize(Drawing::Private::MapFontSymbolicSize(size));
-			}
-			void SetSymbolicSizeRelativeTo(FontSymbolicSize size, int base)
-			{
-				m_Font.SetSymbolicSizeRelativeTo(Drawing::Private::MapFontSymbolicSize(size), base);
-			}
-			void ScaleSzie(double scale)
-			{
-				m_Font.SetFractionalPointSize(m_Font.GetFractionalPointSize() * scale);
-			}
+			FontEncoding GetEncoding() const;
+			void SetEncoding(FontEncoding encoding);
 
-			FontEncoding GetEncoding() const
-			{
-				return Drawing::Private::MapFontEncoding(m_Font.GetEncoding());
-			}
-			void SetEncoding(FontEncoding encoding)
-			{
-				m_Font.SetEncoding(Drawing::Private::MapFontEncoding(encoding));
-			}
+			FontFamily GetFamily() const;
+			void SetFamily(FontFamily family);
 
-			FontFamily GetFamily() const
-			{
-				return Drawing::Private::MapFontFamily(m_Font.GetFamily());
-			}
-			void SetFamily(FontFamily family)
-			{
-				m_Font.SetFamily(Drawing::Private::MapFontFamily(family));
-			}
+			FlagSet<FontStyle> GetStyle() const;
+			void SetStyle(FlagSet<FontStyle> style);
+			void AddStyle(FlagSet<FontStyle> style);
+			void RemoveStyle(FlagSet<FontStyle> style);
 
-			FlagSet<FontStyle> GetStyle() const
-			{
-				auto style = Drawing::Private::MapFontStyle(m_Font.GetStyle());
-				style.Add(FontStyle::Underline, m_Font.GetUnderlined());
-				style.Add(FontStyle::Strikethrough, m_Font.GetStrikethrough());
+			FontWeight GetWeight() const;
+			void SetWeight(FontWeight weight);
+			int GetNumericWeight() const;
+			void SetNumericWeight(int weight);
 
-				return style;
-			}
-			void SetStyle(FlagSet<FontStyle> style)
+			Font ToFont() const;
+			wxFont& AsWXFont() noexcept
 			{
-				m_Font.SetStyle(Drawing::Private::MapFontStyle(style));
-				m_Font.SetUnderlined(style.Contains(FontStyle::Underline));
-				m_Font.SetStrikethrough(style.Contains(FontStyle::Strikethrough));
+				return *m_Font;
 			}
-			void AddStyle(FlagSet<FontStyle> style)
+			const wxFont& AsWXFont() const noexcept
 			{
-				SetStyle(GetStyle().Add(style));
-			}
-			void RemoveStyle(FlagSet<FontStyle> style)
-			{
-				SetStyle(GetStyle().Remove(style));
-			}
-
-			FontWeight GetWeight() const
-			{
-				return Drawing::Private::MapFontWeight(m_Font.GetWeight());
-			}
-			void SetWeight(FontWeight weight)
-			{
-				m_Font.SetWeight(Drawing::Private::MapFontWeight(weight));
-			}
-			int GetNumericWeight() const
-			{
-				return m_Font.GetNumericWeight();
-			}
-			void SetNumericWeight(int weight)
-			{
-				m_Font.SetNumericWeight(weight);
+				return *m_Font;
 			}
 
 		public:
@@ -222,11 +107,6 @@ namespace kxf
 				return IsNull();
 			}
 
-			GDIFont& operator=(const GDIFont& other)
-			{
-				m_Font = other.m_Font;
-
-				return *this;
-			}
+			GDIFont& operator=(const GDIFont& other);
 	};
 }

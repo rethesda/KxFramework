@@ -15,9 +15,9 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API IImage2D: public RTTI::Interface<IImage2D>
+	class KXF_API IImage2D: public RTTI::Interface<IImage2D>
 	{
-		KxRTTI_DeclareIID_Using(IImage2D, ImageFormat::Any.ToNativeUUID());
+		kxf_RTTI_DeclareIID_Using(IImage2D, ImageFormat::Any.ToNativeUUID());
 
 		public:
 			static constexpr size_t npos = std::numeric_limits<size_t>::max();
@@ -28,10 +28,10 @@ namespace kxf
 		public:
 			virtual bool IsNull() const = 0;
 			virtual bool IsSameAs(const IImage2D& other) const = 0;
-			virtual std::unique_ptr<IImage2D> CloneImage2D() const = 0;
+			virtual std::shared_ptr<IImage2D> CloneImage2D() const = 0;
 
 			// Create, save and load
-			virtual void Create(const Size& size) = 0;
+			virtual bool Create(const Size& size) = 0;
 			virtual bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos) = 0;
 			virtual bool Save(IOutputStream& stream, const UniversallyUniqueID& format) const = 0;
 

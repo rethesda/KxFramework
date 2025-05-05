@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "StorageVolume.h"
 #include "NativeFileSystem.h"
 #include "LegacyVolume.h"
@@ -9,6 +9,9 @@
 #include "kxf/Core/Enumerator.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/ScopeGuard.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -121,8 +124,8 @@ namespace kxf
 		{
 			if (driveLetter <= g_LastLegacyVolume)
 			{
-				XChar disk[] = kxS("\0:\\");
-				disk[0] = driveLetter++;
+				XChar disk[] = kxfS("\0:\\");
+				disk[0] = static_cast<XChar>(driveLetter++);
 
 				XChar volumeGuidPath[64] = {};
 				if (::GetVolumeNameForVolumeMountPointW(disk, volumeGuidPath, std::size(volumeGuidPath)))
@@ -154,7 +157,7 @@ namespace kxf
 	{
 		if (volume)
 		{
-			XChar disk[] = kxS("\0:\\");
+			XChar disk[] = kxfS("\0:\\");
 			disk[0] = volume.GetChar();
 
 			return ::DeleteVolumeMountPointW(disk);
@@ -360,7 +363,7 @@ namespace kxf
 	{
 		if (volume)
 		{
-			XChar disk[] = kxS("\0:\\");
+			XChar disk[] = kxfS("\0:\\");
 			disk[0] = volume.GetChar();
 
 			return ::SetVolumeMountPointW(disk, m_Path);

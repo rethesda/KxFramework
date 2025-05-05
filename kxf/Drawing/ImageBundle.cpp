@@ -1,11 +1,10 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "ImageBundle.h"
-#include "GDIRenderer/GDIIcon.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/System/SystemInformation.h"
-#include "kxf/Application/IGUIApplication.h"
-#include "kxf/UI/ITopLevelWidget.h"
+
 #include <wx/iconbndl.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -20,7 +19,7 @@ namespace kxf
 	{
 		for (size_t i = 0; i < other.GetIconCount(); i++)
 		{
-			if (!m_Items.emplace_back(GDIIcon(other.GetIconByIndex(i)).ToBitmapImage()))
+			if (!m_Items.emplace_back(other.GetIconByIndex(i)))
 			{
 				m_Items.pop_back();
 			}
@@ -114,22 +113,16 @@ namespace kxf
 			Size systemSmallIcon;
 			if (sizeFallback.Contains(ImageBundleFlag::SystemSize) || sizeFallback.Contains(ImageBundleFlag::SystemSizeSmall))
 			{
-				std::shared_ptr<IWidget> topWidget;
-				if (auto app = IGUIApplication::GetInstance())
-				{
-					topWidget = app->GetTopWidget();
-				}
-
 				// Get the system icon size
 				if (sizeFallback.Contains(ImageBundleFlag::SystemSize))
 				{
-					systemIcon = System::GetMetric(SystemSizeMetric::Icon, topWidget ? topWidget->GetWxWindow() : nullptr);
+					systemIcon = System::GetMetric(SystemSizeMetric::Icon);
 					sizeFallback.Add(ImageBundleFlag::NearestLarger, !systemSmallIcon.IsFullySpecified());
 					systemIcon.SetDefaults(g_DefaultIconSize);
 				}
 				if (sizeFallback.Contains(ImageBundleFlag::SystemSizeSmall))
 				{
-					systemSmallIcon = System::GetMetric(SystemSizeMetric::IconSmall, topWidget ? topWidget->GetWxWindow() : nullptr);
+					systemSmallIcon = System::GetMetric(SystemSizeMetric::IconSmall);
 					sizeFallback.Add(ImageBundleFlag::NearestLarger, !systemSmallIcon.IsFullySpecified());
 					systemIcon.SetDefaults(g_DefaultIconSizeSmall);
 				}
@@ -199,12 +192,12 @@ namespace kxf
 		return {};
 	}
 
-	wxIconBundle ImageBundle::ToWxIconBundle() const
+	wxIconBundle ImageBundle::ToWXIconBundle() const
 	{
 		wxIconBundle iconBundle;
-		for (const BitmapImage& image: m_Items)
+		for (auto& image: m_Items)
 		{
-			iconBundle.AddIcon(image.ToGDIIcon().ToWxIcon());
+			iconBundle.AddIcon(image.ToWXIcon());
 		}
 		return iconBundle;
 	}

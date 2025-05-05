@@ -2,6 +2,8 @@
 #include "kxf/Common.hpp"
 #include "kxf/Core/String.h"
 #include "kxf/Core/UniChar.h"
+#include <map>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -12,16 +14,43 @@ namespace kxf
 
 namespace kxf::Utility
 {
-	struct StringEqualToNoCase final
+	struct StringCompareIC
 	{
 		template<class T>
-		bool operator()(T&& left, T&& right) const noexcept
+		std::strong_ordering Compare(const T& left, const T& right) const noexcept
 		{
-			return String::Compare(std::forward<T>(left), std::forward<T>(right), StringActionFlag::IgnoreCase) == 0;
+			return String::Compare(left, right, StringActionFlag::IgnoreCase);
 		}
 	};
 
-	struct StringHashNoCase final
+	struct StringEqualToIC: public StringCompareIC
+	{
+		template<class T>
+		bool operator()(const T& left, const T& right) const noexcept
+		{
+			return Compare(left, right) == 0;
+		}
+	};
+
+	struct StringLessThanIC: public StringCompareIC
+	{
+		template<class T>
+		bool operator()(const T& left, const T& right) const noexcept
+		{
+			return Compare(left, right) < 0;
+		}
+	};
+
+	struct StringGreaterThanIC: public StringCompareIC
+	{
+		template<class T>
+		bool operator()(const T& left, const T& right) const noexcept
+		{
+			return Compare(left, right) > 0;
+		}
+	};
+
+	struct StringHashIC
 	{
 		// From Boost
 		template<class T>
@@ -32,22 +61,28 @@ namespace kxf::Utility
 		}
 
 		template<class T>
-		size_t operator()(T&& value) const noexcept
+		size_t operator()(const T& value) const noexcept
 		{
-			size_t hashValue = 0;
+			size_t hash = 0;
 			for (UniChar c: value)
 			{
-				hash_combine(hashValue, c.ToLowerCase().GetValue());
+				hash_combine(hash, c.ToLowerCase().GetValue());
 			}
-			return hashValue;
+			return hash;
 		}
 	};
 
 	template<class TKey, class TValue>
-	using UnorderedMapNoCase = std::unordered_map<TKey, TValue, StringHashNoCase, StringEqualToNoCase>;
+	using MapIC = std::map<TKey, TValue, StringLessThanIC>;
+
+	template<class TValue>
+	using SetIC = std::set<TValue, StringLessThanIC>;
+
+	template<class TKey, class TValue>
+	using UnorderedMapIC = std::unordered_map<TKey, TValue, StringHashIC, StringEqualToIC>;
 	
 	template<class TValue>
-	using UnorderedSetNoCase = std::unordered_set<TValue, StringHashNoCase, StringEqualToNoCase>;
+	using UnorderedSetIC = std::unordered_set<TValue, StringHashIC, StringEqualToIC>;
 }
 
 namespace kxf::Utility
@@ -118,5 +153,5 @@ namespace kxf::Utility
 
 namespace kxf::Utility
 {
-	KX_API std::optional<bool> ParseBool(const String& value);
+	std::optional<bool> ParseBool(const String& value);
 }

@@ -1,5 +1,6 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "ZLibStream.h"
+
 #include "kxf/wxWidgets/StreamWrapper.h"
 #include <wx/zstream.h>
 

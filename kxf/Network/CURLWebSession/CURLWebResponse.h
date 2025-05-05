@@ -14,7 +14,7 @@ namespace kxf::CURL::Private
 
 namespace kxf
 {
-	class CURLWebResponse final: public IWebResponse
+	class KXF_API_NETWORK CURLWebResponse final: public IWebResponse
 	{
 		private:
 			CURLWebRequest& m_Request;
@@ -54,6 +54,6 @@ namespace kxf
 			Enumerator<WebRequestHeader> EnumHeaders() const override;
 			Enumerator<String> EnumCookies() const override;
 
-			std::unique_ptr<IInputStream> GetStream() const override;
+			std::shared_ptr<IInputStream> GetStream() const override;
 	};
 }

@@ -1,10 +1,10 @@
 #pragma once
 #include "Common.h"
 #include "COM.h"
-#include "kxf/Core/DateTime.h"
+#include "UserCredentials.h"
+#include "kxf/DateTime/TimeSpan.h"
+#include "kxf/DateTime/DateTime.h"
 #include "kxf/FileSystem/FSPath.h"
-#include "kxf/Crypto/SecretValue.h"
-#include "kxf/Crypto/UserCredentials.h"
 struct ITaskDefinition;
 struct IRegistrationInfo;
 struct IPrincipal;
@@ -18,7 +18,7 @@ struct ITaskFolder;
 
 namespace kxf::System
 {
-	class KX_API ScheduledTask final
+	class KXF_API ScheduledTask final
 	{
 		friend class TaskScheduler;
 
@@ -67,7 +67,7 @@ namespace kxf::System
 
 namespace kxf::System
 {
-	class KX_API TaskScheduler final
+	class KXF_API TaskScheduler final
 	{
 		private:
 			COMPtr<ITaskService> m_TaskService;

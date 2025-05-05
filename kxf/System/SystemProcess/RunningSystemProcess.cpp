@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "RunningSystemProcess.h"
 #include "kxf/System/NativeAPI.h"
 #include "kxf/System/SystemProcess.h"
@@ -9,10 +9,11 @@
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/String.h"
 #include "kxf/Utility/ScopeGuard.h"
+
 #include <Windows.h>
 #include <PsAPI.h>
 #include <WInternl.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -260,34 +261,34 @@ namespace kxf
 		return SHWindowCommand::None;
 	}
 
-	size_t RunningSystemProcess::EnumEnvironemntVariables(std::function<CallbackCommand(const String&, const String&)> func) const
+	CallbackResult<size_t> RunningSystemProcess::EnumEnvironemntVariables(CallbackFunction<const String&, const String&> func) const
 	{
 		// TODO:
 		// http://stackoverflow.com/questions/38297878/get-startupinfo-for-given-process
 		// https://msdn.microsoft.com/en-us/library/bb432286(v=vs.85).aspx
-		return 0;
+		return {};
 	}
-	size_t RunningSystemProcess::EnumThreads(std::function<CallbackCommand(SystemThread)> func) const
+	CallbackResult<size_t> RunningSystemProcess::EnumThreads(CallbackFunction<SystemThread> func) const
 	{
 		if (!IsNull())
 		{
 			return System::Private::EnumThreads([&](uint32_t pid, uint32_t tid)
 			{
-				return std::invoke(func, tid);
+				return func.Invoke(tid).GetLastCommand();
 			}, GetID());
 		}
-		return 0;
+		return {};
 	}
-	size_t RunningSystemProcess::EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const
+	CallbackResult<size_t> RunningSystemProcess::EnumWindows(CallbackFunction<SystemWindow> func) const
 	{
 		if (!IsNull())
 		{
 			return System::Private::EnumWindows([&](void* hwnd, uint32_t pid, uint32_t tid)
 			{
-				return std::invoke(func, hwnd);
+				return func.Invoke(hwnd).GetLastCommand();
 			}, GetID());
 		}
-		return 0;
+		return {};
 	}
 
 	// RunningSystemProcess

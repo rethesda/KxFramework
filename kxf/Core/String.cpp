@@ -1,12 +1,14 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "String.h"
 #include "RegEx.h"
 #include "IEncodingConverter.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/Utility/Common.h"
-#include "kxf/System/UndefWindows.h"
 #include "kxf/wxWidgets/String.h"
 #include <cctype>
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -592,12 +594,12 @@ namespace kxf
 	// Case conversion
 	String& String::MakeLower() noexcept
 	{
-		::CharLowerBuffW(m_String.data(), m_String.length());
+		::CharLowerBuffW(m_String.data(), m_String.size());
 		return *this;
 	}
 	String& String::MakeUpper() noexcept
 	{
-		::CharUpperBuffW(m_String.data(), m_String.length());
+		::CharUpperBuffW(m_String.data(), m_String.size());
 		return *this;
 	}
 

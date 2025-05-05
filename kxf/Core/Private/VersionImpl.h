@@ -1,7 +1,7 @@
 #pragma once
 #include "../Common.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/DateTime.h"
+#include "kxf/DateTime/DateTime.h"
 
 namespace kxf
 {
@@ -41,7 +41,7 @@ namespace kxf::Private::Version
 			{
 				if (!str)
 				{
-					str = kxS("");
+					str = kxfS("");
 					count = 0;
 				}
 				std::char_traits<XChar>::copy(m_String, str, std::min(ItemCount, count));

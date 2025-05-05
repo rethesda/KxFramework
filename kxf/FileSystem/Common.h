@@ -2,8 +2,7 @@
 #include "kxf/Common.hpp"
 #include "kxf/IO/Common.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/DateTime.h"
-#include "kxf/System/UndefWindows.h"
+#include "kxf/DateTime/DateTime.h"
 
 namespace kxf
 {
@@ -45,7 +44,7 @@ namespace kxf
 		QueryUniqueID = 1 << 7,
 		CreateDirectoryTree = 1 << 8
 	};
-	KxFlagSet_Declare(FSActionFlag);
+	kxf_FlagSet_Declare(FSActionFlag);
 
 	enum class FileSystemFeature: uint32_t
 	{
@@ -72,12 +71,11 @@ namespace kxf
 		VolumeQuotas = 1 << 19,
 		LongFileNames = 1 << 20
 	};
-	KxFlagSet_Declare(FileSystemFeature);
+	kxf_FlagSet_Declare(FileSystemFeature);
 
 	enum class FileAttribute: uint32_t
 	{
 		None = 0,
-		Invalid = std::numeric_limits<uint32_t>::max(),
 
 		Hidden = 1 << 0,
 		Archive = 1 << 1,
@@ -95,8 +93,9 @@ namespace kxf
 		RecallOnDataAccess = 1 << 13,
 
 		Normal = std::numeric_limits<uint32_t>::max() >> 1,
+		Invalid = std::numeric_limits<uint32_t>::max()
 	};
-	KxFlagSet_Declare(FileAttribute);
+	kxf_FlagSet_Declare(FileAttribute);
 
 	enum class ReparsePointTag: uint32_t
 	{
@@ -105,10 +104,10 @@ namespace kxf
 		MountPoint = 1 << 0,
 		SymLink = 1 << 1
 	};
-	KxFlagSet_Declare(ReparsePointTag);
+	kxf_FlagSet_Declare(ReparsePointTag);
 }
 
 namespace kxf::FileSystem
 {
-	KX_API StringView GetNamespaceString(FSPathNamespace type);
+	KXF_API StringView GetNamespaceString(FSPathNamespace type);
 }

@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "StupidMemoryAllocator.h"
 #include "kxf/Threading/LockGuard.h"
 
@@ -227,9 +227,9 @@ namespace kxf
 					void* ptr = reinterpret_cast<uint8_t*>(region) + sizeof(RegionInfo);
 
 					// Write control structure information
-					region->Alignment = alignment;
+					region->Alignment = static_cast<uint32_t>(alignment);
 					region->AllocationSize = size;
-					region->UsedNext = pagesRequired - 1;
+					region->UsedNext = static_cast<uint32_t>(pagesRequired - 1);
 					region->Flags = flags;
 					for (size_t k = 0; k < pagesRequired; k++)
 					{

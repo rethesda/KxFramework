@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "UniversallyUniqueID.h"
 #include "LocallyUniqueID.h"
 #include "RegEx.h"
@@ -8,12 +8,13 @@
 
 #include <Windows.h>
 #include <rpcdce.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/LinkLibs-System.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
-	constexpr kxf::XChar g_DefaultSeparator[] = kxS("-");
-	constexpr kxf::XChar g_RFC_URN[] = kxS("urn:uuid:");
+	constexpr kxf::XChar g_DefaultSeparator[] = kxfS("-");
+	constexpr kxf::XChar g_RFC_URN[] = kxfS("urn:uuid:");
 
 	template<class T, class TUUID>
 	auto CastAs(TUUID&& uuid)

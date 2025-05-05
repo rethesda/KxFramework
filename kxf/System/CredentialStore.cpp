@@ -1,9 +1,10 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "CredentialStore.h"
 #include "kxf/Utility/ScopeGuard.h"
+
 #include <Windows.h>
 #include <wincred.h>
-#include "UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf
 {
@@ -17,7 +18,7 @@ namespace kxf
 			credentialInfo.TargetName = m_ServiceName.wc_str().unsafe_data();
 			credentialInfo.UserName = userName.wc_str().unsafe_data();
 			credentialInfo.CredentialBlob = static_cast<uint8_t*>(const_cast<void*>(secret.GetData()));
-			credentialInfo.CredentialBlobSize = secret.GetSize();
+			credentialInfo.CredentialBlobSize = static_cast<DWORD>(secret.GetSize());
 
 			return ::CredWriteW(&credentialInfo, 0);
 		}

@@ -5,7 +5,6 @@
 #include "kxf/Core/ILibraryInfo.h"
 #include "kxf/IO/IStream.h"
 #include "TinyXML2.h"
-#include <wx/stream.h>
 
 namespace kxf
 {
@@ -42,7 +41,7 @@ namespace kxf::XML
 
 namespace kxf
 {
-	class KX_API XMLAttribute final
+	class KXF_API XMLAttribute final
 	{
 		friend class XMLNode;
 
@@ -99,7 +98,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API XMLNode: public XDocument::XNode<XMLNode>
+	class KXF_API XMLNode: public XDocument::XNode<XMLNode>
 	{
 		friend class XMLDocument;
 		friend class XMLAttribute;
@@ -240,7 +239,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API XMLDocument final: public XMLNode, public IObject
+	class KXF_API XMLDocument final: public XMLNode, public IObject
 	{
 		friend class XMLNode;
 

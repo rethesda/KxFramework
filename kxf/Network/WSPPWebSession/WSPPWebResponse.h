@@ -11,7 +11,7 @@ namespace kxf
 
 namespace kxf
 {
-	class WSPPWebResponse final: public IWebResponse, public Private::WSPPTypes
+	class KXF_API_NETWORK WSPPWebResponse final: public IWebResponse, public Private::WSPPTypes
 	{
 		friend class WSPPWebRequest;
 
@@ -54,6 +54,6 @@ namespace kxf
 			Enumerator<WebRequestHeader> EnumHeaders() const override;
 			Enumerator<String> EnumCookies() const override;
 
-			std::unique_ptr<IInputStream> GetStream() const override;
+			std::shared_ptr<IInputStream> GetStream() const override;
 	};
 }

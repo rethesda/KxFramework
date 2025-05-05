@@ -2,11 +2,10 @@
 #include "kxf/Common.hpp"
 #include <cstdint>
 #include <cstring>
-#include "kxf/System/UndefWindows.h"
 
 namespace kxf::Utility
 {
-	KX_API void SecureZeroMemory(void* ptr, size_t size) noexcept;
+	void SecureZeroMemory(void* ptr, size_t size) noexcept;
 
 	template<class T, class... Args>
 	requires(std::is_constructible_v<T, Args...>)
@@ -17,7 +16,7 @@ namespace kxf::Utility
 
 	template<class T, class... Args>
 	requires(std::is_constructible_v<T, Args...>)
-	constexpr T* AlignAndConstructAt(void* buffer, size_t size, size_t alignment, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
+	constexpr T* ConstructAtAlignedTo(void* buffer, size_t size, size_t alignment, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
 	{
 		void* ptr = buffer;
 		size_t space = size;
@@ -30,9 +29,9 @@ namespace kxf::Utility
 
 	template<class T, class... Args>
 	requires(std::is_constructible_v<T, Args...>)
-	constexpr T* AlignAndConstructAt(void* buffer, size_t size, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
+	constexpr T* ConstructAtAlignedWith(void* buffer, size_t size, Args&&... arg) noexcept(std::is_nothrow_constructible_v<T, Args...>)
 	{
-		return AlignAndConstructAt<T>(buffer, size, alignof(T), std::forward<Args>(arg)...);
+		return ConstructAtAlignedTo<T>(buffer, size, alignof(T), std::forward<Args>(arg)...);
 	}
 
 	template<class T>
@@ -47,92 +46,19 @@ namespace kxf::Utility
 		std::destroy_at(ptr);
 	}
 
-	template<class TFunc>
+	template<size_t size = 0, class TFunc>
 	requires(std::is_member_function_pointer_v<TFunc>)
 	auto StoreMemberFunction(TFunc func) noexcept
 	{
-		std::array<uint8_t, sizeof(func)> buffer;
+		std::array<uint8_t, std::max(sizeof(func), size)> buffer;
+		if constexpr(buffer.size() != sizeof(func))
+		{
+			buffer.fill(0);
+		}
 		std::memcpy(buffer.data(), &func, sizeof(func));
 
 		return buffer;
 	}
-}
-
-namespace kxf::Utility
-{
-	template<class T>
-	class AlignedHeapBuffer final
-	{
-		public:
-			using ValueType = T;
-
-		private:
-			std::allocator<uint8_t> m_Allocator;
-
-			void* m_Source = nullptr;
-			void* m_Aligned = nullptr;
-			size_t m_Size = 0;
-
-		public:
-			AlignedHeapBuffer(size_t size = alignof(T))
-				:m_Size(size)
-			{
-				m_Source = m_Allocator.allocate(size + alignof(ValueType));
-
-				void* toAlign = m_Source;
-				m_Aligned = std::align(size, sizeof(T), toAlign, m_Size);
-			}
-			AlignedHeapBuffer(const AlignedHeapBuffer&) = delete;
-			AlignedHeapBuffer(AlignedHeapBuffer&& other) noexcept
-			{
-				*this = std::move(other);
-			}
-			~AlignedHeapBuffer()
-			{
-				m_Allocator.deallocate(reinterpret_cast<uint8_t*>(m_Source), m_Size + alignof(ValueType));
-			}
-
-		public:
-			void* GetSource() const noexcept
-			{
-				return m_Source;
-			}
-			void* GetAligned() const noexcept
-			{
-				return m_Aligned;
-			}
-			size_t GetSize() const noexcept
-			{
-				return m_Size;
-			}
-
-		public:
-			explicit operator bool() const noexcept
-			{
-				return m_Aligned != nullptr;
-			}
-			bool operator!() const noexcept
-			{
-				return m_Aligned == nullptr;
-			}
-
-			AlignedHeapBuffer& operator=(const AlignedHeapBuffer&) = delete;
-			AlignedHeapBuffer& operator=(AlignedHeapBuffer&& other) noexcept
-			{
-				m_Allocator = std::move(other.m_Allocator);
-
-				m_Source = other.m_Source;
-				other.m_Source = nullptr;
-
-				m_Aligned = other.m_Aligned;
-				other.m_Aligned = nullptr;
-
-				m_Size = other.m_Size;
-				other.m_Size = nullptr;
-
-				return *this;
-			}
-	};
 }
 
 namespace kxf::Utility

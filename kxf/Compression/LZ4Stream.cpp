@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "LZ4Stream.h"
 #include <lz4.h>
 
@@ -30,7 +30,7 @@ namespace kxf::Compression::LZ4
 
 	size_t Compress(const void* sourceBuffer, size_t sourceSize, void* destinationBuffer, size_t destinationSize)
 	{
-		int size = LZ4_compress_default(reinterpret_cast<const char*>(sourceBuffer), reinterpret_cast<char*>(destinationBuffer), sourceSize, destinationSize);
+		int size = LZ4_compress_default(reinterpret_cast<const char*>(sourceBuffer), reinterpret_cast<char*>(destinationBuffer), static_cast<int>(sourceSize), static_cast<int>(destinationSize));
 		return size > 0 ? size : 0;
 	}
 	std::vector<uint8_t> Compress(const void* sourceBuffer, size_t sourceSize)
@@ -46,7 +46,7 @@ namespace kxf::Compression::LZ4
 
 	size_t Decompress(const void* sourceBuffer, size_t sourceSize, void* destinationBuffer, size_t destinationSize)
 	{
-		int size = LZ4_decompress_safe(reinterpret_cast<const char*>(sourceBuffer), reinterpret_cast<char*>(destinationBuffer), sourceSize, destinationSize);
+		int size = LZ4_decompress_safe(reinterpret_cast<const char*>(sourceBuffer), reinterpret_cast<char*>(destinationBuffer), static_cast<int>(sourceSize), static_cast<int>(destinationSize));
 		return size > 0 ? size : 0;
 	}
 	std::vector<uint8_t> Decompress(const void* sourceBuffer, size_t sourceSize)
@@ -67,7 +67,7 @@ namespace kxf
 	{
 		if (m_LZ4Stream)
 		{
-			return LZ4_loadDict(AsCompressorStream(m_LZ4Stream), reinterpret_cast<const char*>(data), size) <= g_MaxDictionarySize;
+			return LZ4_loadDict(AsCompressorStream(m_LZ4Stream), reinterpret_cast<const char*>(data), static_cast<int>(size)) <= g_MaxDictionarySize;
 		}
 		return false;
 	}
@@ -83,7 +83,7 @@ namespace kxf
 		// Init stream with or without dictionary
 		if (!m_Dictionary.empty())
 		{
-			LZ4_setStreamDecode(reinterpret_cast<LZ4_streamDecode_t*>(m_StreamObject), reinterpret_cast<const char*>(m_Dictionary.data()), m_Dictionary.size());
+			LZ4_setStreamDecode(reinterpret_cast<LZ4_streamDecode_t*>(m_StreamObject), reinterpret_cast<const char*>(m_Dictionary.data()), static_cast<int>(m_Dictionary.size()));
 		}
 		else
 		{

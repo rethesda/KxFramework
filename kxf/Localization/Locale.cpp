@@ -1,8 +1,12 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Locale.h"
 #include "Private/LocaleOptions.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/String.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
+#pragma warning(disable: 4267)
 
 namespace
 {

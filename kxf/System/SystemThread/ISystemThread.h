@@ -109,9 +109,9 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API ISystemThread: public RTTI::Interface<ISystemThread>
+	class KXF_API ISystemThread: public RTTI::Interface<ISystemThread>
 	{
-		KxRTTI_DeclareIID(ISystemThread, {0x22ff5e15, 0xd0b3, 0x4ed0, {0x83, 0x89, 0x48, 0xd0, 0xbd, 0x10, 0x72, 0xa1}});
+		kxf_RTTI_DeclareIID(ISystemThread, {0x22ff5e15, 0xd0b3, 0x4ed0, {0x83, 0x89, 0x48, 0xd0, 0xbd, 0x10, 0x72, 0xa1}});
 
 		public:
 			virtual ~ISystemThread() = default;
@@ -136,6 +136,6 @@ namespace kxf
 			virtual bool Suspend() = 0;
 			virtual bool Resume() = 0;
 
-			virtual size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const = 0;
+			virtual CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const = 0;
 	};
 }

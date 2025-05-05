@@ -10,9 +10,9 @@ namespace kxf
 
 namespace kxf
 {
-	class IWebSession: public RTTI::ExtendInterface<IWebSession, IEvtHandler>
+	class KXF_API_NETWORK IWebSession: public RTTI::ExtendInterface<IWebSession, IEvtHandler>
 	{
-		KxRTTI_DeclareIID(IWebSession, {0x46f42b07, 0xd313, 0x475e, {0x82, 0x41, 0x63, 0xf6, 0x64, 0x4a, 0x85, 0x8c}});
+		kxf_RTTI_DeclareIID(IWebSession, {0x46f42b07, 0xd313, 0x475e, {0x82, 0x41, 0x63, 0xf6, 0x64, 0x4a, 0x85, 0x8c}});
 
 		public:
 			virtual void SetBaseURI(const URI& uri) = 0;

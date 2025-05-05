@@ -1,8 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/DateTime.h"
-#include "kxf/Core/AlignedStorage.h"
+#include "kxf/Core/UninitializedStorage.h"
+#include "kxf/DateTime/DateTime.h"
 class wxCmdLineParser;
 
 namespace kxf
@@ -44,12 +44,12 @@ namespace kxf
 		SwitchHidden = FlagSetValue<CommandLineParserFlag>(6),
 		SwitchNegatable = FlagSetValue<CommandLineParserFlag>(7)
 	};
-	KxFlagSet_Declare(CommandLineParserFlag);
+	kxf_FlagSet_Declare(CommandLineParserFlag);
 }
 
 namespace kxf
 {
-	class KX_API CommandLineArg final
+	class KXF_API CommandLineArg final
 	{
 		friend class CommandLineParser;
 
@@ -114,13 +114,13 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API CommandLineParser final
+	class KXF_API CommandLineParser final
 	{
 		private:
 			void MoveFrom(CommandLineParser& other) noexcept;
 
 		private:
-			AlignedStorage<wxCmdLineParser, sizeof(void*), alignof(void*)> m_Parser;
+			UninitializedStorage<wxCmdLineParser, sizeof(void*), alignof(void*)> m_Parser;
 
 		public:
 			CommandLineParser();

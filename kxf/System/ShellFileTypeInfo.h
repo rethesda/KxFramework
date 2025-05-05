@@ -1,184 +1,92 @@
 #pragma once
 #include "Common.h"
-#include "kxf/Core/String.h"
-#include "kxf/FileSystem/FSPath.h"
-#include "kxf/Utility/Common.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/Utility/String.h"
-#include <wx/mimetype.h>
-#include <wx/iconloc.h>
+class wxFileTypeInfo;
 
 namespace kxf
 {
-	class KX_API ShellFileTypeInfo final
+	class KXF_API ShellFileTypeInfo final
 	{
 		private:
-			wxFileTypeInfo m_FileTypeInfo;
-			Utility::UnorderedMapNoCase<String, bool> m_URLProtocolMap;
+			std::unique_ptr<wxFileTypeInfo> m_FileTypeInfo;
+			Utility::UnorderedMapIC<String, bool> m_URLProtocolMap;
 
 		public:
 			ShellFileTypeInfo() = default;
-			ShellFileTypeInfo(const String& mimeType)
-				:m_FileTypeInfo(mimeType)
-			{
-			}
-
-			template<class... Args>
+			ShellFileTypeInfo(const String& mimeType);
 			ShellFileTypeInfo(const String& mimeType,
-						   const String& openCommand,
-						   const String& printCommand,
-						   const String& description,
-						   const FSPath& extension,
-						   Args&& ... arg
-			)
-				:m_FileTypeInfo(mimeType, openCommand, printCommand, description, extension.GetExtension())
-			{
-				AddExtensions(std::forward<Args>(arg)...);
-			}
+							  const String& openCommand,
+							  const String& printCommand,
+							  const String& description,
+							  const String& extension
+			);
 
-			ShellFileTypeInfo(const wxFileTypeInfo& other)
-				:m_FileTypeInfo(other)
-			{
-			}
-			ShellFileTypeInfo(wxFileTypeInfo&& other)
-				:m_FileTypeInfo(std::move(other))
-			{
-			}
+			ShellFileTypeInfo(const wxFileTypeInfo& other);
 			ShellFileTypeInfo(const ShellFileTypeInfo&) = delete;
-			ShellFileTypeInfo(ShellFileTypeInfo&&) = delete;
+			ShellFileTypeInfo(ShellFileTypeInfo&&) noexcept = default;
+			~ShellFileTypeInfo();
 
 		public:
-			const wxFileTypeInfo& AsWxFileTypeInfo() const noexcept
+			wxFileTypeInfo& AsWXFileTypeInfo() noexcept
 			{
-				return m_FileTypeInfo;
+				return *m_FileTypeInfo;
 			}
-			wxFileTypeInfo& AsWxFileTypeInfo() noexcept
+			const wxFileTypeInfo& AsWXFileTypeInfo() const noexcept
 			{
-				return m_FileTypeInfo;
+				return *m_FileTypeInfo;
 			}
 
 		public:
-			String GetDescription() const
-			{
-				return m_FileTypeInfo.GetDescription();
-			}
-			ShellFileTypeInfo& SetDescription(const String& value)
-			{
-				m_FileTypeInfo.SetDescription(value);
-				return *this;
-			}
+			String GetDescription() const;
+			ShellFileTypeInfo& SetDescription(const String& value);
 		
-			String GetShortDescription() const
-			{
-				return m_FileTypeInfo.GetShortDesc();
-			}
-			ShellFileTypeInfo& SetShortDescription(const String& value)
-			{
-				m_FileTypeInfo.SetShortDesc(value);
-				return *this;
-			}
+			String GetShortDescription() const;
+			ShellFileTypeInfo& SetShortDescription(const String& value);
 		
-			String GetMimeType() const
-			{
-				return m_FileTypeInfo.GetMimeType();
-			}
+			String GetMimeType() const;
 
-			String GetOpenCommand() const
-			{
-				return m_FileTypeInfo.GetOpenCommand();
-			}
-			ShellFileTypeInfo& SetOpenCommand(const String& value)
-			{
-				m_FileTypeInfo.SetOpenCommand(value);
-				return *this;
-			}
+			String GetOpenCommand() const;
+			ShellFileTypeInfo& SetOpenCommand(const String& value);
 
-			String GetPrintCommand() const
-			{
-				return m_FileTypeInfo.GetPrintCommand();
-			}
-			ShellFileTypeInfo& SetPrintCommand(const String& value)
-			{
-				m_FileTypeInfo.SetPrintCommand(value);
-				return *this;
-			}
+			String GetPrintCommand() const;
+			ShellFileTypeInfo& SetPrintCommand(const String& value);
 
-			template<class TFunc>
-			size_t EnumExtensions(TFunc&& func) const
-			{
-				size_t count = 0;
-				for (const wxString& value: m_FileTypeInfo.GetExtensions())
-				{
-					count++;
-					if (!std::invoke(func, FSPath(value).GetExtension()))
-					{
-						break;
-					}
-				}
-				return count;
-			}
-
-			size_t GetExtensionsCount() const
-			{
-				return m_FileTypeInfo.GetExtensionsCount();
-			}
-			ShellFileTypeInfo& AddExtension(const FSPath& extension, bool isURLProtocol = false)
-			{
-				String ext = extension.GetExtension();
-
-				m_FileTypeInfo.AddExtension(ext);
-				m_URLProtocolMap.insert_or_assign(std::move(ext), isURLProtocol);
-				return *this;
-			}
+			size_t GetExtensionsCount() const;
+			CallbackResult<size_t> EnumExtensions(CallbackFunction<String> func) const;
+			ShellFileTypeInfo& AddExtension(const String& extension, bool isURLProtocol = false);
 			
 			template<class... Args>
 			ShellFileTypeInfo& AddExtensions(Args&&... arg)
 			{
-				Utility::ForEachParameterPackItem([this](FSPath ext)
+				if (m_FileTypeInfo)
 				{
-					AddExtension(std::move(ext));
-				}, std::forward<Args>(arg)...);
+					Utility::ForEachParameterPackItem([this](const String& extension)
+					{
+						AddExtension(extension);
+					}, std::forward<Args>(arg)...);
+				}
 				return *this;
 			}
 
-			int GetIconIndex() const
-			{
-				return m_FileTypeInfo.GetIconIndex();
-			}
-			FSPath GetIconFile() const
-			{
-				return String(m_FileTypeInfo.GetIconFile());
-			}
-			ShellFileTypeInfo& SetIcon(const FSPath& filePath, int index = 0)
-			{
-				m_FileTypeInfo.SetIcon(filePath.GetFullPath(), index);
-				return *this;
-			}
+			int GetIconIndex() const;
+			String GetIconFile() const;
+			ShellFileTypeInfo& SetIcon(const String& filePath, int index = 0);
 
-			bool IsURLProtocol(const FSPath& ext) const;
-			ShellFileTypeInfo& SetURLProtocol(const FSPath& ext, bool protocol = true);
+			bool IsURLProtocol(const String& extension) const;
+			ShellFileTypeInfo& SetURLProtocol(const String& extension, bool protocol = true);
 
 		public:
 			explicit operator bool() const noexcept
 			{
-				return m_FileTypeInfo.IsValid();
+				return m_FileTypeInfo != nullptr;
 			}
 			bool operator!() const noexcept
 			{
-				return !m_FileTypeInfo.IsValid();
+				return m_FileTypeInfo == nullptr;
 			}
 
 			ShellFileTypeInfo& operator=(const ShellFileTypeInfo&) = delete;
-			ShellFileTypeInfo& operator=(ShellFileTypeInfo&&) = delete;
-
-			ShellFileTypeInfo& operator=(const wxFileTypeInfo& other)
-			{
-				m_FileTypeInfo = other;
-				return *this;
-			}
-			ShellFileTypeInfo& operator=(wxFileTypeInfo&& other)
-			{
-				m_FileTypeInfo = std::move(other);
-				return *this;
-			}
+			ShellFileTypeInfo& operator=(ShellFileTypeInfo&&) = default;
 	};
 }

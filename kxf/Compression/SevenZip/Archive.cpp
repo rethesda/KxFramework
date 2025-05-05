@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Archive.h"
 #include "Library.h"
 #include "Common.h"
@@ -157,7 +157,7 @@ namespace
 		private:
 			std::optional<FileItem> DoItem(IEnumerator& enumerator, FileItem item, const FSPath& directory, std::vector<FSPath>& childDirectories)
 			{
-				FSPath fullPath = item.GetFullPath();
+				FSPath fullPath = item.GetPath();
 				FSPath containingDirectory = fullPath.GetBefore(directory);
 				if (containingDirectory == directory)
 				{
@@ -470,29 +470,6 @@ namespace kxf::SevenZip
 		return NativeFileSystem().GetForbiddenPathNameCharacters(except);
 	}
 
-	bool Archive::ItemExist(const FSPath& path) const
-	{
-		return FindItemByName(*m_Data.InArchive, m_Data.ItemCount, path) != std::numeric_limits<size_t>::max();
-	}
-	bool Archive::FileExist(const FSPath& path) const
-	{
-		size_t index = FindItemByName(*m_Data.InArchive, m_Data.ItemCount, path);
-		if (index != std::numeric_limits<size_t>::max())
-		{
-			return !GetItemAttributes(*m_Data.InArchive, m_Data.ItemCount, LocallyUniqueID(index)).Contains(FILE_ATTRIBUTE_DIRECTORY);
-		}
-		return {};
-	}
-	bool Archive::DirectoryExist(const FSPath& path) const
-	{
-		size_t index = FindItemByName(*m_Data.InArchive, m_Data.ItemCount, path);
-		if (index != std::numeric_limits<size_t>::max())
-		{
-			return GetItemAttributes(*m_Data.InArchive, m_Data.ItemCount, LocallyUniqueID(index)).Contains(FILE_ATTRIBUTE_DIRECTORY);
-		}
-		return {};
-	}
-
 	FileItem Archive::GetItem(const FSPath& path) const
 	{
 		size_t index = FindItemByName(*m_Data.InArchive, m_Data.ItemCount, path);
@@ -510,32 +487,8 @@ namespace kxf::SevenZip
 		}
 		return {};
 	}
-	bool Archive::IsDirectoryEmpty(const FSPath& directory) const
-	{
-		for (const FileItem& item: EnumItems(directory))
-		{
-			return false;
-		}
-		return true;
-	}
 
 	// IFileIDSystem
-	bool Archive::ItemExist(const UniversallyUniqueID& id) const
-	{
-		auto attributes = GetItemAttributes(*m_Data.InArchive, m_Data.ItemCount, id);
-		return !attributes.Equals(INVALID_FILE_ATTRIBUTES);
-	}
-	bool Archive::FileExist(const UniversallyUniqueID& id) const
-	{
-		auto attributes = GetItemAttributes(*m_Data.InArchive, m_Data.ItemCount, id);
-		return !attributes.Equals(INVALID_FILE_ATTRIBUTES) && !attributes.Contains(FILE_ATTRIBUTE_DIRECTORY);
-	}
-	bool Archive::DirectoryExist(const UniversallyUniqueID& id) const
-	{
-		auto attributes = GetItemAttributes(*m_Data.InArchive, m_Data.ItemCount, id);
-		return !attributes.Equals(INVALID_FILE_ATTRIBUTES) && attributes.Contains(FILE_ATTRIBUTE_DIRECTORY);
-	}
-
 	FileItem Archive::GetItem(const UniversallyUniqueID& id) const
 	{
 		auto luid = id.ToLocallyUniqueID();
@@ -572,19 +525,11 @@ namespace kxf::SevenZip
 			{
 				if (FileItem item = Private::GetArchiveItem(*m_Data.InArchive, luid.ToInt()))
 				{
-					return EnumItems(item.GetFullPath(), {}, flags);
+					return EnumItems(item.GetPath(), {}, flags);
 				}
 			}
 		}
 		return {};
-	}
-	bool Archive::IsDirectoryEmpty(const UniversallyUniqueID& id) const
-	{
-		for (const FileItem& item: EnumItems(id, {}))
-		{
-			return false;
-		}
-		return true;
 	}
 
 	Archive& Archive::operator=(Archive&& other)

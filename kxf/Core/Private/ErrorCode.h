@@ -8,5 +8,5 @@ namespace kxf
 
 namespace kxf::Private
 {
-	String FormatErrorCode(const IErrorCode& error);
+	KXF_API String FormatErrorCode(const IErrorCode& error);
 }

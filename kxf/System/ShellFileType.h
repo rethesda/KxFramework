@@ -1,132 +1,116 @@
 #pragma once
 #include "Common.h"
-#include "kxf/Core/String.h"
-#include "kxf/FileSystem/FSPath.h"
-#include <wx/mimetype.h>
-#include <wx/iconloc.h>
+class wxFileType;
 
 namespace kxf
 {
-	class KX_API ShellFileType final
+	class ShellFileTypeInfo;
+}
+
+namespace kxf
+{
+	class KXF_API ShellFileType final
 	{
 		public:
-			using MessageParameters = wxFileType::MessageParameters;
+			class MessageParameters final
+			{
+				friend class ShellFileType;
+
+				private:
+					String m_FileName;
+					String m_MIMEType;
+
+				public:
+					MessageParameters() = default;
+					MessageParameters(String fileName, String mimeType = {})
+						:m_FileName(std::move(fileName)), m_MIMEType(std::move(mimeType))
+					{
+					}
+
+				public:
+					const String& GetFileName() const noexcept
+					{
+						return m_FileName;
+					}
+					const String& GetMIMEType() const noexcept
+					{
+						return m_MIMEType;
+					}
+			};
+
+			class IconLocation final
+			{
+				friend class ShellFileType;
+
+				private:
+					String m_FileName;
+					int m_Index = -1;
+
+				public:
+					IconLocation() = default;
+					IconLocation(String fileName, int index = -1)
+						:m_FileName(std::move(fileName)), m_Index(index)
+					{
+					}
+
+				public:
+					const String& GetFileName() const noexcept
+					{
+						return m_FileName;
+					}
+					int GetIndex() const noexcept
+					{
+						return m_Index;
+					}
+			};
 
 		public:
-			static String ExpandCommand(const String &command, const MessageParameters& parameters)
-			{
-				return wxFileType::ExpandCommand(command, parameters);
-			}
+			static String ExpandCommand(const String &command, const MessageParameters& parameters);
 
 		private:
 			std::unique_ptr<wxFileType> m_FileType;
 
 		public:
 			ShellFileType() = default;
-			ShellFileType(wxFileType* fileType) noexcept
-				:m_FileType(fileType)
-			{
-			}
-			ShellFileType(ShellFileType&& other) noexcept
-			{
-				*this = std::move(other);
-			}
+			ShellFileType(wxFileType* fileType);
+			ShellFileType(const ShellFileTypeInfo& typeInfo);
+			ShellFileType(ShellFileType&&) noexcept = default;
 			ShellFileType(const ShellFileType&) = delete;
+			~ShellFileType();
 
 		public:
-			const wxFileType& AsWxFileType() const
+			wxFileType& AsWXFileType()
 			{
 				return *m_FileType;
 			}
-			wxFileType& AsWxFileType()
+			const wxFileType& AsWXFileType() const
 			{
 				return *m_FileType;
 			}
 
 		public:
-			String GetDescription() const
-			{
-				wxString value;
-				m_FileType->GetDescription(&value);
-				return value;
-			}
-			String GetExtension() const
-			{
-				wxArrayString extensions;
-				return m_FileType->GetExtensions(extensions) ? extensions.front() : "";
-			}
-			wxArrayString GetAllExtensions() const
-			{
-				wxArrayString extensions;
-				m_FileType->GetExtensions(extensions);
-				return extensions;
-			}
+			String GetDescription() const;
+			String GetExtension() const;
+			std::vector<String> GetAllExtensions() const;
 
-			String GetMimeType() const
-			{
-				wxString value;
-				m_FileType->GetMimeType(&value);
-				return value;
-			}
-			wxArrayString GetAllMimeTypes() const
-			{
-				wxArrayString mimeTypes;
-				m_FileType->GetMimeTypes(mimeTypes);
-				return mimeTypes;
-			}
+			String GetMimeType() const;
+			std::vector<String> GetAllMimeTypes() const;
 
-			wxIconLocation GetIcon() const
-			{
-				wxIconLocation icon;
-				m_FileType->GetIcon(&icon);
-				return icon;
-			}
-			wxIconLocation GetIcon(const MessageParameters& parameters) const
-			{
-				wxIconLocation icon;
-				m_FileType->GetIcon(&icon, parameters);
-				return icon;
-			}
+			IconLocation GetIcon() const;
+			IconLocation GetIcon(const MessageParameters& parameters) const;
 
-			String GetCommand(const MessageParameters& parameters, const String& action) const
-			{
-				String value;
-				m_FileType->GetExpandedCommand(action, parameters);
-				return value;
-			}
-			String GetCommand(const String& filePath, const String& action) const
-			{
-				return GetCommand(MessageParameters(filePath), action);
-			}
+			String GetCommand(const String& action, const String& filePath) const;
+			String GetCommand(const String& action, const MessageParameters& parameters) const;
 
-			String GetOpenCommand(const MessageParameters& parameters) const
-			{
-				wxString value;
-				m_FileType->GetOpenCommand(&value, parameters);
-				return value;
-			}
-			String GetOpenCommand(const FSPath& filePath) const
-			{
-				return GetOpenCommand(MessageParameters(filePath.GetFullPath()));
-			}
-			FSPath GetOpenExecutable() const;
+			String GetOpenCommand(const String& filePath) const;
+			String GetOpenCommand(const MessageParameters& parameters) const;
+			String GetOpenExecutable() const;
 
-			String GetPrintCommand(const MessageParameters& parameters) const
-			{
-				wxString value;
-				m_FileType->GetPrintCommand(&value, parameters);
-				return value;
-			}
-			String GetPrintCommand(const String& filePath) const
-			{
-				return GetPrintCommand(MessageParameters(filePath));
-			}
+			String GetPrintCommand(const String& filePath) const;
+			String GetPrintCommand(const MessageParameters& parameters) const;
 		
-			size_t GetAllCommands(wxArrayString& verbs, wxArrayString& commands, const MessageParameters& parameters) const
-			{
-				return m_FileType->GetAllCommands(&verbs, &commands, parameters);
-			}
-			bool IsURLProtocol(const FSPath& extension) const;
+			size_t GetAllCommands(std::vector<String>& verbs, std::vector<String>& commands, const MessageParameters& parameters) const;
+			bool IsURLProtocol(const String& extension) const;
 
 		public:
 			explicit operator bool() const noexcept
@@ -138,11 +122,7 @@ namespace kxf
 				return m_FileType == nullptr;
 			}
 
-			ShellFileType& operator=(ShellFileType&& other) noexcept
-			{
-				m_FileType = std::move(other.m_FileType);
-				return *this;
-			}
+			ShellFileType& operator=(ShellFileType&&) noexcept = default;
 			ShellFileType& operator=(const ShellFileType&) = delete;
 	};
 }

@@ -1,0 +1,464 @@
+diff --git forkSrcPrefix/src/msw/colordlg.cpp forkDstPrefix/src/msw/colordlg.cpp
+index 81353412f97ff98620a91b57b1f7a0107f1cf30d..2ff8d2e393759b89127ace17db1ef5f24e6f725c 100644
+--- forkSrcPrefix/src/msw/colordlg.cpp
++++ forkDstPrefix/src/msw/colordlg.cpp
+@@ -35,7 +35,7 @@
+ #endif
+ 
+ #include "wx/scopeguard.h"
+-
++#include "wx/dynlib.h"
+ #include "wx/msw/private.h"
+ #include "wx/msw/private/dpiaware.h"
+ 
+@@ -64,6 +64,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(wxColourDialog, wxDialog);
+ // implementation
+ // ============================================================================
+ 
++namespace
++{
++	wxDynamicLibrary dll_ComDlg32;
++	decltype(CommDlgExtendedError)* pfn_CommDlgExtendedError = nullptr;
++	decltype(ChooseColor)* pfn_ChooseColor = nullptr;
++
++	template<class TFunc>
++	void LoadFunc(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbol(name));
++	}
++
++	template<class TFunc>
++	void LoadFuncAW(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbolAorW(name));
++	}
++}
++
+ #ifndef COLORBOXES
+     #define COLORBOXES 64
+ #endif
+@@ -154,6 +173,20 @@ wxColourDialogHookProc(HWND hwnd,
+ 
+ void wxColourDialog::Init()
+ {
++	if (!dll_ComDlg32.IsLoaded())
++	{
++		if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++		{
++			LoadFunc(pfn_CommDlgExtendedError, wxT("CommDlgExtendedError"));
++			LoadFuncAW(pfn_ChooseColor, wxT("ChooseColor"));
++		}
++		else
++		{
++			wxLogLastError(wxT("Failed to load comdlg32.dll"));
++			return;
++		}
++	}
++
+     m_movedWindow = false;
+     m_centreDir = 0;
+ 
+@@ -219,11 +252,11 @@ int wxColourDialog::ShowModal()
+     wxMSWImpl::AutoSystemDpiAware dpiAwareness;
+ 
+     // do show the modal dialog
+-    if ( !::ChooseColor(&chooseColorStruct) )
++    if ( !pfn_ChooseColor(&chooseColorStruct) )
+     {
+         // 0 error means the dialog was simply cancelled, i.e. no real error
+         // occurred
+-        const DWORD err = CommDlgExtendedError();
++        const DWORD err = pfn_CommDlgExtendedError();
+         if ( err )
+         {
+             wxLogError(_("Colour selection dialog failed with error %0lx."), err);
+diff --git forkSrcPrefix/src/msw/dcprint.cpp forkDstPrefix/src/msw/dcprint.cpp
+index 053b914b8187c2009ac519aa2222c43b13b80f7a..34b98d290445f65f4fdd623a65b39468a7826932 100644
+--- forkSrcPrefix/src/msw/dcprint.cpp
++++ forkDstPrefix/src/msw/dcprint.cpp
+@@ -40,6 +40,7 @@
+     #include "wx/msw/dib.h"
+ #endif
+ 
++#include "wx/dynlib.h"
+ #include "wx/printdlg.h"
+ #include "wx/display.h"
+ #include "wx/msw/printdlg.h"
+@@ -71,6 +72,18 @@ wxIMPLEMENT_ABSTRACT_CLASS(wxPrinterDCImpl, wxMSWDCImpl);
+ // implementation
+ // ============================================================================
+ 
++namespace
++{
++	wxDynamicLibrary dll_ComDlg32;
++	decltype(PrintDlg)* pfn_PrintDlg = nullptr;
++
++	template<class TFunc>
++	void LoadFuncAW(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbolAorW(name));
++	}
++}
++
+ // ----------------------------------------------------------------------------
+ // wxPrinterDC construction
+ // ----------------------------------------------------------------------------
+@@ -91,6 +104,19 @@ wxPrinterDC::wxPrinterDC(const wxString& driver_name,
+ #if wxUSE_COMMON_DIALOGS
+     if ( interactive )
+     {
++		if (!dll_ComDlg32.IsLoaded())
++		{
++			if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++			{
++				LoadFuncAW(pfn_PrintDlg, wxT("PrintDlg"));
++			}
++			else
++			{
++				wxLogLastError(wxT("Failed to load comdlg32.dll"));
++				return;
++			}
++		}
++
+         PRINTDLG pd;
+ 
+         pd.lStructSize = sizeof( PRINTDLG );
+@@ -105,7 +131,7 @@ wxPrinterDC::wxPrinterDC(const wxString& driver_name,
+         pd.nCopies = 1;
+         pd.hInstance = (HINSTANCE)NULL;
+ 
+-        m_ok = PrintDlg( &pd ) != 0;
++        m_ok = pfn_PrintDlg( &pd ) != 0;
+         if ( m_ok )
+         {
+             m_hDC = (WXHDC) pd.hDC;
+@@ -259,6 +285,19 @@ void wxPrinterDCImpl::SetFont(const wxFont& font)
+ // Returns default device and port names
+ static bool wxGetDefaultDeviceName(wxString& deviceName, wxString& portName)
+ {
++	if (!dll_ComDlg32.IsLoaded())
++	{
++		if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++		{
++			LoadFuncAW(pfn_PrintDlg, wxT("PrintDlg"));
++		}
++		else
++		{
++			wxLogLastError(wxT("Failed to load comdlg32.dll"));
++			return false;
++		}
++	}
++
+     deviceName.clear();
+ 
+     LPDEVNAMES  lpDevNames;
+@@ -274,7 +313,7 @@ static bool wxGetDefaultDeviceName(wxString& deviceName, wxString& portName)
+     pd.Flags          = PD_RETURNDEFAULT;
+     pd.nCopies        = 1;
+ 
+-    if (!PrintDlg((LPPRINTDLG)&pd))
++    if (!pfn_PrintDlg((LPPRINTDLG)&pd))
+     {
+         if ( pd.hDevMode )
+             GlobalFree(pd.hDevMode);
+diff --git forkSrcPrefix/src/msw/fdrepdlg.cpp forkDstPrefix/src/msw/fdrepdlg.cpp
+index fd6c6f787d6bdb116a4fd3517a9fd7cc857bf802..3f2b0efe0506549a2a8052b155f9e3fb3ed1b583 100644
+--- forkSrcPrefix/src/msw/fdrepdlg.cpp
++++ forkDstPrefix/src/msw/fdrepdlg.cpp
+@@ -28,6 +28,7 @@
+     #include "wx/log.h"
+ #endif
+ 
++#include "wx/dynlib.h"
+ #include "wx/fdrepdlg.h"
+ 
+ // ----------------------------------------------------------------------------
+@@ -49,6 +50,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(wxFindReplaceDialog, wxDialog);
+ // wxFindReplaceDialogImpl: the internals of wxFindReplaceDialog
+ // ----------------------------------------------------------------------------
+ 
++namespace
++{
++	wxDynamicLibrary dll_ComDlg32;
++	decltype(CommDlgExtendedError)* pfn_CommDlgExtendedError = nullptr;
++
++	template<class TFunc>
++	void LoadFunc(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbol(name));
++	}
++}
++
+ class WXDLLEXPORT wxFindReplaceDialogImpl
+ {
+ public:
+@@ -292,6 +305,19 @@ wxFindReplaceDialogHookProc(HWND hwnd,
+ 
+ void wxFindReplaceDialog::Init()
+ {
++	if (!dll_ComDlg32.IsLoaded())
++	{
++		if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++		{
++			LoadFunc(pfn_CommDlgExtendedError, wxT("CommDlgExtendedError"));
++		}
++		else
++		{
++			wxLogLastError(wxT("Failed to load comdlg32.dll"));
++			return;
++		}
++	}
++
+     m_impl = NULL;
+     m_FindReplaceData = NULL;
+ 
+@@ -406,7 +432,7 @@ bool wxFindReplaceDialog::Show(bool show)
+     if ( !hwnd )
+     {
+         wxLogError(_("Failed to create the standard find/replace dialog (error code %d)"),
+-                   ::CommDlgExtendedError());
++                   pfn_CommDlgExtendedError());
+ 
+         wxDELETE(m_impl);
+ 
+diff --git forkSrcPrefix/src/msw/filedlg.cpp forkDstPrefix/src/msw/filedlg.cpp
+index 66615ab3ff475e79ef9c28c0bace1f5634ffe005..f9622cff0574e7f79c92bd813969137ff2ce65e2 100644
+--- forkSrcPrefix/src/msw/filedlg.cpp
++++ forkDstPrefix/src/msw/filedlg.cpp
+@@ -87,6 +87,19 @@ static wxRect gs_rectDialog(0, 0, 428, 266);
+ // implementation
+ // ============================================================================
+ 
++namespace
++{
++    wxDynamicLibrary dll_ComDlg32;
++
++    decltype(CommDlgExtendedError)* pfn_CommDlgExtendedError = nullptr;
++
++    template<class TFunc>
++    void LoadFunc(TFunc& ptr, const wxChar* name)
++    {
++        ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbol(name));
++    }
++}
++
+ wxIMPLEMENT_CLASS(wxFileDialog, wxFileDialogBase);
+ 
+ // ----------------------------------------------------------------------------
+@@ -1205,7 +1218,22 @@ static bool DoShowCommFileDialog(OPENFILENAME *of, long style, DWORD *err)
+ 
+     if ( err )
+     {
+-        *err = CommDlgExtendedError();
++        //*err = CommDlgExtendedError();
++
++        if (!dll_ComDlg32.IsLoaded())
++        {
++            if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++            {
++                LoadFunc(pfn_CommDlgExtendedError, wxT("CommDlgExtendedError"));
++            }
++            else
++            {
++                wxLogLastError(wxT("Failed to load comdlg32.dll"));
++                return false;
++            }
++        }
++
++        *err = pfn_CommDlgExtendedError();
+     }
+ 
+     return false;
+diff --git forkSrcPrefix/src/msw/fontdlg.cpp forkDstPrefix/src/msw/fontdlg.cpp
+index b1010f3b0c6f60eea3977f76df347c01431b3ad4..7d664089865c6ebfefddbb74b89aba267d4b319d 100644
+--- forkSrcPrefix/src/msw/fontdlg.cpp
++++ forkDstPrefix/src/msw/fontdlg.cpp
+@@ -35,6 +35,7 @@
+ 
+ #include "wx/fontutil.h"
+ #include "wx/display.h"
++#include "wx/dynlib.h"
+ #include "wx/msw/private/dpiaware.h"
+ 
+ #include <stdlib.h>
+@@ -50,6 +51,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(wxFontDialog, wxDialog);
+ // implementation
+ // ============================================================================
+ 
++namespace
++{
++	wxDynamicLibrary dll_ComDlg32;
++	decltype(ChooseFont)* pfn_ChooseFont = nullptr;
++	decltype(CommDlgExtendedError)* pfn_CommDlgExtendedError = nullptr;
++
++	template<class TFunc>
++	void LoadFunc(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbol(name));
++	}
++
++	template<class TFunc>
++	void LoadFuncAW(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbolAorW(name));
++	}
++}
++
+ // ----------------------------------------------------------------------------
+ // font dialog hook proc used for setting the dialog title if necessary
+ // ----------------------------------------------------------------------------
+@@ -93,8 +113,22 @@ wxString wxFontDialog::GetTitle() const
+ // standard dialog doesn't work correctly when using per-monitor awareness.
+ static BOOL wxMSWChooseFont(CHOOSEFONT* pCF)
+ {
++	if (!dll_ComDlg32.IsLoaded())
++	{
++		if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++		{
++			LoadFuncAW(pfn_ChooseFont, wxT("ChooseFont"));
++            LoadFunc(pfn_CommDlgExtendedError, wxT("CommDlgExtendedError"));
++		}
++		else
++		{
++			wxLogLastError(wxT("Failed to load comdlg32.dll"));
++			return false;
++		}
++	}
++
+     wxMSWImpl::AutoSystemDpiAware dpiAwareness;
+-    return ::ChooseFont(pCF);
++    return pfn_ChooseFont(pCF);
+ }
+ 
+ int wxFontDialog::ShowModal()
+@@ -215,7 +249,21 @@ int wxFontDialog::ShowModal()
+     }
+     else
+     {
+-        DWORD dwErr = CommDlgExtendedError();
++		if (!dll_ComDlg32.IsLoaded())
++		{
++			if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++			{
++				LoadFuncAW(pfn_ChooseFont, wxT("ChooseFont"));
++				LoadFunc(pfn_CommDlgExtendedError, wxT("CommDlgExtendedError"));
++			}
++			else
++			{
++				wxLogLastError(wxT("Failed to load comdlg32.dll"));
++				return false;
++			}
++		}
++
++        DWORD dwErr = pfn_CommDlgExtendedError();
+         if ( dwErr != 0 )
+         {
+             wxLogError(_("Common dialog failed with error code %0lx."), dwErr);
+diff --git forkSrcPrefix/src/msw/printdlg.cpp forkDstPrefix/src/msw/printdlg.cpp
+index 67f79cfdd26396d52dc0a47603a667c061839e18..b0e64ce4a276785ba05ed64b043c74b9b6749948 100644
+--- forkSrcPrefix/src/msw/printdlg.cpp
++++ forkDstPrefix/src/msw/printdlg.cpp
+@@ -37,9 +37,30 @@
+ #include "wx/msw/dcprint.h"
+ #include "wx/paper.h"
+ #include "wx/modalhook.h"
++#include "wx/dynlib.h"
+ 
+ #include <stdlib.h>
+ 
++namespace
++{
++	wxDynamicLibrary dll_ComDlg32;
++	decltype(CommDlgExtendedError)* pfn_CommDlgExtendedError = nullptr;
++	decltype(PageSetupDlg)* pfn_PageSetupDlg = nullptr;
++	decltype(PrintDlg)* pfn_PrintDlg = nullptr;
++
++	template<class TFunc>
++	void LoadFunc(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbol(name));
++	}
++
++	template<class TFunc>
++	void LoadFuncAW(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComDlg32.GetSymbolAorW(name));
++	}
++}
++
+ // smart pointer like class using OpenPrinter and ClosePrinter
+ class WinPrinter
+ {
+@@ -121,7 +142,22 @@ private:
+ 
+ static wxString wxGetPrintDlgError()
+ {
+-    DWORD err = CommDlgExtendedError();
++	if (!dll_ComDlg32.IsLoaded())
++	{
++		if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++		{
++			LoadFunc(pfn_CommDlgExtendedError, wxT("CommDlgExtendedError"));
++			LoadFuncAW(pfn_PageSetupDlg, wxT("PageSetupDlg"));
++			LoadFuncAW(pfn_PrintDlg, wxT("PrintDlg"));
++		}
++		else
++		{
++			wxLogLastError(wxT("Failed to load comdlg32.dll"));
++            return {};
++		}
++	}
++
++    DWORD err = pfn_CommDlgExtendedError();
+     wxString msg = wxT("Unknown");
+     switch (err)
+     {
+@@ -490,7 +526,7 @@ void wxWindowsPrintNativeData::InitializeDevMode(const wxString& printerName, Wi
+ 
+         // Fill out the DEVMODE structure
+         // so we can use it as input in the 'real' PrintDlg
+-        if (!PrintDlg(&pd))
++        if (!pfn_PrintDlg(&pd))
+         {
+             if ( pd.hDevMode )
+                 GlobalFree(pd.hDevMode);
+@@ -823,7 +859,7 @@ int wxWindowsPrintDialog::ShowModal()
+ 
+     pd->hwndOwner = hWndParent;
+ 
+-    bool ret = (PrintDlg( pd ) != 0);
++    bool ret = (pfn_PrintDlg( pd ) != 0);
+ 
+     pd->hwndOwner = 0;
+ 
+@@ -991,6 +1027,21 @@ wxWindowsPageSetupDialog::wxWindowsPageSetupDialog(wxWindow *p, wxPageSetupDialo
+ 
+ bool wxWindowsPageSetupDialog::Create(wxWindow *p, wxPageSetupDialogData *data)
+ {
++	if (!dll_ComDlg32.IsLoaded())
++	{
++		if (dll_ComDlg32.Load(wxT("comdlg32.dll")))
++		{
++			LoadFunc(pfn_CommDlgExtendedError, wxT("CommDlgExtendedError"));
++			LoadFuncAW(pfn_PageSetupDlg, wxT("PageSetupDlg"));
++            LoadFuncAW(pfn_PrintDlg, wxT("PrintDlg"));
++		}
++		else
++		{
++			wxLogLastError(wxT("Failed to load comdlg32.dll"));
++			return false;
++		}
++	}
++
+     m_dialogParent = p;
+     m_pageDlg = NULL;
+ 
+@@ -1024,7 +1075,7 @@ int wxWindowsPageSetupDialog::ShowModal()
+         pd->hwndOwner = (HWND) wxTheApp->GetTopWindow()->GetHWND();
+     else
+         pd->hwndOwner = 0;
+-    BOOL retVal = PageSetupDlg( pd ) ;
++    BOOL retVal = pfn_PageSetupDlg( pd ) ;
+     pd->hwndOwner = 0;
+     if (retVal)
+     {

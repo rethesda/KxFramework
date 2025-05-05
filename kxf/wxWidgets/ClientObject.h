@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include <wx/object.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {

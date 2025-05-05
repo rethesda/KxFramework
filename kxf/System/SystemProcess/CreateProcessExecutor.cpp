@@ -1,8 +1,11 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "CreateProcessExecutor.h"
 #include "ProcessEvent.h"
 #include "kxf/System/Private/Shell.h"
 #include "kxf/System/Private/System.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::System
 {

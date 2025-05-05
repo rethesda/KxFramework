@@ -1,9 +1,11 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Font.h"
-#include "GDIRenderer/GDIScreenContext.h"
+#include "kxf/wxWidgets/MapDrawing.h"
+
 #include <wx/font.h>
 #include <wx/fontutil.h>
-#include "Private/Common.h"
+#include <wx/dcscreen.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -15,7 +17,7 @@ namespace
 	{
 		if (dpi == Geometry::DefaultCoord)
 		{
-			dpi = GDIScreenContext().GetDPI().GetHeight();
+			dpi = wxScreenDC().GetPPI().GetHeight();
 		}
 		return (pixelSize.GetHeight() * g_FontPPI) / dpi;
 	}
@@ -23,7 +25,7 @@ namespace
 	{
 		if (dpi == Geometry::DefaultCoord)
 		{
-			dpi = GDIScreenContext().GetDPI().GetHeight();
+			dpi = wxScreenDC().GetPPI().GetHeight();
 		}
 		return (pointSize * dpi) / g_FontPPI;
 	}
@@ -33,11 +35,11 @@ namespace kxf
 {
 	FontEncoding Font::GetDefaultEncoding() noexcept
 	{
-		return GDIFont::GetDefaultEncoding();
+		return wxWidgets::MapFontEncoding(wxFont::GetDefaultEncoding());
 	}
 	void Font::SetDefaultEncoding(FontEncoding encoding) noexcept
 	{
-		GDIFont::SetDefaultEncoding(encoding);
+		wxFont::SetDefaultEncoding(wxWidgets::MapFontEncoding(encoding));
 	}
 
 	int Font::GetNumericWeightOf(FontWeight weight) noexcept
@@ -135,10 +137,6 @@ namespace kxf
 		return FontWeight::None;
 	}
 
-	void Font::CreateFrom(const GDIFont& other)
-	{
-		CreateFrom(other.ToWxFont());
-	}
 	void Font::CreateFrom(const wxFont& other)
 	{
 		if (other.IsOk())
@@ -147,10 +145,10 @@ namespace kxf
 			m_PixelSize = Size(other.GetPixelSize());
 			m_PointSize = static_cast<float>(other.GetFractionalPointSize());
 			m_Weight = other.GetNumericWeight();
-			m_Family = Drawing::Private::MapFontFamily(other.GetFamily());
-			m_Encoding = Drawing::Private::MapFontEncoding(other.GetEncoding());
+			m_Family = wxWidgets::MapFontFamily(other.GetFamily());
+			m_Encoding = wxWidgets::MapFontEncoding(other.GetEncoding());
 
-			m_Style = Drawing::Private::MapFontStyle(other.GetStyle());
+			m_Style = wxWidgets::MapFontStyle(other.GetStyle());
 			m_Style.Add(FontStyle::Underline, other.GetUnderlined());
 			m_Style.Add(FontStyle::Strikethrough, other.GetStrikethrough());
 		}
@@ -161,10 +159,10 @@ namespace kxf
 		m_PixelSize = Size(other.GetPixelSize());
 		m_PointSize = static_cast<float>(other.GetFractionalPointSize());
 		m_Weight = other.GetNumericWeight();
-		m_Family = Drawing::Private::MapFontFamily(other.GetFamily());
-		m_Encoding = Drawing::Private::MapFontEncoding(other.GetEncoding());
+		m_Family = wxWidgets::MapFontFamily(other.GetFamily());
+		m_Encoding = wxWidgets::MapFontEncoding(other.GetEncoding());
 
-		m_Style = Drawing::Private::MapFontStyle(other.GetStyle());
+		m_Style = wxWidgets::MapFontStyle(other.GetStyle());
 		m_Style.Add(FontStyle::Underline, other.GetUnderlined());
 		m_Style.Add(FontStyle::Strikethrough, other.GetStrikethrough());
 	}
@@ -175,7 +173,7 @@ namespace kxf
 	}
 	bool Font::IsInstalled() const
 	{
-		return !ToGDIFont().IsNull();
+		return wxWidgets::MapFont(*this).IsOk();
 	}
 	Font Font::GetBaseFont() const
 	{
@@ -213,13 +211,9 @@ namespace kxf
 		m_PointSize = PointSizeFromPixelSize(pixelSize);
 	}
 
-	GDIFont Font::ToGDIFont() const
+	wxFont Font::ToWXFont() const
 	{
-		return *this;
-	}
-	wxFont Font::ToWxFont() const
-	{
-		return GDIFont(*this).ToWxFont();
+		return wxWidgets::MapFont(*this);
 	}
 }
 

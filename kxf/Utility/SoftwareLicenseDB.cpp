@@ -1,16 +1,14 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "SoftwareLicenseDB.h"
 #include "kxf/Core/IEncodingConverter.h"
 #include "kxf/System/DynamicLibrary.h"
 
 #if !defined(KXF_DYNAMIC_LIBRARY)
-	#pragma message("SoftwareLicenseDB requires building as a DLL otherwise some license texts will not be available")
+	#pragma message("SoftwareLicenseDB requires building as a DLL, otherwise some license texts will not be available")
 #endif
 
 namespace
 {
-	kxf::SoftwareLicenseDB g_SoftwareLicenseDB;
-
 	constexpr char g_MIT[] = R"~~~({}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -37,7 +35,7 @@ freely, subject to the following restrictions:
    misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.)~~~";\
 
-constexpr char g_BSD2_CALUSE[] = R"~~~({}
+	constexpr char g_BSD2_CALUSE[] = R"~~~({}
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -64,7 +62,7 @@ namespace
 {
 	kxf::String LoadLicense(const kxf::String& name, kxf::IEncodingConverter& encodingConverter = kxf::EncodingConverter_WhateverWorks)
 	{
-		auto buffer = kxf::DynamicLibrary::GetCurrentModule().GetResource(kxS("SOFTWARELICENSEDB"), name);
+		auto buffer = kxf::DynamicLibrary::GetCurrentModule().GetResource(kxfS("SOFTWARELICENSEDB"), name);
 		if (!buffer.empty())
 		{
 			return encodingConverter.ToWideChar(buffer);
@@ -77,7 +75,8 @@ namespace kxf
 {
 	const SoftwareLicenseDB& SoftwareLicenseDB::Get()
 	{
-		return g_SoftwareLicenseDB;
+		static kxf::SoftwareLicenseDB instance;
+		return instance;
 	}
 
 	String SoftwareLicenseDB::GetName(SoftwareLicenseType licenseType) const
@@ -117,31 +116,32 @@ namespace kxf
 		{
 			case SoftwareLicenseType::MIT:
 			{
-				return Format(g_MIT, copyright).TrimRight();
+				return Format(g_MIT, copyright).TrimBoth();
 			}
 			case SoftwareLicenseType::ZLib:
 			{
-				return Format(g_Zlib, copyright).TrimRight();
+				return Format(g_Zlib, copyright).TrimBoth();
 			}
 			case SoftwareLicenseType::GNU_GPLv3:
 			{
-				return Format(LoadLicense("GNU_GPLv3"), copyright).TrimRight();
+				return Format(LoadLicense("GNU_GPLv3"), copyright).TrimBoth();
 			}
 			case SoftwareLicenseType::GNU_LGPLv3:
 			{
-				return Format(LoadLicense("GNU_LGPLv3"), copyright).TrimRight();
+				return Format(LoadLicense("GNU_LGPLv3"), copyright).TrimBoth();
 			}
 			case SoftwareLicenseType::BSD2_Clause:
 			{
-				return Format(g_BSD2_CALUSE, copyright).TrimRight();
+				return Format(g_BSD2_CALUSE, copyright).TrimBoth();
 			}
 			case SoftwareLicenseType::BSD3_Clause:
 			{
-				return Format(g_BSD3_CALUSE, copyright).TrimRight();
+				return Format(g_BSD3_CALUSE, copyright).TrimBoth();
 			}
 		};
 		return {};
 	}
+
 	bool SoftwareLicenseDB::RequiresCopyrightString(SoftwareLicenseType licenseType) const
 	{
 		switch (licenseType)

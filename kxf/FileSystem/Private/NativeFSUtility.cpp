@@ -1,8 +1,9 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "NativeFSUtility.h"
 #include "kxf/IO/NativeFileStream.h"
 #include "kxf/System/SystemInformation.h"
 #include "kxf/Utility/ScopeGuard.h"
+#include "kxf/Utility/String.h"
 #include "kxf/Utility/Memory.h"
 
 namespace kxf::FileSystem::Private
@@ -28,6 +29,20 @@ namespace kxf::FileSystem::Private
 			}
 		}
 		return result;
+	}
+	FSPath GetFileFullPath(HANDLE fileHandle)
+	{
+		constexpr DWORD flags = VOLUME_NAME_DOS|FILE_NAME_NORMALIZED;
+		const DWORD length = ::GetFinalPathNameByHandleW(fileHandle, nullptr, 0, flags);
+		if (length != 0)
+		{
+			String result;
+			if (::GetFinalPathNameByHandleW(fileHandle, Utility::StringBuffer(result, length), length, flags) != 0)
+			{
+				return result;
+			}
+		}
+		return {};
 	}
 
 	bool IsValidFindItem(const _WIN32_FIND_DATAW& findInfo) noexcept
@@ -111,22 +126,16 @@ namespace kxf::FileSystem::Private
 		}
 
 		// Assign path
-		fileItem.SetFullPath(std::move(path));
+		fileItem.SetPath(std::move(path));
 
 		return fileItem;
 	}
 	FileItem ConvertFileInfo(void* fileHandle, UniversallyUniqueID id, FlagSet<FSActionFlag> flags)
 	{
-		NativeFileStream stream;
-		if (stream.AttachHandle(fileHandle))
+		if (fileHandle && fileHandle != INVALID_HANDLE_VALUE)
 		{
-			Utility::ScopeGuard atExit= [&]()
-			{
-				stream.DetachHandle();
-			};
-
 			// File item and path
-			FileItem fileItem(stream.GetFilePath());
+			FileItem fileItem(GetFileFullPath(fileHandle));
 
 			BY_HANDLE_FILE_INFORMATION fileInfo = {};
 			if (::GetFileInformationByHandle(fileHandle, &fileInfo))
@@ -178,7 +187,6 @@ namespace kxf::FileSystem::Private
 		}
 		return {};
 	}
-
 	CallbackResult<bool> CopyOrMoveDirectoryTree(NativeFileSystem& fileSystem,
 												 const FSPath& source,
 												 const FSPath& destination,
@@ -188,7 +196,7 @@ namespace kxf::FileSystem::Private
 	{
 		for (const FileItem& item: fileSystem.EnumItems(source, {}, flags|FSActionFlag::Recursive))
 		{
-			FSPath target = destination / item.GetFullPath().GetAfter(source);
+			FSPath target = destination / item.GetPath().GetAfter(source);
 			if (item.IsDirectory())
 			{
 				if (!func.Invoke(source, target, 0, 0).ShouldTerminate())

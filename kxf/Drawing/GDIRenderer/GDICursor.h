@@ -1,58 +1,65 @@
 #pragma once
 #include "Common.h"
-#include "IGDIObject.h"
-#include "../IImage2D.h"
-#include <wx/cursor.h>
+#include "kxf/Core/UninitializedStorage.h"
+#include "kxf/Drawing/IImage2D.h"
+#include "kxf/Drawing/IGDIObject.h"
+class wxCursor;
 
+namespace kxf
+{
+	class GDIIcon;
+	class GDIBitmap;
+}
 namespace kxf::Drawing
 {
 	enum class StockCursor
 	{
-		None = wxCURSOR_NONE,
-		Default = wxCURSOR_DEFAULT,
+		None = 0,
+		
+		ArrowLeft = 1,
+		ArrowRight = 2,
+		ArrowWait = 27,
+		ArrowQuestion = 16,
 
-		ArrowLeft = wxCURSOR_ARROW,
-		ArrowRight = wxCURSOR_RIGHT_ARROW,
-		ArrowWait = wxCURSOR_ARROWWAIT,
-		ArrowQuestion = wxCURSOR_QUESTION_ARROW,
+		PointLeft = 14,
+		PointRight = 15,
 
-		PointLeft = wxCURSOR_POINT_LEFT,
-		PointRight = wxCURSOR_POINT_RIGHT,
+		LeftButton = 8,
+		MiddleButton = 10,
+		MiddleRight = 17,
 
-		LeftButton = wxCURSOR_LEFT_BUTTON,
-		MiddleButton = wxCURSOR_MIDDLE_BUTTON,
-		MiddleRight = wxCURSOR_RIGHT_BUTTON,
+		SizeAny = 22,
+		SizeRightTopLeftBottom = 18,
+		SizeLeftTopRightBottom = 20,
+		SizeTopBottom = 19,
+		SizeLeftRight = 21,
 
-		SizeAny = wxCURSOR_SIZING,
-		SizeRightTopLeftBottom = wxCURSOR_SIZENESW,
-		SizeLeftTopRightBottom = wxCURSOR_SIZENWSE,
-		SizeTopBottom = wxCURSOR_SIZENS,
-		SizeLeftRight = wxCURSOR_SIZEWE,
+		Char = 4,
+		Cross = 5,
+		Hand = 6,
+		NoEntry = 11,
+		Magnifier = 9,
+		Wait = 24,
+		Watch = 25,
+		IBeam = 7,
+		Bullseye = 3,
+		PaintPrush = 12,
+		SprayCan = 23,
+		Pencil = 13,
+		Blank = 26,
 
-		Char = wxCURSOR_CHAR,
-		Cross = wxCURSOR_CROSS,
-		Hand = wxCURSOR_HAND,
-		NoEntry = wxCURSOR_NO_ENTRY,
-		Magnifier = wxCURSOR_MAGNIFIER,
-		Wait = wxCURSOR_WAIT,
-		Watch = wxCURSOR_WATCH,
-		IBeam = wxCURSOR_IBEAM,
-		Bullseye = wxCURSOR_BULLSEYE,
-		PaintPrush = wxCURSOR_PAINT_BRUSH,
-		SprayCan = wxCURSOR_SPRAYCAN,
-		Pencil = wxCURSOR_PENCIL,
-		Blank = wxCURSOR_BLANK,
+		Default = ArrowLeft
 	};
 }
 
 namespace kxf
 {
-	class KX_API GDICursor: public RTTI::DynamicImplementation<GDICursor, IGDIObject, IImage2D>
+	class KXF_API GDICursor: public RTTI::DynamicImplementation<GDICursor, IGDIObject, IImage2D>
 	{
-		KxRTTI_DeclareIID(GDICursor, {0xec12b28a, 0x111e, 0x4f00, {0x8c, 0xe0, 0xdd, 0xb, 0x18, 0x9, 0xf7, 0x5e}});
+		kxf_RTTI_DeclareIID(GDICursor, {0xec12b28a, 0x111e, 0x4f00, {0x8c, 0xe0, 0xdd, 0xb, 0x18, 0x9, 0xf7, 0x5e}});
 
 		private:
-			wxCursor m_Cursor;
+			UninitializedStorage<wxCursor, 32, 0> m_Cursor;
 			Point m_HotSpot = Point::UnspecifiedPosition();
 
 		private:
@@ -65,35 +72,23 @@ namespace kxf
 			}
 
 		public:
-			GDICursor() = default;
-			GDICursor(const wxCursor& other)
-				:m_Cursor(other)
-			{
-			}
+			GDICursor();
+			GDICursor(const wxCursor& other);
 
 			GDICursor(const GDIIcon& other);
 			GDICursor(const GDIBitmap& other);
+			GDICursor(const GDICursor& other);
 			GDICursor(const BitmapImage& other);
-			GDICursor(const GDICursor& other)
-				:m_Cursor(other.m_Cursor), m_HotSpot(other.m_HotSpot)
-			{
-			}
 
-			virtual ~GDICursor() = default;
+			~GDICursor();
 
 		public:
 			// IGDIObject
-			bool IsNull() const override
+			bool IsNull() const override;
+			bool IsSameAs(const IGDIObject& other) const override;
+			std::shared_ptr<IGDIObject> CloneGDIObject() const override
 			{
-				return !m_Cursor.IsOk();
-			}
-			bool IsSameAs(const IGDIObject& other) const override
-			{
-				return m_Cursor.GetHandle() == other.GetHandle();
-			}
-			std::unique_ptr<IGDIObject> CloneGDIObject() const override
-			{
-				return std::make_unique<GDICursor>(m_Cursor);
+				return std::make_shared<GDICursor>(*m_Cursor);
 			}
 
 			void* GetHandle() const override;
@@ -101,37 +96,17 @@ namespace kxf
 			void AttachHandle(void* handle) override;
 
 			// IImage2D
-			bool IsSameAs(const IImage2D& other) const override
+			bool IsSameAs(const IImage2D& other) const override;
+			std::shared_ptr<IImage2D> CloneImage2D() const override
 			{
-				if (this == &other)
-				{
-					return true;
-				}
-				else if (auto cursor = other.QueryInterface<GDICursor>())
-				{
-					return m_Cursor.IsSameAs(cursor->m_Cursor);
-				}
-				return false;
-			}
-			std::unique_ptr<IImage2D> CloneImage2D() const override
-			{
-				return std::make_unique<GDICursor>(m_Cursor);
+				return std::make_shared<GDICursor>(*m_Cursor);
 			}
 
-			Size GetSize() const override
-			{
-				return m_Cursor.IsOk() ? Size(m_Cursor.GetSize()) : Size::UnspecifiedSize();
-			}
-			ColorDepth GetColorDepth() const override
-			{
-				return m_Cursor.GetDepth();
-			}
-			UniversallyUniqueID GetFormat() const override
-			{
-				return ImageFormat::CUR;
-			}
+			Size GetSize() const override;
+			ColorDepth GetColorDepth() const override;
+			UniversallyUniqueID GetFormat() const override;
 
-			void Create(const Size& size) override;
+			bool Create(const Size& size) override;
 			bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos);
 			bool Save(IOutputStream& stream, const UniversallyUniqueID& format) const;
 
@@ -141,26 +116,20 @@ namespace kxf
 			BitmapImage ToBitmapImage(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const override;
 
 			// GDICursor
-			const wxCursor& ToWxCursor() const noexcept
+			wxCursor& AsWXCursor() noexcept
 			{
-				return m_Cursor;
+				return *m_Cursor;
 			}
-			wxCursor& ToWxCursor() noexcept
+			const wxCursor& AsWXCursor() const noexcept
 			{
-				return m_Cursor;
+				return *m_Cursor;
 			}
+
 			GDIIcon ToGDIIcon() const;
 			GDIBitmap ToGDIBitmap(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const;
 
-			Point GetHotSpot() const
-			{
-				return Point(m_Cursor.GetHotSpot());
-			}
-			void SetHotSpot(Point hotSpot)
-			{
-				// TODO: Update the hotspot on the cursor in memory
-				m_HotSpot = std::move(hotSpot);
-			}
+			Point GetHotSpot() const;
+			void SetHotSpot(Point hotSpot);
 
 		public:
 			explicit operator bool() const noexcept
@@ -172,26 +141,11 @@ namespace kxf
 				return IsNull();
 			}
 
-			GDICursor& operator=(const GDICursor& other)
-			{
-				m_Cursor = other.m_Cursor;
-				m_HotSpot = other.m_HotSpot;
-
-				return *this;
-			}
+			GDICursor& operator=(const GDICursor& other);
 	};
 }
 
 namespace kxf::Drawing
 {
-	inline constexpr wxStockCursor ToWxStockCursor(StockCursor cursorType) noexcept
-	{
-		return static_cast<wxStockCursor>(cursorType);
-	}
-	inline constexpr StockCursor FromWxStockCursor(wxStockCursor cursorType) noexcept
-	{
-		return static_cast<StockCursor>(cursorType);
-	}
-
-	KX_API GDICursor GetStockCursor(Drawing::StockCursor cursor);
+	KXF_API GDICursor GetStockCursor(Drawing::StockCursor cursor);
 }

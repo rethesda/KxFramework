@@ -1,33 +1,33 @@
 #pragma once
 #include "Common.h"
 
-#define KX_DefineLogCategory(name)						constexpr kxf::StringView name = kxS(#name)
-#define KX_DefineLogModuleCategory(module, name)		constexpr kxf::StringView module##_##name = kxS(#module "/" #name)
+#define kxf_DefineLogCategory(name)						constexpr kxf::StringView name = kxfS(#name)
+#define kxf_DefineLogModuleCategory(module, name)		constexpr kxf::StringView module##_##name = kxfS(#module "/" #name)
 
 namespace kxf::LogCategory
 {
-	KX_DefineLogCategory(kxf);
-	KX_DefineLogCategory(WinAPI);
-	KX_DefineLogCategory(wxWidgets);
+	kxf_DefineLogCategory(kxf);
+	kxf_DefineLogCategory(WinAPI);
+	kxf_DefineLogCategory(wxWidgets);
 
-	KX_DefineLogModuleCategory(kxf, Application);
-	KX_DefineLogModuleCategory(kxf, Async);
-	KX_DefineLogModuleCategory(kxf, Compression);
-	KX_DefineLogModuleCategory(kxf, Core);
-	KX_DefineLogModuleCategory(kxf, Crypto);
-	KX_DefineLogModuleCategory(kxf, Drawing);
-	KX_DefineLogModuleCategory(kxf, EventSystem);
-	KX_DefineLogModuleCategory(kxf, FileSystem);
-	KX_DefineLogModuleCategory(kxf, IO);
-	KX_DefineLogModuleCategory(kxf, IPC);
-	KX_DefineLogModuleCategory(kxf, Localization);
-	KX_DefineLogModuleCategory(kxf, Network);
-	KX_DefineLogModuleCategory(kxf, RTTI);
-	KX_DefineLogModuleCategory(kxf, Sciter);
-	KX_DefineLogModuleCategory(kxf, Serialization);
-	KX_DefineLogModuleCategory(kxf, System);
-	KX_DefineLogModuleCategory(kxf, Threading);
-	KX_DefineLogModuleCategory(kxf, UI);
-	KX_DefineLogModuleCategory(kxf, Utility);
-	KX_DefineLogModuleCategory(kxf, wxWidgets);
+	kxf_DefineLogModuleCategory(kxf, Application);
+	kxf_DefineLogModuleCategory(kxf, Async);
+	kxf_DefineLogModuleCategory(kxf, Compression);
+	kxf_DefineLogModuleCategory(kxf, Core);
+	kxf_DefineLogModuleCategory(kxf, Crypto);
+	kxf_DefineLogModuleCategory(kxf, Drawing);
+	kxf_DefineLogModuleCategory(kxf, EventSystem);
+	kxf_DefineLogModuleCategory(kxf, FileSystem);
+	kxf_DefineLogModuleCategory(kxf, IO);
+	kxf_DefineLogModuleCategory(kxf, IPC);
+	kxf_DefineLogModuleCategory(kxf, Localization);
+	kxf_DefineLogModuleCategory(kxf, Network);
+	kxf_DefineLogModuleCategory(kxf, RTTI);
+	kxf_DefineLogModuleCategory(kxf, Sciter);
+	kxf_DefineLogModuleCategory(kxf, Serialization);
+	kxf_DefineLogModuleCategory(kxf, System);
+	kxf_DefineLogModuleCategory(kxf, Threading);
+	kxf_DefineLogModuleCategory(kxf, UI);
+	kxf_DefineLogModuleCategory(kxf, Utility);
+	kxf_DefineLogModuleCategory(kxf, wxWidgets);
 }

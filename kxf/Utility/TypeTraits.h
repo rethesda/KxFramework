@@ -6,18 +6,30 @@ namespace kxf::Utility
 	template<class>
 	struct MethodTraits;
 
-	template<class Return, class Object, class... Args>
-	struct MethodTraits<Return(Object::*)(Args...)>
+	template<class Rx, class Tx, class... Args>
+	struct MethodTraits<Rx(Tx::*)(Args...)>
 	{
-		using TReturn = Return;
-		using TInstance = Object;
+		using TReturn = Rx;
+		using TInstance = Tx;
 		using TArgsTuple = typename std::tuple<Args...>;
 
 		inline static constexpr size_t ArgumentCount = sizeof...(Args);
 	};
 
-	template<size_t N, typename... T>
-	using NthTypeOf = typename std::tuple_element<N, std::tuple<T...>>::type;
+	template<class>
+	struct FunctionPtrTraits;
+
+	template<class Rx, class... Args>
+	struct FunctionPtrTraits<Rx(*)(Args...)>
+	{
+		using TReturn = Rx;
+		using TArgsTuple = typename std::tuple<Args...>;
+
+		inline static constexpr size_t ArgumentCount = sizeof...(Args);
+	};
+
+	template<size_t N, class... Args>
+	using NthTypeOf = typename std::tuple_element<N, std::tuple<Args...>>::type;
 }
 
 namespace kxf::Utility
@@ -35,29 +47,19 @@ namespace kxf::Utility
 namespace kxf::Utility
 {
 	template<class T>
-	struct is_unique_ptr: std::false_type
-	{
-	};
+	struct is_unique_ptr: std::false_type {};
 
 	template<class T, class D>
-	struct is_unique_ptr<std::unique_ptr<T, D>>: std::true_type
-	{
-	};
+	struct is_unique_ptr<std::unique_ptr<T, D>>: std::true_type {};
 
 	template<class T, class D>
-	struct is_unique_ptr<const std::unique_ptr<T, D>>: std::true_type
-	{
-	};
+	struct is_unique_ptr<const std::unique_ptr<T, D>>: std::true_type {};
 
 	template<class T, class D>
-	struct is_unique_ptr<std::unique_ptr<T, D>&>: std::true_type
-	{
-	};
+	struct is_unique_ptr<std::unique_ptr<T, D>&>: std::true_type {};
 
 	template<class T, class D>
-	struct is_unique_ptr<const std::unique_ptr<T, D>&>: std::true_type
-	{
-	};
+	struct is_unique_ptr<const std::unique_ptr<T, D>&>: std::true_type {};
 
 	template<class T>
 	inline constexpr bool is_unique_ptr_v = is_unique_ptr<T>::value;
@@ -66,14 +68,10 @@ namespace kxf::Utility
 namespace kxf::Utility
 {
 	template<class T>
-	struct is_optional: std::false_type
-	{
-	};
+	struct is_optional: std::false_type {};
 
 	template<class T>
-	struct is_optional<std::optional<T>>: std::true_type
-	{
-	};
+	struct is_optional<std::optional<T>>: std::true_type {};
 
 	template<class T>
 	inline constexpr bool is_optional_v = is_optional<T>::value;
@@ -82,19 +80,19 @@ namespace kxf::Utility
 namespace kxf::Utility
 {
 	template<class T, bool isEnum = std::is_enum_v<T>, bool isInteger = std::is_integral_v<T>>
-	struct UnderlyingTypeEx
+	struct any_underlying_type
 	{
 		using type = typename std::underlying_type<T>::type;
 	};
 
 	template<class T>
-	struct UnderlyingTypeEx<T, false, true>
+	struct any_underlying_type<T, false, true>
 	{
 		using type = typename T;
 	};
 
 	template<class T>
-	using UnderlyingTypeEx_t = typename UnderlyingTypeEx<T>::type;
+	using any_underlying_type_t = typename any_underlying_type<T>::type;
 }
 
 namespace kxf::Utility

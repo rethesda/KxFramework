@@ -1,9 +1,9 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "NativeFileSystem.h"
 #include "FSActionEvent.h"
 #include "Private/NativeFSUtility.h"
 #include "kxf/Application/ICoreApplication.h"
-#include "kxf/Core/AlignedObjectStorage.h"
+#include "kxf/Core/UninitializedStorage.h"
 #include "kxf/Core/Enumerator.h"
 #include "kxf/System/DynamicLibrary.h"
 #include "kxf/System/SystemInformation.h"
@@ -34,7 +34,7 @@ namespace
 			{
 				// Some search on Google says that 'FILE_ID_DESCRIPTOR' isn't always 24. it *is* 24 for me on both x64 and x86
 				// and it seems to work fine with the size of 24. Still I'm going to make it bigger, just in case.
-				AlignedObjectStorage<FILE_ID_DESCRIPTOR, 64, alignof(FILE_ID_DESCRIPTOR)> fileIDDescriptor;
+				GuardedUninitializedStorage<FILE_ID_DESCRIPTOR, 64, alignof(FILE_ID_DESCRIPTOR)> fileIDDescriptor;
 				fileIDDescriptor->dwSize = fileIDDescriptor.size();
 
 				if (System::IsWindowsVersionOrGreater(NamedSystemRelease::Windows8))
@@ -170,7 +170,7 @@ namespace kxf::FileSystem::Private
 				}
 				else
 				{
-					return (directory / kxS("*")).GetFullPathTryNS(FSPathNamespace::Win32File);
+					return (directory / kxfS("*")).GetFullPathTryNS(FSPathNamespace::Win32File);
 				}
 			}
 			std::optional<FileItem> DoItem(IEnumerator& enumerator, WIN32_FIND_DATAW& findInfo, const FSPath& directory, std::vector<FSPath>& childDirectories)
@@ -203,7 +203,7 @@ namespace kxf::FileSystem::Private
 				// Make final path relative if needed
 				if (m_Flags.Contains(FSActionFlag::RelativePath))
 				{
-					fileItem.SetFullPath(fileItem.GetFullPath().GetAfter(GetRootPath()));
+					fileItem.SetPath(fileItem.GetPath().GetAfter(GetRootPath()));
 				}
 				return fileItem;
 			};
@@ -319,42 +319,15 @@ namespace kxf
 		return FileSystem::Private::PathResolver(*this).Resolve(relativePath);
 	}
 
-	bool NativeFileSystem::ItemExist(const FSPath& path) const
-	{
-		FileSystem::Private::PathResolver pathResolver(*this);
-		return pathResolver.DoWithResolvedPath1(path, [](const FSPath& path)
-		{
-			return FileSystem::Private::GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES;
-		});
-	}
-	bool NativeFileSystem::FileExist(const FSPath& path) const
-	{
-		FileSystem::Private::PathResolver pathResolver(*this);
-		return pathResolver.DoWithResolvedPath1(path, [](const FSPath& path)
-		{
-			const FlagSet<DWORD> attributes = FileSystem::Private::GetFileAttributes(path);
-			return !attributes.Equals(INVALID_FILE_ATTRIBUTES) && !attributes.Contains(FILE_ATTRIBUTE_DIRECTORY);
-		});
-	}
-	bool NativeFileSystem::DirectoryExist(const FSPath& path) const
-	{
-		FileSystem::Private::PathResolver pathResolver(*this);
-		return pathResolver.DoWithResolvedPath1(path, [](const FSPath& path)
-		{
-			const FlagSet<uint32_t> attributes = FileSystem::Private::GetFileAttributes(path);
-			return !attributes.Equals(INVALID_FILE_ATTRIBUTES) && attributes.Contains(FILE_ATTRIBUTE_DIRECTORY);
-		});
-	}
-
 	FileItem NativeFileSystem::GetItem(const FSPath& path) const
 	{
 		FileSystem::Private::PathResolver pathResolver(*this);
 		return pathResolver.DoWithResolvedPath1(path, [](const FSPath& path) -> FileItem
 		{
-			NativeFileStream file(path, IOStreamAccess::ReadAttributes, IOStreamDisposition::OpenExisting, IOStreamShare::Everything);
-			if (file)
+			NativeFileStream fileStream(path, IOStreamAccess::ReadAttributes, IOStreamDisposition::OpenExisting, IOStreamShare::Everything, IOStreamFlag::AllowDirectories);
+			if (fileStream)
 			{
-				return FileSystem::Private::ConvertFileInfo(file.GetHandle());
+				return FileSystem::Private::ConvertFileInfo(fileStream.GetHandle());
 			}
 			return {};
 		});
@@ -372,20 +345,6 @@ namespace kxf
 		{
 			return FileSystem::Private::NativeDirectoryEnumerator(std::move(path), query, flags);
 		});
-	}
-
-	bool NativeFileSystem::IsDirectoryEmpty(const FSPath& directory) const
-	{
-		if (IsNull())
-		{
-			return false;
-		}
-
-		for (const FileItem& item: EnumItems(directory))
-		{
-			return false;
-		}
-		return true;
 	}
 
 	bool NativeFileSystem::CreateDirectory(const FSPath& path, FlagSet<FSActionFlag> flags)
@@ -590,7 +549,7 @@ namespace kxf
 					std::vector<String> directories;
 					for (const FileItem& item: EnumItems(path, {}, FSActionFlag::Recursive))
 					{
-						String filePath = item.GetFullPath().GetFullPathTryNS(FSPathNamespace::Win32File);
+						String filePath = item.GetPath().GetFullPathTryNS(FSPathNamespace::Win32File);
 						if (item.IsDirectory())
 						{
 							if (!DoRemoveDirectory(filePath))
@@ -683,45 +642,6 @@ namespace kxf
 	}
 
 	// IFileIDSystem
-	bool NativeFileSystem::ItemExist(const UniversallyUniqueID& id) const
-	{
-		if (IsNull())
-		{
-			return false;
-		}
-
-		NativeFileStream file;
-		return OpenFileByID(m_LookupVolume, id, file);
-	}
-	bool NativeFileSystem::FileExist(const UniversallyUniqueID& id) const
-	{
-		if (IsNull())
-		{
-			return false;
-		}
-
-		NativeFileStream file;
-		if (OpenFileByID(m_LookupVolume, id, file))
-		{
-			return !file.GetAttributes().Contains(FileAttribute::Directory);
-		}
-		return false;
-	}
-	bool NativeFileSystem::DirectoryExist(const UniversallyUniqueID& id) const
-	{
-		if (IsNull())
-		{
-			return false;
-		}
-
-		NativeFileStream file;
-		if (OpenFileByID(m_LookupVolume, id, file))
-		{
-			return file.GetAttributes().Contains(FileAttribute::Directory);
-		}
-		return false;
-	}
-	
 	FileItem NativeFileSystem::GetItem(const UniversallyUniqueID& id) const
 	{
 		if (IsNull())

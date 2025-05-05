@@ -5,9 +5,10 @@
 #include "kxf/System/COM.h"
 #include "kxf/Core/ErrorCode.h"
 #include "kxf/Compression/IArchive.h"
+
 #include <7zip/CPP/7zip/Archive/IArchive.h>
 #include <7zip/CPP/7zip/IPassword.h>
-
+#include "kxf/Win32/UndefMacros.h"
 #undef True
 #undef False
 

@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "UniChar.h"
-#include "kxf/System/UndefWindows.h"
 #include "kxf/Serialization/BinarySerializer.h"
 #include "Private/String.h"
 #include <format>
@@ -15,9 +14,9 @@ namespace kxf
 
 	using XChar = wchar_t;
 	using StringView = std::basic_string_view<XChar>;
-	KX_API extern const String NullString;
+	KXF_API extern const String NullString;
 
-	#define kxS(x)	L ## x
+	#define kxfS(x)	L ## x
 
 	enum class StringActionFlag: uint32_t
 	{
@@ -26,13 +25,13 @@ namespace kxf
 		Symmetrical = 1 << 1,
 		FirstMatchOnly = 1 << 2,
 	};
-	KxFlagSet_Declare(StringActionFlag);
+	kxf_FlagSet_Declare(StringActionFlag);
 }
 
 namespace kxf
 {
-	std::basic_string_view<XChar> StringViewOf(const String& string) noexcept;
-	std::basic_string_view<XChar> StringViewOf(const wxString& string) noexcept;
+	KXF_API std::basic_string_view<XChar> StringViewOf(const String& string) noexcept;
+	KXF_API std::basic_string_view<XChar> StringViewOf(const wxString& string) noexcept;
 
 	template<class T>
 	constexpr std::basic_string_view<T> StringViewOf(const std::basic_string<T>& string) noexcept
@@ -80,7 +79,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API String final
+	class KXF_API String final
 	{
 		friend struct std::hash<String>;
 		friend struct BinarySerializer<String>;
@@ -397,7 +396,7 @@ namespace kxf
 			}
 			String& DoAppend(UniChar c, size_t count = 1)
 			{
-				m_String.append(count, *c);
+				m_String.append(count, c.GetAs<XChar>());
 				return *this;
 			}
 
@@ -441,7 +440,7 @@ namespace kxf
 			}
 			String& DoPrepend(UniChar c, size_t count = 1)
 			{
-				m_String.insert(0, count, *c);
+				m_String.insert(0, count, c.GetAs<XChar>());
 				return *this;
 			}
 			
@@ -467,7 +466,7 @@ namespace kxf
 			}
 			String& DoInsert(size_t pos, UniChar c, size_t count = 1)
 			{
-				m_String.insert(pos, count, *c);
+				m_String.insert(pos, count, c.GetAs<XChar>());
 				return *this;
 			}
 			
@@ -662,7 +661,7 @@ namespace kxf
 			{
 				if (!m_String.empty())
 				{
-					m_String[0] = *UniChar(m_String[0]).ToUpperCase();
+					m_String[0] = UniChar(m_String[0]).ToUpperCase().GetAs<XChar>();
 				}
 				return *this;
 			}
@@ -1105,7 +1104,8 @@ namespace kxf
 		return temp;
 	}
 
-	template<class T> requires(std::is_constructible_v<String, T>)
+	template<class T>
+	requires(std::is_constructible_v<String, T>)
 	String operator+(const String& left, T&& right)
 	{
 		String temp = left;
@@ -1115,7 +1115,8 @@ namespace kxf
 	}
 
 	// Conversion
-	template<class T> requires(std::is_arithmetic_v<T>)
+	template<class T>
+	requires(std::is_arithmetic_v<T>)
 	String ToString(T value)
 	{
 		if constexpr(std::is_same_v<XChar, char>)
@@ -1132,7 +1133,8 @@ namespace kxf
 		}
 	}
 
-	template<class T> requires(std::is_enum_v<T>)
+	template<class T>
+	requires(std::is_enum_v<T>)
 	String ToString(T value)
 	{
 		return ToString(static_cast<std::underlying_type_t<T>>(value));
@@ -1181,7 +1183,7 @@ namespace std
 namespace kxf
 {
 	template<>
-	struct KX_API BinarySerializer<String> final
+	struct KXF_API BinarySerializer<String> final
 	{
 		uint64_t Serialize(IOutputStream& stream, const String& value) const;
 		uint64_t Deserialize(IInputStream& stream, String& value) const;

@@ -6,7 +6,7 @@
 #include "kxf/Utility/Common.h"
 
 #include <Windows.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 struct _WIN32_FIND_DATAW;
 struct _BY_HANDLE_FILE_INFORMATION;
 
@@ -14,6 +14,7 @@ namespace kxf::FileSystem::Private
 {
 	uint32_t GetFileAttributes(const FSPath& path);
 	UniversallyUniqueID GetFileUniqueID(HANDLE fileHandle, const _BY_HANDLE_FILE_INFORMATION& fileInfo);
+	FSPath GetFileFullPath(HANDLE fileHandle);
 
 	constexpr inline FlagSet<FileAttribute> MapFileAttributes(uint32_t nativeAttributes) noexcept
 	{
@@ -190,6 +191,7 @@ namespace kxf::FileSystem::Private
 	
 	bool IsValidFindItem(const _WIN32_FIND_DATAW& findInfo) noexcept;
 	void* CallFindFirstFile(const String& query, _WIN32_FIND_DATAW& findInfo, bool isCaseSensitive = false);
+
 	FileItem ConvertFileInfo(const _WIN32_FIND_DATAW& findInfo, const FSPath& location, UniversallyUniqueID id = {}, FlagSet<FSActionFlag> flags = {});
 	FileItem ConvertFileInfo(void* fileHandle, UniversallyUniqueID id = {}, FlagSet<FSActionFlag> flags = {});
 

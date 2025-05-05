@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "SystemWindowRPCExchanger.h"
 #include "../SystemWindowRPCEvent.h"
 #include "kxf/IO/IStream.h"
@@ -7,11 +7,13 @@
 #include "kxf/Threading/IThreadPool.h"
 #include "kxf/EventSystem/IEvtHandler.h"
 #include "kxf/Application/ICoreApplication.h"
+
 #include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
-	constexpr kxf::XChar g_SharedPrefix[] = kxS("kxf::SystemWindowRPCExchanger");
+	constexpr kxf::XChar g_SharedPrefix[] = kxfS("kxf::SystemWindowRPCExchanger");
 }
 
 namespace kxf

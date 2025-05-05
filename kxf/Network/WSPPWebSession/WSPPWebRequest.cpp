@@ -1,9 +1,10 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "WSPPWebRequest.h"
 #include "WSPPWebSession.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/IO/MemoryStream.h"
 #include "kxf/IO/StreamReaderWriter.h"
+#include "kxf/Log/ScopedLogger.h"
 
 namespace kxf
 {
@@ -202,7 +203,7 @@ namespace kxf
 				}
 				catch (...)
 				{
-					wxLogDebug("WSPPWebRequest::DoRegisterHandlers: exception occurred");
+					Log::Debug("WSPPWebRequest::DoRegisterHandlers: exception occurred");
 				}
 			}
 			return nullptr;
@@ -219,7 +220,7 @@ namespace kxf
 		}
 		catch (...)
 		{
-			wxLogDebug("WSPPWebRequest::DoSetRequestHeaders: exception occurred");
+			Log::Debug("WSPPWebRequest::DoSetRequestHeaders: exception occurred");
 		}
 	}
 	void WSPPWebRequest::DoPrepareSendData()
@@ -255,7 +256,7 @@ namespace kxf
 		}
 		catch (...)
 		{
-			wxLogDebug("WSPPWebRequest::DoPrepareSendData: exception occurred");
+			Log::Debug("WSPPWebRequest::DoPrepareSendData: exception occurred");
 		}
 	}
 	void WSPPWebRequest::DoPrepareReceiveData()
@@ -344,7 +345,7 @@ namespace kxf
 			m_Connection = nullptr;
 			m_State = WebRequestState::None;
 
-			wxLogDebug("WSPPWebRequest::WSPPWebRequest: exception occurred");
+			Log::Debug("WSPPWebRequest::WSPPWebRequest: exception occurred");
 		}
 	}
 	WSPPWebRequest::~WSPPWebRequest() noexcept

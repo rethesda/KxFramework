@@ -1,8 +1,12 @@
 # VisualStudio files
 .vs/*
 *.vcxproj.user
+*.aps
+cpp.hint
+ClassDiagram.cd
+kxf/+Resources/RC*
 
-# Output binaries
+# Output and intermediate build files
 Bin/*
 Junk/*
 Build/*

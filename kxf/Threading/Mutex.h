@@ -2,11 +2,11 @@
 #include "Common.h"
 #include "kxf/System/Common.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/DateTime/TimeSpan.h"
+#include "kxf/DateTime/TimeSpan.h"
 
 namespace kxf
 {
-	class KX_API Mutex final
+	class KXF_API Mutex final
 	{
 		private:
 			void* m_Handle = nullptr;

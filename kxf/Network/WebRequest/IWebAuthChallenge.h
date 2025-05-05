@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "kxf/Crypto/UserCredentials.h"
+#include "kxf/System/UserCredentials.h"
 
 namespace kxf
 {
@@ -15,9 +15,9 @@ namespace kxf
 
 namespace kxf
 {
-	class IWebAuthChallenge: public RTTI::Interface<IWebAuthChallenge>
+	class KXF_API_NETWORK IWebAuthChallenge: public RTTI::Interface<IWebAuthChallenge>
 	{
-		KxRTTI_DeclareIID(IWebAuthChallenge, {0xb2231898, 0xd519, 0x4a61, {0xbc, 0x36, 0xfc, 0x4, 0x5d, 0x9a, 0x7c, 0x13}});
+		kxf_RTTI_DeclareIID(IWebAuthChallenge, {0xb2231898, 0xd519, 0x4a61, {0xbc, 0x36, 0xfc, 0x4, 0x5d, 0x9a, 0x7c, 0x13}});
 
 		public:
 			virtual WebAuthChallengeSource GetSource() const = 0;
@@ -30,7 +30,11 @@ namespace kxf
 	class NullWebAuthChallenge final: public IWebAuthChallenge
 	{
 		public:
-			static IWebAuthChallenge& Get();
+			static IWebAuthChallenge& Get()
+			{
+				static NullWebAuthChallenge instance;
+				return instance;
+			}
 
 		public:
 			WebAuthChallengeSource GetSource() const override

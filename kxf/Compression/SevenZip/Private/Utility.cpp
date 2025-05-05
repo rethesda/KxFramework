@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Utility.h"
 #include "GUIDs.h"
 #include "InStreamWrapper.h"
@@ -7,9 +7,10 @@
 #include "kxf/FileSystem/NativeFileSystem.h"
 #include "kxf/FileSystem/Private/NativeFSUtility.h"
 #include "kxf/Utility/ScopeGuard.h"
+
 #include <ShlObj.h>
 #include <shlwapi.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -101,7 +102,7 @@ namespace kxf::SevenZip::Private
 			// Get name of file
 			if (HResult(archive.GetProperty(fileIndex, kpidPath, &property)))
 			{
-				fileItem.SetFullPath(property.ToString().value_or(NullString));
+				fileItem.SetPath(property.ToString().value_or(NullString));
 
 				// Attributes
 				if (FAILED(archive.GetProperty(fileIndex, kpidAttrib, &property)))

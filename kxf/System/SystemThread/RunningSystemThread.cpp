@@ -1,13 +1,14 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "RunningSystemThread.h"
 #include "kxf/System/SystemProcess.h"
 #include "kxf/System/SystemWindow.h"
 #include "kxf/System/Private/System.h"
 #include "kxf/System/NativeAPI.h"
 #include "kxf/System/HResult.h"
+
 #include <Windows.h>
 #include <PsAPI.h>
-#include "kxf/System/UndefWindows.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf
 {
@@ -104,16 +105,16 @@ namespace kxf
 		return ::ResumeThread(m_Handle) != std::numeric_limits<DWORD>::max();
 	}
 
-	size_t RunningSystemThread::EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const
+	CallbackResult<size_t> RunningSystemThread::EnumWindows(CallbackFunction<SystemWindow> func) const
 	{
 		if (!IsNull())
 		{
 			return System::Private::EnumWindows([&](void* hwnd, uint32_t pid, uint32_t tid)
 			{
-				return std::invoke(func, hwnd);
+				return func.Invoke(hwnd).GetLastCommand();
 			}, GetOwningProcess().GetID(), GetID());
 		}
-		return 0;
+		return {};
 	}
 
 	// RunningSystemThread

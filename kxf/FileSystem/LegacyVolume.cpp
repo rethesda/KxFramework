@@ -1,8 +1,11 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "LegacyVolume.h"
 #include "FSPath.h"
 #include "kxf/Core/Enumerator.h"
 #include "kxf/Utility/Common.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -27,7 +30,7 @@ namespace kxf
 			{
 				if (driveMask & 1 << index)
 				{
-					return FromIndex(index);
+					return FromIndex(static_cast<int>(index));
 				}
 				en.SkipCurrent();
 			}
@@ -59,7 +62,7 @@ namespace kxf
 	{
 		if (IsValid())
 		{
-			XChar disk[] = kxS("\0:\\");
+			XChar disk[] = kxfS("\0:\\");
 			disk[0] = m_Drive;
 
 			return disk;

@@ -1,12 +1,14 @@
 #pragma once
 #include "Common.h"
+#include "MapIO.h"
 #include "kxf/Core/OptionalPtr.h"
 #include "kxf/IO/IStream.h"
 #include <wx/stream.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {
-	class KX_API InputStreamWrapper: public RTTI::Implementation<InputStreamWrapper, IInputStream>
+	class KXF_API InputStreamWrapper: public RTTI::Implementation<InputStreamWrapper, IInputStream>
 	{
 		protected:
 			optional_ptr<wxInputStream> m_Stream;
@@ -93,7 +95,7 @@ namespace kxf::wxWidgets
 			{
 				InvalidateInputCache();
 
-				if (auto seekWx = IO::ToWxSeekMode(seek))
+				if (auto seekWx = wxWidgets::MapSeekMode(seek))
 				{
 					return m_Stream->SeekI(offset.ToBytes(), *seekWx);
 				}
@@ -111,7 +113,7 @@ namespace kxf::wxWidgets
 			}
 	};
 
-	class KX_API OutputStreamWrapper: public RTTI::Implementation<OutputStreamWrapper, IOutputStream>
+	class KXF_API OutputStreamWrapper: public RTTI::Implementation<OutputStreamWrapper, IOutputStream>
 	{
 		private:
 			optional_ptr<wxOutputStream> m_Stream;
@@ -189,7 +191,7 @@ namespace kxf::wxWidgets
 			{
 				InvalidateOutputCache();
 
-				if (auto seekWx = IO::ToWxSeekMode(seek))
+				if (auto seekWx = wxWidgets::MapSeekMode(seek))
 				{
 					return m_Stream->SeekO(offset.ToBytes(), *seekWx);
 				}
@@ -219,7 +221,7 @@ namespace kxf::wxWidgets
 
 namespace kxf::wxWidgets
 {
-	class KX_API InputStreamWrapperWx: public wxInputStream
+	class KXF_API InputStreamWrapperWx: public wxInputStream
 	{
 		protected:
 			optional_ptr<IInputStream> m_Stream;
@@ -232,7 +234,7 @@ namespace kxf::wxWidgets
 			}
 			wxFileOffset OnSysSeek(wxFileOffset offset, wxSeekMode mode) override
 			{
-				if (auto seek = IO::FromWxSeekMode(mode))
+				if (auto seek = wxWidgets::MapSeekMode(mode))
 				{
 					return m_Stream->SeekI(offset, *seek).ToBytes<wxFileOffset>();
 				}
@@ -305,7 +307,7 @@ namespace kxf::wxWidgets
 			}
 			wxFileOffset SeekI(wxFileOffset offset, wxSeekMode mode = wxSeekMode::wxFromStart) override
 			{
-				if (auto seek = IO::FromWxSeekMode(mode))
+				if (auto seek = wxWidgets::MapSeekMode(mode))
 				{
 					return m_Stream->SeekI(offset, *seek).ToBytes<wxFileOffset>();
 				}
@@ -323,7 +325,7 @@ namespace kxf::wxWidgets
 			}
 	};
 
-	class KX_API OutputStreamWrapperWx: public wxOutputStream
+	class KXF_API OutputStreamWrapperWx: public wxOutputStream
 	{
 		protected:
 			optional_ptr<IOutputStream> m_Stream;
@@ -336,7 +338,7 @@ namespace kxf::wxWidgets
 			}
 			wxFileOffset OnSysSeek(wxFileOffset offset, wxSeekMode mode) override
 			{
-				if (auto seek = IO::FromWxSeekMode(mode))
+				if (auto seek = wxWidgets::MapSeekMode(mode))
 				{
 					return m_Stream->SeekO(offset, *seek).ToBytes<wxFileOffset>();
 				}
@@ -403,7 +405,7 @@ namespace kxf::wxWidgets
 			}
 			wxFileOffset SeekO(wxFileOffset offset, wxSeekMode mode = wxSeekMode::wxFromStart) override
 			{
-				if (auto seek = IO::FromWxSeekMode(mode))
+				if (auto seek = wxWidgets::MapSeekMode(mode))
 				{
 					return m_Stream->SeekO(offset, *seek).ToBytes<wxFileOffset>();
 				}

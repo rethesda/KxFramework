@@ -1,8 +1,9 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "XMLDocument.h"
 #include "Private/Utility.h"
 #include "kxf/Network/URI.h"
 #include "kxf/Utility/SoftwareLicenseDB.h"
+#include <wx/memory.h>
 
 namespace
 {

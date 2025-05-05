@@ -1,9 +1,11 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "URI.h"
 #include "kxf/Core/ResourceID.h"
 #include "kxf/FileSystem/FSPath.h"
-#include <uriparser/Uri.h>
+
 #include <wx/uri.h>
+#include <uriparser/Uri.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -75,35 +77,40 @@ namespace
 	}
 }
 
-namespace kxf::Private
+namespace kxf
 {
-	class URIObject final
+	class URIImpl final
 	{
 		private:
-			UriUriW m_URI;
+			UriUriW m_URIData = {};
 
 		private:
-			void Initialize() noexcept
+			void ZeroBuffer() noexcept
 			{
-				std::memset(&m_URI, 0, sizeof(m_URI));
+				std::memset(&m_URIData, 0, sizeof(m_URIData));
 			}
 			void Destroy() noexcept
 			{
-				if (m_URI.owner)
+				if (m_URIData.owner)
 				{
-					::uriFreeUriMembersW(&m_URI);
-					m_URI.owner = URI_FALSE;
+					::uriFreeUriMembersW(&m_URIData);
+					m_URIData.owner = URI_FALSE;
 				}
-				std::memset(&m_URI, 0, sizeof(m_URI));
+				ZeroBuffer();
 			}
 
 		public:
-			URIObject() noexcept
+			URIImpl() noexcept
 			{
-				Initialize();
+				ZeroBuffer();
 			}
-			URIObject(const URIObject&) = delete;
-			~URIObject() noexcept
+			URIImpl(const URIImpl&) = delete;
+			URIImpl(URIImpl&& other) noexcept
+			{
+				std::memcpy(&m_URIData, &other.m_URIData, sizeof(m_URIData));
+				other.ZeroBuffer();
+			}
+			~URIImpl() noexcept
 			{
 				Destroy();
 			}
@@ -111,39 +118,41 @@ namespace kxf::Private
 		public:
 			const UriUriW* Get() const noexcept
 			{
-				return &m_URI;
+				return &m_URIData;
 			}
 			UriUriW* Get() noexcept
 			{
-				return &m_URI;
+				return &m_URIData;
 			}
 
-		public:
 			bool Create(const String& uri, bool makeOwner) noexcept
 			{
 				Destroy();
 
-				if (::uriParseSingleUriW(&m_URI, uri.wc_str(), nullptr) == URI_SUCCESS)
+				if (!uri.IsEmpty())
 				{
-					if (makeOwner)
+					auto result = ::uriParseSingleUriW(&m_URIData, uri.wc_str(), nullptr);
+					if (result == URI_SUCCESS)
 					{
-						auto result = ::uriMakeOwnerW(&m_URI);
-						return result == URI_SUCCESS || result == URI_TRUE;
+						if (makeOwner)
+						{
+							result = ::uriMakeOwnerW(&m_URIData);
+							return result == URI_SUCCESS || result == URI_TRUE;
+						}
+						return true;
 					}
-					return true;
 				}
 				return false;
 			}
 			String BuildURI() const
 			{
 				int requiredSize = 0;
-				if (::uriToStringCharsRequiredW(&m_URI, &requiredSize) == URI_SUCCESS)
+				if (::uriToStringCharsRequiredW(&m_URIData, &requiredSize) == URI_SUCCESS)
 				{
-					std::wstring buffer;
-					buffer.resize(requiredSize);
+					std::wstring buffer(requiredSize, 0);
 
 					int written = 0;
-					if (::uriToStringW(buffer.data(), &m_URI, requiredSize + 1, &written) == URI_SUCCESS)
+					if (::uriToStringW(buffer.data(), &m_URIData, requiredSize + 1, &written) == URI_SUCCESS)
 					{
 						return buffer;
 					}
@@ -158,47 +167,47 @@ namespace kxf::Private
 					return std::hash<StringView>()(FromTextRange(value));
 				};
 
-				size_t hash = Hash(m_URI.scheme);
-				hash ^= Hash(m_URI.userInfo);
-				hash ^= Hash(m_URI.hostText);
-				hash ^= Hash(m_URI.portText);
+				size_t hash = Hash(m_URIData.scheme);
+				hash ^= Hash(m_URIData.userInfo);
+				hash ^= Hash(m_URIData.hostText);
+				hash ^= Hash(m_URIData.portText);
 
-				auto pathHead = m_URI.pathHead;
+				auto pathHead = m_URIData.pathHead;
 				while (pathHead)
 				{
 					hash ^= Hash(pathHead->text);
 					pathHead = pathHead->next;
 				}
 
-				hash ^= Hash(m_URI.query);
-				hash ^= Hash(m_URI.fragment);
+				hash ^= Hash(m_URIData.query);
+				hash ^= Hash(m_URIData.fragment);
 
 				return hash;
 			}
-			bool IsSameAs(const URIObject& other) const noexcept
+			bool IsSameAs(const URIImpl& other) const noexcept
 			{
-				return this == &other || ::uriEqualsUriW(&m_URI, &other.m_URI);
+				return this == &other || ::uriEqualsUriW(&m_URIData, &other.m_URIData);
 			}
 
-			bool Resolve(const URIObject& base, FlagSet<URIFlag> flags) noexcept
+			bool Resolve(const URIImpl& base, FlagSet<URIFlag> flags) noexcept
 			{
 				UriUriW result;
-				if (::uriAddBaseUriW(&result, &m_URI, &base.m_URI) == URI_SUCCESS)
+				if (::uriAddBaseUriW(&result, &m_URIData, &base.m_URIData) == URI_SUCCESS)
 				{
 					Destroy();
-					m_URI = result;
+					m_URIData = result;
 
 					return true;
 				}
 				return false;
 			}
-			bool MakeReference(const URIObject& base, FlagSet<URIFlag> flags) noexcept
+			bool MakeReference(const URIImpl& base, FlagSet<URIFlag> flags) noexcept
 			{
 				UriUriW result;
-				if (::uriRemoveBaseUriW(&result, &m_URI, &base.m_URI, flags.Contains(URIFlag::DomainRootRelative)) == URI_SUCCESS)
+				if (::uriRemoveBaseUriW(&result, &m_URIData, &base.m_URIData, flags.Contains(URIFlag::DomainRootRelative)) == URI_SUCCESS)
 				{
 					Destroy();
-					m_URI = result;
+					m_URIData = result;
 
 					return true;
 				}
@@ -207,9 +216,9 @@ namespace kxf::Private
 			bool Normalize()
 			{
 				unsigned int requiresNormalization = 0;
-				if (::uriNormalizeSyntaxMaskRequiredExW(&m_URI, &requiresNormalization) == URI_SUCCESS)
+				if (::uriNormalizeSyntaxMaskRequiredExW(&m_URIData, &requiresNormalization) == URI_SUCCESS)
 				{
-					return ::uriNormalizeSyntaxExW(&m_URI, requiresNormalization) == URI_SUCCESS;
+					return ::uriNormalizeSyntaxExW(&m_URIData, requiresNormalization) == URI_SUCCESS;
 				}
 				return false;
 			}
@@ -217,28 +226,28 @@ namespace kxf::Private
 		public:
 			bool HasScheme() const noexcept
 			{
-				return !IsTextRangeEmpty(m_URI.scheme);
+				return !IsTextRangeEmpty(m_URIData.scheme);
 			}
 			String GetScheme() const
 			{
-				return FromTextRange(m_URI.scheme);
+				return FromTextRange(m_URIData.scheme);
 			}
 
 			NetworkHostType GetHostType() const noexcept
 			{
-				if (m_URI.hostData.ip4)
+				if (m_URIData.hostData.ip4)
 				{
 					return NetworkHostType::IPv4;
 				}
-				else if (m_URI.hostData.ip6)
+				else if (m_URIData.hostData.ip6)
 				{
 					return NetworkHostType::IPv6;
 				}
-				else if (m_URI.hostData.ipFuture.first && m_URI.hostData.ipFuture.afterLast)
+				else if (m_URIData.hostData.ipFuture.first && m_URIData.hostData.ipFuture.afterLast)
 				{
 					return NetworkHostType::IPvFuture;
 				}
-				else if (m_URI.hostText.first && m_URI.hostText.afterLast)
+				else if (m_URIData.hostText.first && m_URIData.hostText.afterLast)
 				{
 					return NetworkHostType::RegisteredName;
 				}
@@ -246,31 +255,31 @@ namespace kxf::Private
 			}
 			bool HasServer() const noexcept
 			{
-				return !IsTextRangeEmpty(m_URI.hostText);
+				return !IsTextRangeEmpty(m_URIData.hostText);
 			}
 			String GetServer() const
 			{
-				return FromTextRange(m_URI.hostText);
+				return FromTextRange(m_URIData.hostText);
 			}
 
 			bool HasPort() const noexcept
 			{
-				return !IsTextRangeEmpty(m_URI.portText);
+				return !IsTextRangeEmpty(m_URIData.portText);
 			}
 			String GetPort() const
 			{
-				return FromTextRange(m_URI.portText);
+				return FromTextRange(m_URIData.portText);
 			}
 
 			bool HasPath() const
 			{
-				return m_URI.pathHead && !IsTextRangeEmpty(m_URI.pathHead->text);
+				return m_URIData.pathHead && !IsTextRangeEmpty(m_URIData.pathHead->text);
 			}
 			String GetPath() const
 			{
 				String result;
 
-				auto pathHead = m_URI.pathHead;
+				auto pathHead = m_URIData.pathHead;
 				while (pathHead)
 				{
 					if (!result.IsEmpty())
@@ -286,33 +295,33 @@ namespace kxf::Private
 
 			bool HasQuery() const noexcept
 			{
-				return !IsTextRangeEmpty(m_URI.query);
+				return !IsTextRangeEmpty(m_URIData.query);
 			}
 			String GetQuery() const
 			{
-				return FromTextRange(m_URI.query);
+				return FromTextRange(m_URIData.query);
 			}
 
 			bool HasFragment() const noexcept
 			{
-				return !IsTextRangeEmpty(m_URI.fragment);
+				return !IsTextRangeEmpty(m_URIData.fragment);
 			}
 			String GetFragment() const
 			{
-				return FromTextRange(m_URI.fragment);
+				return FromTextRange(m_URIData.fragment);
 			}
 
 			bool HasUserInfo() const noexcept
 			{
-				return !IsTextRangeEmpty(m_URI.userInfo);
+				return !IsTextRangeEmpty(m_URIData.userInfo);
 			}
 			String GetUserInfo() const
 			{
-				return FromTextRange(m_URI.userInfo);
+				return FromTextRange(m_URIData.userInfo);
 			}
 			String GetUser() const
 			{
-				auto userInfo = FromTextRange(m_URI.userInfo);
+				auto userInfo = FromTextRange(m_URIData.userInfo);
 
 				size_t pos = userInfo.find(':');
 				if (pos != StringView::npos)
@@ -323,7 +332,7 @@ namespace kxf::Private
 			}
 			String GetPassword() const
 			{
-				auto userInfo = FromTextRange(m_URI.userInfo);
+				auto userInfo = FromTextRange(m_URIData.userInfo);
 
 				size_t pos = userInfo.find(':');
 				if (pos != StringView::npos)
@@ -334,7 +343,18 @@ namespace kxf::Private
 			}
 
 		public:
-			URIObject& operator=(const URIObject&) = delete;
+			URIImpl& operator=(const URIImpl&) = delete;
+			URIImpl& operator=(URIImpl&& other) noexcept
+			{
+				if (this != &other)
+				{
+					Destroy();
+
+					std::memcpy(&m_URIData, &other.m_URIData, sizeof(m_URIData));
+					other.ZeroBuffer();
+				}
+				return *this;
+			}
 	};
 }
 
@@ -356,34 +376,28 @@ namespace kxf
 	}
 	String URI::Unescape(const String& source, LineBreakFormat lineBreakFormat, FlagSet<URIFlag> flags)
 	{
-		auto buffer = source.str();
-		if (const wchar_t* outputTerminator = ::uriUnescapeInPlaceExW(buffer.data(), flags.Contains(URIFlag::SpacePlus), MapLineBreakFormat(lineBreakFormat)))
+		auto buffer = source.ToUTF8();
+		if (auto outputTerminator = ::uriUnescapeInPlaceExA(buffer.data(), flags.Contains(URIFlag::SpacePlus), MapLineBreakFormat(lineBreakFormat)))
 		{
 			buffer.resize(outputTerminator - buffer.data());
-			return buffer;
+			return String::FromUTF8(buffer);
 		}
 		return {};
 	}
 
-	URI::URI() noexcept = default;
-	URI::URI(URI&&) noexcept = default;
-	URI::~URI() = default;
-
 	bool URI::IsNull() const noexcept
 	{
-		return m_URI == nullptr;
+		return !m_URI.IsConstructed();
 	}
 	void URI::Clear() noexcept
 	{
-		m_URI = nullptr;
+		m_URI.Destroy();
 	}
 
 	bool URI::Create(const String& uri)
 	{
-		auto uriObject = std::make_unique<Private::URIObject>();
-		if (uriObject->Create(uri, true))
+		if (m_URI.ConstructAligned() && m_URI->Create(uri, true))
 		{
-			m_URI = std::move(uriObject);
 			return true;
 		}
 		else
@@ -394,21 +408,15 @@ namespace kxf
 	}
 	bool URI::Create(const FSPath& path)
 	{
-		String pathString = path.GetFullPath();
+		if (path)
+		{
+			String fullPath = path.GetFullPath();
 
-		std::wstring buffer;
-		if (path.IsAbsolute())
-		{
-			buffer.resize(8 + 3 * pathString.length() + 1);
-		}
-		else
-		{
-			buffer.resize(3 * pathString.length() + 1);
-		}
-
-		if (::uriWindowsFilenameToUriStringW(pathString.wc_str(), buffer.data()) == URI_SUCCESS)
-		{
-			return Create(String(std::move(buffer)));
+			std::wstring buffer(8 + 3 * fullPath.length() + 1, 0);
+			if (::uriWindowsFilenameToUriStringW(fullPath.wc_str(), buffer.data()) == URI_SUCCESS)
+			{
+				return Create(String(std::move(buffer)));
+			}
 		}
 		return false;
 	}
@@ -453,6 +461,20 @@ namespace kxf
 	String URI::BuildUnescapedURI(LineBreakFormat lineBreakFormat, FlagSet<URIFlag> flags) const
 	{
 		return m_URI ? Unescape(m_URI->BuildURI(), lineBreakFormat, flags) : NullString;
+	}
+	FSPath URI::ToFSPath() const
+	{
+		if (m_URI && m_URI->GetScheme() == kxfS("file"))
+		{
+			auto uri = m_URI->BuildURI();
+
+			std::wstring buffer(uri.length() + 1, 0);
+			if (::uriUriStringToWindowsFilenameW(uri.wc_str(), buffer.data()) == URI_SUCCESS)
+			{
+				return String(std::move(buffer));
+			}
+		}
+		return {};
 	}
 
 	bool URI::HasScheme() const noexcept
@@ -539,11 +561,24 @@ namespace kxf
 		Create(other.BuildURI());
 		return *this;
 	}
-	URI& URI::operator=(URI&&) noexcept = default;
+	URI& URI::operator=(URI&& other) noexcept
+	{
+		if (this != &other)
+		{
+			Clear();
+
+			if (other.m_URI)
+			{
+				m_URI.ConstructAligned(std::move(*other.m_URI));
+				other.Clear();
+			}
+		}
+		return *this;
+	}
 
 	bool URI::operator==(const URI& other) const noexcept
 	{
-		return m_URI == other.m_URI || (m_URI && other.m_URI && m_URI->IsSameAs(*other.m_URI));
+		return this == &other || (!m_URI && !other.m_URI) || (m_URI && other.m_URI && m_URI->IsSameAs(*other.m_URI));
 	}
 	bool URI::operator==(const wxURI& other) const
 	{

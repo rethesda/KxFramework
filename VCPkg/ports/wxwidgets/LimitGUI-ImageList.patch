@@ -1,0 +1,269 @@
+diff --git a/src/msw/imaglist.cpp b/src/msw/imaglist.cpp
+index a7bf5a51de9993602fcd7014d9390ecdbc826511..5b0a1b9e6876807864a0806b003a185c5fa26746 100644
+--- a/src/msw/imaglist.cpp
++++ b/src/msw/imaglist.cpp
+@@ -36,6 +36,7 @@
+ 
+ #include "wx/imaglist.h"
+ #include "wx/dc.h"
++#include "wx/dynlib.h"
+ #include "wx/msw/dc.h"
+ #include "wx/msw/dib.h"
+ #include "wx/msw/private.h"
+@@ -55,6 +56,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(wxImageList, wxObject);
+ // returns the default transparent colour to use for creating the mask
+ static wxColour GetDefaultMaskColour();
+ 
++namespace
++{
++	wxDynamicLibrary dll_ComCtl32;
++    decltype(ImageList_Create)* pfn_ImageList_Create = nullptr;
++    decltype(ImageList_Destroy)* pfn_ImageList_Destroy = nullptr;
++    decltype(ImageList_GetIcon)* pfn_ImageList_GetIcon = nullptr;
++    decltype(ImageList_GetIconSize)* pfn_ImageList_GetIconSize = nullptr;
++    decltype(ImageList_GetImageInfo)* pfn_ImageList_GetImageInfo = nullptr;
++    decltype(ImageList_GetImageCount)* pfn_ImageList_GetImageCount = nullptr;
++    decltype(ImageList_Add)* pfn_ImageList_Add = nullptr;
++    decltype(ImageList_AddMasked)* pfn_ImageList_AddMasked = nullptr;
++    decltype(ImageList_Replace)* pfn_ImageList_Replace = nullptr;
++    decltype(ImageList_Remove)* pfn_ImageList_Remove = nullptr;
++    decltype(ImageList_SetBkColor)* pfn_ImageList_SetBkColor = nullptr;
++    decltype(ImageList_Draw)* pfn_ImageList_Draw = nullptr;
++
++    template<class TFunc>
++    void LoadFunc(TFunc& ptr, const wxChar* name)
++    {
++        ptr = reinterpret_cast<TFunc>(dll_ComCtl32.GetSymbol(name));
++    }
++}
++
+ // ============================================================================
+ // implementation
+ // ============================================================================
+@@ -68,6 +92,30 @@ bool wxImageList::Create(int width, int height, bool mask, int initial)
+ {
+     wxASSERT_MSG( m_hImageList == NULL, "Recreating existing wxImageList?" );
+ 
++    if (!dll_ComCtl32.IsLoaded())
++    {
++        if (dll_ComCtl32.Load(wxT("comctl32.dll")))
++        {
++            LoadFunc(pfn_ImageList_Create, wxT("ImageList_Create"));
++            LoadFunc(pfn_ImageList_Destroy, wxT("ImageList_Destroy"));
++            LoadFunc(pfn_ImageList_GetIcon, wxT("ImageList_GetIcon"));
++            LoadFunc(pfn_ImageList_GetIconSize, wxT("ImageList_GetIconSize"));
++            LoadFunc(pfn_ImageList_GetImageInfo, wxT("ImageList_GetImageInfo"));
++            LoadFunc(pfn_ImageList_GetImageCount, wxT("ImageList_GetImageCount"));
++            LoadFunc(pfn_ImageList_Add, wxT("ImageList_Add"));
++            LoadFunc(pfn_ImageList_AddMasked, wxT("ImageList_AddMasked"));
++            LoadFunc(pfn_ImageList_Replace, wxT("ImageList_Replace"));
++            LoadFunc(pfn_ImageList_Remove, wxT("ImageList_Remove"));
++            LoadFunc(pfn_ImageList_SetBkColor, wxT("ImageList_SetBkColor"));
++            LoadFunc(pfn_ImageList_Draw, wxT("ImageList_Draw"));
++        }
++        else
++        {
++			wxLogLastError(wxT("Failed to load comctl32.dll"));
++			return false;
++        }
++    }
++
+     // Prevent from storing negative dimensions
+     m_size = wxSize(wxMax(width, 0), wxMax(height, 0));
+     UINT flags = 0;
+@@ -91,8 +139,8 @@ bool wxImageList::Create(int width, int height, bool mask, int initial)
+         flags |= ILC_MASK;
+ 
+     // Grow by 1, I guess this is reasonable behaviour most of the time
+-    m_hImageList = (WXHIMAGELIST) ImageList_Create(width, height, flags,
+-                                                   initial, 1);
++    m_hImageList = (WXHIMAGELIST)pfn_ImageList_Create(width, height, flags,
++                                                      initial, 1);
+     if ( !m_hImageList )
+     {
+         wxLogLastError(wxT("ImageList_Create()"));
+@@ -105,7 +153,7 @@ void wxImageList::Destroy()
+ {
+     if ( m_hImageList )
+     {
+-        ImageList_Destroy(GetHImageList());
++        pfn_ImageList_Destroy(GetHImageList());
+         m_hImageList = 0;
+     }
+ }
+@@ -124,7 +172,7 @@ int wxImageList::GetImageCount() const
+ {
+     wxASSERT_MSG( m_hImageList, wxT("invalid image list") );
+ 
+-    return ImageList_GetImageCount(GetHImageList());
++    return pfn_ImageList_GetImageCount(GetHImageList());
+ }
+ 
+ // Returns the size (same for all images) of the images in the list
+@@ -132,7 +180,7 @@ bool wxImageList::GetSize(int WXUNUSED(index), int &width, int &height) const
+ {
+     wxASSERT_MSG( m_hImageList, wxT("invalid image list") );
+ 
+-    return ImageList_GetIconSize(GetHImageList(), &width, &height) != 0;
++    return pfn_ImageList_GetIconSize(GetHImageList(), &width, &height) != 0;
+ }
+ 
+ // ----------------------------------------------------------------------------
+@@ -302,7 +350,7 @@ int wxImageList::Add(const wxBitmap& bitmap, const wxBitmap& mask)
+     wxMSWBitmaps bitmaps;
+     GetImageListBitmaps(bitmaps, bitmap, mask);
+ 
+-    int index = ImageList_Add(GetHImageList(), bitmaps.hbmp, bitmaps.hbmpMask);
++    int index = pfn_ImageList_Add(GetHImageList(), bitmaps.hbmp, bitmaps.hbmpMask);
+     if ( index == -1 )
+     {
+         wxLogError(_("Couldn't add an image to the image list."));
+@@ -320,9 +368,9 @@ int wxImageList::Add(const wxBitmap& bitmap, const wxColour& maskColour)
+     wxMask mask(bitmap, maskColour);
+     GetImageListBitmaps(bitmaps, bitmap, mask.GetBitmap());
+ 
+-    int index = ImageList_AddMasked(GetHImageList(),
+-                                    bitmaps.hbmp,
+-                                    wxColourToRGB(maskColour));
++    int index = pfn_ImageList_AddMasked(GetHImageList(),
++                                        bitmaps.hbmp,
++                                        wxColourToRGB(maskColour));
+     if ( index == -1 )
+     {
+         wxLogError(_("Couldn't add an image to the image list."));
+@@ -351,7 +399,7 @@ bool wxImageList::Replace(int index,
+     wxMSWBitmaps bitmaps;
+     GetImageListBitmaps(bitmaps, bitmap, mask);
+ 
+-    if ( !ImageList_Replace(GetHImageList(), index, bitmaps.hbmp, bitmaps.hbmpMask) )
++    if ( !pfn_ImageList_Replace(GetHImageList(), index, bitmaps.hbmp, bitmaps.hbmpMask) )
+     {
+         wxLogLastError(wxT("ImageList_Replace()"));
+         return false;
+@@ -371,7 +419,7 @@ bool wxImageList::Replace(int i, const wxIcon& icon)
+ // Removes the image at the given index.
+ bool wxImageList::Remove(int index)
+ {
+-    bool ok = index >= 0 && ImageList_Remove(GetHImageList(), index) != FALSE;
++    bool ok = index >= 0 && pfn_ImageList_Remove(GetHImageList(), index) != FALSE;
+     if ( !ok )
+     {
+         wxLogLastError(wxT("ImageList_Remove()"));
+@@ -384,7 +432,7 @@ bool wxImageList::Remove(int index)
+ bool wxImageList::RemoveAll()
+ {
+     // don't use ImageList_RemoveAll() because mingw32 headers don't have it
+-    bool ok = ImageList_Remove(GetHImageList(), -1) != FALSE;
++    bool ok = pfn_ImageList_Remove(GetHImageList(), -1) != FALSE;
+     if ( !ok )
+     {
+         wxLogLastError(wxT("ImageList_Remove()"));
+@@ -421,7 +469,7 @@ bool wxImageList::Draw(int index,
+         }
+     }
+ 
+-    ImageList_SetBkColor(GetHImageList(), clr);
++    pfn_ImageList_SetBkColor(GetHImageList(), clr);
+ 
+     UINT style = 0;
+     if ( flags & wxIMAGELIST_DRAW_NORMAL )
+@@ -439,7 +487,7 @@ bool wxImageList::Draw(int index,
+     x += origin.x;
+     y += origin.y;
+ 
+-    bool ok = ImageList_Draw(GetHImageList(), index, hDC, x, y, style) != 0;
++    bool ok = pfn_ImageList_Draw(GetHImageList(), index, hDC, x, y, style) != 0;
+     if ( !ok )
+     {
+         wxLogLastError(wxT("ImageList_Draw()"));
+@@ -461,7 +509,7 @@ wxBitmap wxImageList::GetBitmap(int index) const
+     dc.SelectObject(bitmap);
+ 
+     IMAGEINFO ii;
+-    ImageList_GetImageInfo(GetHImageList(), index, &ii);
++    pfn_ImageList_GetImageInfo(GetHImageList(), index, &ii);
+     if ( ii.hbmMask )
+     {
+         // draw it the first time to find a suitable mask colour
+@@ -514,7 +562,7 @@ wxBitmap wxImageList::GetBitmap(int index) const
+ // Get the icon
+ wxIcon wxImageList::GetIcon(int index) const
+ {
+-    HICON hIcon = ImageList_ExtractIcon(0, GetHImageList(), index);
++    HICON hIcon = pfn_ImageList_GetIcon(GetHImageList(), index, 0);
+     if (hIcon)
+     {
+         wxIcon icon;
+diff --git a/src/msw/ownerdrw.cpp b/src/msw/ownerdrw.cpp
+index c0673f95a9522f6fb643dcd2607ff8100b735f5f..5ce492ecfd606dc1999f3199b7d4fe50fa357840 100644
+--- a/src/msw/ownerdrw.cpp
++++ b/src/msw/ownerdrw.cpp
+@@ -16,6 +16,7 @@
+ 
+ #include "wx/ownerdrw.h"
+ #include "wx/msw/dc.h"
++#include "wx/dynlib.h"
+ #include "wx/msw/private.h"
+ #include "wx/msw/private/dc.h"
+ #include "wx/msw/wrapcctl.h"            // for HIMAGELIST
+@@ -24,6 +25,21 @@
+ // implementation of wxOwnerDrawn class
+ // ============================================================================
+ 
++namespace
++{
++	wxDynamicLibrary dll_ComCtl32;
++	decltype(ImageList_Create)* pfn_ImageList_Create = nullptr;
++	decltype(ImageList_Destroy)* pfn_ImageList_Destroy = nullptr;
++	decltype(ImageList_Add)* pfn_ImageList_Add = nullptr;
++	decltype(ImageList_Draw)* pfn_ImageList_Draw = nullptr;
++
++	template<class TFunc>
++	void LoadFunc(TFunc& ptr, const wxChar* name)
++	{
++		ptr = reinterpret_cast<TFunc>(dll_ComCtl32.GetSymbol(name));
++	}
++}
++
+ int wxOwnerDrawn::MSWGetTextType() const
+ {
+     // By default, handle the mnemonics.
+@@ -111,17 +127,33 @@ BOOL wxDrawStateBitmap(HDC hDC, HBITMAP hBitmap, int x, int y, UINT uState)
+         case wxDSB_NORMAL:
+         case wxDSB_SELECTED:
+             {
++			    if (!dll_ComCtl32.IsLoaded())
++			    {
++				    if (dll_ComCtl32.Load(wxT("comctl32.dll")))
++				    {
++					    LoadFunc(pfn_ImageList_Create, wxT("ImageList_Create"));
++					    LoadFunc(pfn_ImageList_Destroy, wxT("ImageList_Destroy"));
++					    LoadFunc(pfn_ImageList_Add, wxT("ImageList_Add"));
++					    LoadFunc(pfn_ImageList_Draw, wxT("ImageList_Draw"));
++				    }
++				    else
++				    {
++					    wxLogLastError(wxT("Failed to load comctl32.dll"));
++					    return false;
++				    }
++			    }
++
+                 // uses image list functions to draw
+                 //  - normal bitmap with support transparency
+                 //    (image list internally create mask etc.)
+                 //  - blend bitmap with the background colour
+                 //    (like default selected items)
+-                HIMAGELIST hIml = ::ImageList_Create(bmp.bmWidth, bmp.bmHeight,
+-                                                     ILC_COLOR32 | ILC_MASK, 1, 1);
+-                ::ImageList_Add(hIml, hBitmap, NULL);
++                HIMAGELIST hIml = pfn_ImageList_Create(bmp.bmWidth, bmp.bmHeight,
++                                                       ILC_COLOR32 | ILC_MASK, 1, 1);
++                pfn_ImageList_Add(hIml, hBitmap, NULL);
+                 UINT fStyle = uState == wxDSB_SELECTED ? ILD_SELECTED : ILD_NORMAL;
+-                result = ::ImageList_Draw(hIml, 0, hDC, x, y, fStyle);
+-                ::ImageList_Destroy(hIml);
++                result = pfn_ImageList_Draw(hIml, 0, hDC, x, y, fStyle);
++                pfn_ImageList_Destroy(hIml);
+             }
+             break;
+ 

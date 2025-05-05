@@ -14,7 +14,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API EventID final
+	class KXF_API EventID final
 	{
 		friend struct std::hash<EventID>;
 		friend struct BinarySerializer<EventID>;
@@ -42,7 +42,7 @@ namespace kxf
 			template<class TFunc>
 			requires(std::is_member_function_pointer_v<TFunc>)
 			EventID(TFunc func) noexcept
-				:m_ID(UniversallyUniqueID::CreateFromInt128(Utility::StoreMemberFunction(func)))
+				:m_ID(UniversallyUniqueID::CreateFromInt128(Utility::StoreMemberFunction<16>(func)))
 			{
 			}
 			
@@ -73,15 +73,6 @@ namespace kxf
 				:m_ID(String(id))
 			{
 			}
-			
-			// wxWidgets event tag (integer)
-			#ifdef __WXWINDOWS__
-			template<class T>
-			EventID(const wxEventTypeTag<T>& eventTag) noexcept
-				:m_ID(static_cast<wxEventType>(eventTag))
-			{
-			}
-			#endif
 
 			EventID(EventID&& other) noexcept
 			{
@@ -129,9 +120,7 @@ namespace kxf
 				}
 			}
 
-			#ifdef __WXWINDOWS__
-			bool IsWxWidgetsID() const noexcept;
-			#endif
+			bool IsWXID() const noexcept;
 
 		public:
 			explicit operator bool() const noexcept
@@ -199,7 +188,8 @@ namespace kxf
 				Init();
 			}
 
-			template<class T> requires(std::is_constructible_v<EventID, T>)
+			template<class T>
+			requires(std::is_constructible_v<EventID, T>)
 			EventTag(T&& arg) noexcept(std::is_nothrow_constructible_v<EventID, T>)
 				:m_ID(std::forward<T>(arg))
 			{
@@ -217,12 +207,6 @@ namespace kxf
 			{
 				return m_ID.IsNull();
 			}
-			#ifdef __WXWINDOWS__
-			wxEventTypeTag<TEvent> ToWxTag() const noexcept
-			{
-				return m_ID.AsInt();
-			}
-			#endif
 
 			const EventID& operator*() const noexcept
 			{
@@ -293,8 +277,8 @@ namespace kxf
 
 namespace kxf::EventSystem
 {
-	KX_API EventID NewSimpleEventID() noexcept;
-	KX_API EventID NewUniqueEventID() noexcept;
+	KXF_API EventID NewSimpleEventID() noexcept;
+	KXF_API EventID NewUniqueEventID() noexcept;
 }
 
 namespace kxf

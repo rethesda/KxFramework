@@ -4,7 +4,9 @@
 #include "WithEvtHandler.h"
 #include "kxf/System/COM.h"
 #include "kxf/Core/ErrorCode.h"
+
 #include <7zip/CPP/7zip/IStream.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::SevenZip::Private
 {

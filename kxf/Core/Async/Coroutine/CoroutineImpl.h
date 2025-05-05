@@ -1,6 +1,7 @@
 #pragma once
 #include "../Common.h"
-#include "kxf/EventSystem/GenericTimer.h"
+#include "kxf/RTTI/RTTI.h"
+#include "kxf/DateTime/SimpleTimer.h"
 #include "kxf/EventSystem/IndirectInvocationEvent.h"
 #include "YieldInstruction.h"
 #include <utility>
@@ -10,33 +11,46 @@
 namespace kxf
 {
 	class Coroutine;
-}
-namespace kxf::Async
-{
-	class CoroutineBase;
+
+	class KXF_API ICoroutine: public RTTI::Interface<ICoroutine>
+	{
+		kxf_RTTI_DeclareIID(ICoroutine, {0x948e00f7, 0xc620, 0x4c7d, { 0xb6, 0x95, 0x96, 0x67, 0x71, 0xd5, 0xd9, 0x83}});
+
+		protected:
+			virtual Async::YieldInstruction Execute() = 0;
+
+		public:
+			virtual void Terminate() = 0;
+
+			virtual TimeSpan GetTimeDelta() const = 0;
+			virtual TimeSpan GetElapsedTime() const = 0;
+	};
 }
 
 namespace kxf::Async
 {
-	class KX_API CoroutineTimer final: public GenericTimer
+	class CoroutineBase;
+
+	class KXF_API CoroutineTimer final: public SimpleTimer
 	{
 		private:
-			std::unique_ptr<CoroutineBase> m_Coroutine;
+			std::shared_ptr<CoroutineBase> m_Coroutine;
 
 		protected:
 			void OnNotify() override;
 
 		public:
-			void Wait(std::unique_ptr<CoroutineBase> coroutine, const TimeSpan& time);
-			std::unique_ptr<CoroutineBase> Relinquish();
+			void Wait(std::shared_ptr<CoroutineBase> coroutine, const TimeSpan& time);
+			std::shared_ptr<CoroutineBase> Relinquish();
 	};
-	class KX_API CoroutineExecutor final: public EventSystem::IndirectInvocationEvent
+
+	class KXF_API CoroutineExecutor final: public EventSystem::IndirectInvocationEvent
 	{
 		private:
-			std::unique_ptr<CoroutineBase> m_Coroutine;
+			std::shared_ptr<CoroutineBase> m_Coroutine;
 
 		public:
-			CoroutineExecutor(std::unique_ptr<CoroutineBase> coroutine);
+			CoroutineExecutor(std::shared_ptr<CoroutineBase> coroutine);
 
 		public:
 			// IEvent
@@ -52,13 +66,13 @@ namespace kxf::Async
 
 namespace kxf::Async
 {
-	class KX_API CoroutineBase: public wxObject
+	class KXF_API CoroutineBase: RTTI::Implementation<CoroutineBase, ICoroutine>
 	{
 		friend class CoroutineTimer;
 		friend class CoroutineExecutor;
 
 		public:
-			static CoroutineBase* Run(std::unique_ptr<CoroutineBase> coroutine);
+			static CoroutineBase* Run(std::shared_ptr<CoroutineBase> coroutine);
 
 			template<class T = intptr_t>
 			static YieldInstruction Yield(const T& nextState = 0)
@@ -81,9 +95,9 @@ namespace kxf::Async
 			}
 
 		private:
-			static void QueueExecution(std::unique_ptr<CoroutineBase> coroutine);
-			static void DelayExecution(std::unique_ptr<CoroutineBase> coroutine, const TimeSpan& time);
-			static void AbortExecution(std::unique_ptr<CoroutineBase> coroutine);
+			static void QueueExecution(std::shared_ptr<CoroutineBase> coroutine);
+			static void DelayExecution(std::shared_ptr<CoroutineBase> coroutine, const TimeSpan& time);
+			static void AbortExecution(std::shared_ptr<CoroutineBase> coroutine);
 
 		private:
 			CoroutineTimer m_DelayTimer;
@@ -95,27 +109,25 @@ namespace kxf::Async
 		private:
 			void BeforeExecute();
 			void AfterExecute();
-			void RunExecute(std::unique_ptr<CoroutineBase> coroutine);
+			void RunExecute(std::shared_ptr<CoroutineBase> coroutine);
 
 			TimeSpan GetCurrentExecutionTime() const;
-
-		protected:
-			virtual YieldInstruction Execute() = 0;
 
 		public:
 			CoroutineBase();
 			virtual ~CoroutineBase();
 
 		public:
-			void Terminate();
+			// ICoroutine
+			void Terminate() override;
+
+			TimeSpan GetTimeDelta() const override;
+			TimeSpan GetElapsedTime() const override;
 
 			template<class T = intptr_t>
 			std::optional<T> GetNextState() const noexcept
 			{
 				return m_Instruction.GetNextState<T>();
 			}
-
-			TimeSpan GetTimeDelta() const;
-			TimeSpan GetElapsedTime() const;
 	};
 }

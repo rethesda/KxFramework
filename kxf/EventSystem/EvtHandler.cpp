@@ -1,10 +1,11 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "EvtHandler.h"
 #include "IdleEvent.h"
 #include "EvtHandlerAccessor.h"
 #include "kxf/Application/ICoreApplication.h"
 #include "kxf/Application/Private/Utility.h"
 #include "kxf/Utility/Container.h"
+#include <wx/thread.h>
 
 namespace
 {
@@ -71,15 +72,17 @@ namespace kxf
 			Destroy();
 		}
 
-		m_EventTable = std::move(other.m_EventTable);
 		{
 			WriteLockGuard lockThis(m_EventTableLock);
 			WriteLockGuard lockOther(other.m_EventTableLock);
+
 			m_EventTable = std::move(other.m_EventTable);
+			m_EventBindSlot = std::exchange(other.m_EventBindSlot, 0);
 		}
 		{
 			WriteLockGuard lockThis(m_PendingEventsLock);
 			WriteLockGuard lockOther(other.m_PendingEventsLock);
+
 			m_PendingEvents = std::move(other.m_PendingEvents);
 		}
 		m_PrevHandler.exchange(other.m_PrevHandler);
@@ -130,7 +133,7 @@ namespace kxf
 	bool EvtHandler::TryApp(IEvent& event)
 	{
 		auto app = ICoreApplication::GetInstance();
-		if (app && static_cast<IEvtHandler*>(this) != app && this != &app->GetEvtHandler())
+		if (app && static_cast<IEvtHandler*>(this) != app)
 		{
 			// Special case: don't pass 'IIdleEvent::EvtIdle' to app, since it'll always
 			// swallow it. Events of 'IIdleEvent::EvtIdle' are sent explicitly to the app

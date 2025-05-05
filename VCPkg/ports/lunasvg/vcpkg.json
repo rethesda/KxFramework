@@ -1,8 +1,0 @@
-{
-  "name": "lunasvg",
-  "version-string": "1.4.2",
-  "port-version": 1,
-  "description": "lunasvg is a standalone c++ library to create, animate, manipulate and render SVG files.",
-  "homepage": "https://github.com/sammycage/lunasvg",
-  "license": "MIT"
-}

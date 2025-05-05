@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "CURLWebResponse.h"
 #include "CURLWebRequest.h"
 #include "LibCURLUtility.h"
@@ -236,7 +236,7 @@ namespace kxf
 		return {};
 	}
 
-	std::unique_ptr<IInputStream> CURLWebResponse::GetStream() const
+	std::shared_ptr<IInputStream> CURLWebResponse::GetStream() const
 	{
 		if (m_Request.m_ReceiveStream)
 		{

@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "String.h"
 #include "kxf/Core/IEncodingConverter.h"
 
@@ -81,11 +81,11 @@ namespace kxf::Utility
 {
 	std::optional<bool> ParseBool(const String& value)
 	{
-		if (value == kxS("false") || value == kxS("FALSE"))
+		if (value == kxfS("false") || value == kxfS("FALSE"))
 		{
 			return false;
 		}
-		else if (value == kxS("true") || value == kxS("TRUE"))
+		else if (value == kxfS("true") || value == kxfS("TRUE"))
 		{
 			return true;
 		}

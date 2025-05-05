@@ -6,7 +6,7 @@
 
 namespace kxf
 {
-	class KX_API SystemProcess: public ISystemProcess
+	class KXF_API SystemProcess: public ISystemProcess
 	{
 		public:
 			static SystemProcess GetCurrentProcess();
@@ -89,15 +89,15 @@ namespace kxf
 				return RunningSystemProcess(m_PID, SystemProcessAccess::QueryLimitedInformation).GetShowWindowCommand();
 			}
 
-			size_t EnumEnvironemntVariables(std::function<CallbackCommand(const String&, const String&)> func) const override
+			CallbackResult<size_t> EnumEnvironemntVariables(CallbackFunction<const String&, const String&> func) const override
 			{
 				return RunningSystemProcess(m_PID, SystemProcessAccess::None).EnumEnvironemntVariables(std::move(func));
 			}
-			size_t EnumThreads(std::function<CallbackCommand(SystemThread)> func) const override
+			CallbackResult<size_t> EnumThreads(CallbackFunction<SystemThread> func) const override
 			{
 				return RunningSystemProcess(m_PID, SystemProcessAccess::None).EnumThreads(std::move(func));
 			}
-			size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const override
+			CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const override
 			{
 				return RunningSystemProcess(m_PID, SystemProcessAccess::None).EnumWindows(std::move(func));
 			}
@@ -135,7 +135,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API SystemProcessInfo: public ISystemProcess
+	class KXF_API SystemProcessInfo: public ISystemProcess
 	{
 		public:
 			static SystemProcessInfo GetCurrentProcess();
@@ -224,26 +224,25 @@ namespace kxf
 				return m_ShowWindowCommand;
 			}
 
-			size_t EnumEnvironemntVariables(std::function<CallbackCommand(const String&, const String&)> func) const override
+			CallbackResult<size_t> EnumEnvironemntVariables(CallbackFunction<const String&, const String&> func) const override
 			{
-				size_t count = 0;
 				for (const auto& [name, value]: m_Environment)
 				{
-					count++;
-					if (std::invoke(func, name, value) == CallbackCommand::Terminate)
+					if (func.Invoke(name, value).ShouldTerminate())
 					{
 						break;
 					}
 				}
-				return count;
+
+				return func.Finalize(m_Environment.size());
 			}
-			size_t EnumThreads(std::function<CallbackCommand(SystemThread)> func) const override
+			CallbackResult<size_t> EnumThreads(CallbackFunction<SystemThread> func) const override
 			{
-				return 0;
+				return {};
 			}
-			size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const override
+			CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const override
 			{
-				return 0;
+				return {};
 			}
 
 			// SystemProcessInfo
@@ -274,7 +273,7 @@ namespace kxf
 				m_Environment.clear();
 			}
 
-			std::unique_ptr<ISystemProcess> Spawn(EvtHandlerDelegate evtHandler = {}, FlagSet<CreateSystemProcessFlag> flags = {});
+			std::shared_ptr<ISystemProcess> Spawn(EvtHandlerDelegate evtHandler = {}, FlagSet<CreateSystemProcessFlag> flags = {});
 	};
 }
 

@@ -1,11 +1,16 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Common.h"
-#include "IImageHandler.h"
 #include "BitmapImage.h"
+#include "IImageHandler.h"
 #include "Private/SVGImageHandler.h"
+#include "GDIRenderer/GDIBitmap.h"
 #include "kxf/wxWidgets/StreamWrapper.h"
 #include "kxf/Utility/ScopeGuard.h"
+
 #include <wx/image.h>
+#include <Windows.h>
+#include "kxf/Win32/LinkLibs-GUI.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::Drawing
 {
@@ -15,7 +20,7 @@ namespace kxf::Drawing
 		wxImage::AddHandler(std::make_unique<Drawing::Private::SVGImageHandler>().release());
 	}
 
-	std::unique_ptr<IImage2D> LoadImage(IInputStream& stream, size_t index)
+	std::shared_ptr<IImage2D> LoadImage(IInputStream& stream, size_t index)
 	{
 		if (stream.IsSeekable())
 		{
@@ -47,11 +52,29 @@ namespace kxf::Drawing
 					if (handlerWx.LoadFile(&image, wrapper, false, index != std::numeric_limits<size_t>::max() ? static_cast<int>(index) : -1) && image.IsOk())
 					{
 						image.SetType(handlerWx.GetType());
-						return std::make_unique<BitmapImage>(std::move(image));
+						return std::make_shared<BitmapImage>(std::move(image));
 					}
 				}
 			}
 		}
 		return nullptr;
+	}
+	GDIBitmap BitmapFromMemoryLocation(const void* data)
+	{
+		const BITMAPINFO& bitmapInfo = *static_cast<const BITMAPINFO*>(data);
+		const BITMAPINFOHEADER& bitmapHeader = bitmapInfo.bmiHeader;
+
+		// We don't support other color depth values here
+		const ColorDepth colorDepth = bitmapHeader.biBitCount;
+		if (colorDepth == ColorDepthDB::BPP24 || colorDepth == ColorDepthDB::BPP32)
+		{
+			// TODO: Check the correctness of this pointer
+			const auto bitmapData = reinterpret_cast<const uint8_t*>(data) + sizeof(BITMAPINFO);
+
+			GDIBitmap bitmap;
+			bitmap.AttachHandle(::CreateBitmap(bitmapHeader.biWidth, bitmapHeader.biHeight, bitmapHeader.biPlanes, bitmapHeader.biBitCount, bitmapData));
+			return bitmap;
+		}
+		return {};
 	}
 }

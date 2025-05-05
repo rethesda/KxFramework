@@ -1,22 +1,24 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "CoreApplication.h"
-#include "Private/NativeApp.h"
 #include "Private/Utility.h"
+#include "Private/Win32ConsoleEventLoop.h"
+#include "kxf/Core/Enumerator.h"
 #include "kxf/Log/ScopedLogger.h"
-#include "kxf/EventSystem/Private/Win32ConsoleEventLoop.h"
 #include "kxf/EventSystem/IEventExecutor.h"
 #include "kxf/EventSystem/IdleEvent.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/System/NativeAPI.h"
 #include "kxf/System/NtStatus.h"
 #include "kxf/System/DynamicLibrary.h"
 #include "kxf/System/DynamicLibraryEvent.h"
-#include "kxf/UI/IWidget.h"
 #include "kxf/Utility/Container.h"
 #include "kxf/Utility/ScopeGuard.h"
-#include "kxf/wxWidgets/Application.h"
+#include "kxf/wxWidgets/ApplicationWrapper.h"
+#include "kxf/wxWidgets/ApplicationWrapperConsole.h"
 #include "kxf/wxWidgets/EvtHandlerWrapper.h"
 #include "kxf/wxWidgets/Setup.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -88,6 +90,7 @@ namespace kxf::Private
 
 namespace kxf
 {
+	// CoreApplication
 	bool CoreApplication::InitDLLNotifications()
 	{
 		if (!NativeAPI::NtDLL::LdrRegisterDllNotification)
@@ -151,6 +154,7 @@ namespace kxf
 		m_DLLNotificationsCookie = nullptr;
 	}
 
+	// IEvtHandler
 	bool CoreApplication::OnDynamicBind(EventItem& eventItem)
 	{
 		if (!m_DLLNotificationsCookie)
@@ -174,147 +178,29 @@ namespace kxf
 	// IObject
 	RTTI::QueryInfo CoreApplication::DoQueryInterface(const IID& iid) noexcept
 	{
-		if (iid.IsOfType<wxWidgets::Application>() || iid.IsOfType<wxWidgets::ApplicationConsole>())
+		if (auto app = wxAppConsole::GetInstance())
 		{
-			if (auto app = Application::Private::NativeApp::GetInstance())
+			if (iid.IsOfType<wxWidgets::ApplicationConsole>())
 			{
-				return app->QueryInterface(iid);
+				if (auto appConsole = dynamic_cast<wxWidgets::ApplicationConsole*>(app))
+				{
+					return appConsole->QueryInterface(iid);
+				}
+				return nullptr;
 			}
-			return nullptr;
+			else if (iid.IsOfType<wxWidgets::ApplicationGUI>())
+			{
+				if (auto appGUI = dynamic_cast<wxWidgets::ApplicationGUI*>(app))
+				{
+					return appGUI->QueryInterface(iid);
+				}
+				return nullptr;
+			}
 		}
 		return TBaseClass::DoQueryInterface(iid);
 	}
 
-	// ICoreApplication
-	bool CoreApplication::OnCreate()
-	{
-		KX_SCOPEDLOG_FUNC;
-
-		if (!m_NativeAppInitialized)
-		{
-			if (auto app = wxAppConsole::GetInstance())
-			{
-				int argc = m_ArgC;
-				m_NativeAppInitialized = app->wxAppConsole::Initialize(argc, m_ArgVW);
-				if (!m_NativeAppInitialized)
-				{
-					KX_SCOPEDLOG.SetFail();
-					return false;
-				}
-			}
-		}
-
-		KX_SCOPEDLOG.SetSuccess();
-		return true;
-	}
-	void CoreApplication::OnDestroy()
-	{
-		KX_SCOPEDLOG_FUNC;
-
-		UninitDLLNotifications();
-
-		// Destroy the main loop
-		m_MainLoop = nullptr;
-
-		// Clean up any still pending objects. Normally there shouldn't any as we
-		// already do this in 'OnExit', but this could happen if the user code has
-		// somehow managed to create more of them since then or just forgot to call
-		// the base class 'OnExit'.
-		FinalizeScheduledForDestruction();
-
-		if (m_NativeAppInitialized && !m_NativeAppCleanedUp)
-		{
-			if (auto app = wxAppConsole::GetInstance())
-			{
-				app->wxAppConsole::CleanUp();
-				m_NativeAppCleanedUp = true;
-			}
-		}
-
-		KX_SCOPEDLOG.SetSuccess();
-	}
-
-	void CoreApplication::OnExit()
-	{
-		// Finalize scheduled objects if there are anything left
-		FinalizeScheduledForDestruction();
-	}
-	int CoreApplication::OnRun()
-	{
-		KX_SCOPEDLOG_FUNC;
-
-		if (auto mainLoop = CreateMainLoop())
-		{
-			// Save the old main loop pointer (if any), create a new loop and run it.
-			// At the end of the loop, restore the original main loop.
-			std::swap(m_MainLoop, mainLoop);
-			Utility::ScopeGuard atExit = [&]()
-			{
-				m_MainLoop = std::move(mainLoop);
-			};
-
-			// Here we're running our newly created main loop saved in place of 'm_MainLoop' pointer.
-			int code = m_MainLoop->Run();
-
-			KX_SCOPEDLOG.LogReturn(code);
-			return code;
-		}
-
-		KX_SCOPEDLOG.LogReturn(m_ExitCode);
-		return m_ExitCode.value_or(-1);
-	}
-
-	void CoreApplication::Exit(int exitCode)
-	{
-		KX_SCOPEDLOG_ARGS(exitCode);
-
-		if (m_MainLoop)
-		{
-			ExitMainLoop(exitCode);
-		}
-		else
-		{
-			m_ExitCode = exitCode;
-			std::terminate();
-		}
-
-		KX_SCOPEDLOG.SetSuccess();
-	}
-
-	void CoreApplication::AddEventFilter(std::shared_ptr<IEventFilter> eventFilter)
-	{
-		WriteLockGuard lock(m_EventFiltersLock);
-
-		m_EventFilters.emplace_back(std::move(eventFilter));
-	}
-	void CoreApplication::RemoveEventFilter(IEventFilter& eventFilter)
-	{
-		WriteLockGuard lock(m_EventFiltersLock);
-
-		m_EventFilters.remove_if([&](auto& item)
-		{
-			return item.get() == &eventFilter;
-		});
-	}
-	IEventFilter::Result CoreApplication::FilterEvent(IEvent& event)
-	{
-		using Result = IEventFilter::Result;
-
-		ReadLockGuard lock(m_EventFiltersLock);
-		for (auto& eventFilter: m_EventFilters)
-		{
-			const Result result = eventFilter->FilterEvent(event);
-			if (result != Result::Skip)
-			{
-				return result;
-			}
-		}
-
-		// Do nothing by default if there are no event filters
-		return Result::Skip;
-	}
-
-	// Application::IBasicInfo
+	// ICoreApplication -> Basic Info
 	String CoreApplication::GetName() const
 	{
 		if (!m_Name.IsEmpty())
@@ -421,14 +307,14 @@ namespace kxf
 		}
 	}
 
-	// Application::IMainEoventLoop
+	// ICoreApplication -> Main Event Loop
 	std::shared_ptr<IEventLoop> CoreApplication::CreateMainLoop()
 	{
 		return std::make_shared<kxf::EventSystem::Private::Win32ConsoleEventLoop>();
 	}
 	void CoreApplication::ExitMainLoop(int exitCode)
 	{
-		KX_SCOPEDLOG_ARGS(exitCode);
+		KXF_SCOPEDLOG_ARGS(exitCode);
 
 		// We should exit from the main event loop, not just any currently active (e.g. modal dialog) event loop
 		m_ExitCode = exitCode;
@@ -438,7 +324,7 @@ namespace kxf
 		}
 	}
 
-	// Application::IActiveEventLoop
+	// ICoreApplication -> Active Event Loop
 	IEventLoop* CoreApplication::GetActiveEventLoop()
 	{
 		return m_ActiveEventLoop;
@@ -448,8 +334,8 @@ namespace kxf
 		m_ActiveEventLoop = eventLoop;
 		if (eventLoop)
 		{
-			wxEventLoopBase::SetActive(&eventLoop->GetWxLoop());
-			IActiveEventLoop::CallOnEnterEventLoop(*eventLoop);
+			wxEventLoopBase::SetActive(static_cast<wxEventLoopBase*>(eventLoop->GetHandle()));
+			ICoreApplication::CallOnEnterEventLoop(*eventLoop);
 		}
 	}
 
@@ -511,7 +397,7 @@ namespace kxf
 		return false;
 	}
 
-	// Application::IPendingEvents
+	// ICoreApplication -> Pending Events
 	bool CoreApplication::IsPendingEventHandlerProcessingEnabled() const
 	{
 		return m_PendingEventsProcessingEnabled;
@@ -560,20 +446,13 @@ namespace kxf
 	}
 	void CoreApplication::FinalizeScheduledForDestruction()
 	{
-		if (auto app = Application::Private::NativeApp::GetInstance())
+		if (auto app = wxWidgets::ApplicationWrapperConsole::GetInstance())
 		{
 			app->DeletePendingObjects();
 		}
 
 		if (WriteLockGuard lock(m_ScheduledForDestructionLock); !m_ScheduledForDestruction.empty())
 		{
-			for (auto& item: m_ScheduledForDestruction)
-			{
-				if (auto widget = item->QueryInterface<IWidget>())
-				{
-					widget->DestroyWidget();
-				}
-			}
 			m_ScheduledForDestruction.clear();
 		}
 	}
@@ -716,7 +595,7 @@ namespace kxf
 		return count;
 	}
 
-	// Application::IExceptionHandler
+	// ICoreApplication -> Exception Handler
 	bool CoreApplication::OnMainLoopException()
 	{
 		return Application::Private::OnMainLoopException();
@@ -753,16 +632,16 @@ namespace kxf
 		}
 	}
 
-	// Application::IDebugHandler
+	// ICoreApplication -> Debug Handler
 	void CoreApplication::OnAssertFailure(const String& file, int line, const String& function, const String& condition, const String& message)
 	{
 		// No need to do anything with it here, it's going to be logged by our log system
 	}
 
-	// Application::ICommandLine
+	// ICoreApplication -> Command Line
 	void CoreApplication::InitializeCommandLine(char** argv, size_t argc)
 	{
-		KX_SCOPEDLOG_ARGS(argv, argc);
+		KXF_SCOPEDLOG_ARGS(argv, argc);
 
 		m_ArgC = argc;
 		m_ArgVA = argv;
@@ -771,11 +650,11 @@ namespace kxf
 		m_CommandLineParser.SetCommandLine(argc, argv);
 		OnCommandLineInit(m_CommandLineParser);
 
-		KX_SCOPEDLOG.SetSuccess();
+		KXF_SCOPEDLOG.SetSuccess();
 	}
 	void CoreApplication::InitializeCommandLine(wchar_t** argv, size_t argc)
 	{
-		KX_SCOPEDLOG_ARGS(argv, argc);
+		KXF_SCOPEDLOG_ARGS(argv, argc);
 
 		m_ArgC = argc;
 		m_ArgVA = nullptr;
@@ -784,7 +663,7 @@ namespace kxf
 		m_CommandLineParser.SetCommandLine(argc, argv);
 		OnCommandLineInit(m_CommandLineParser);
 
-		KX_SCOPEDLOG.SetSuccess();
+		KXF_SCOPEDLOG.SetSuccess();
 	}
 
 	Enumerator<String> CoreApplication::EnumCommandLineArgs() const
@@ -840,5 +719,139 @@ namespace kxf
 			parser.ShowUsage();
 		}
 		return false;
+	}
+
+	// ICoreApplication -> Application
+	bool CoreApplication::OnCreate()
+	{
+		KXF_SCOPEDLOG_FUNC;
+
+		if (!m_NativeAppInitialized)
+		{
+			if (auto app = wxAppConsole::GetInstance())
+			{
+				int argc = m_ArgC;
+				m_NativeAppInitialized = app->Initialize(argc, m_ArgVW);
+				if (!m_NativeAppInitialized)
+				{
+					KXF_SCOPEDLOG.SetFail();
+					return false;
+				}
+			}
+		}
+
+		KXF_SCOPEDLOG.SetSuccess();
+		return true;
+	}
+	void CoreApplication::OnDestroy()
+	{
+		KXF_SCOPEDLOG_FUNC;
+
+		UninitDLLNotifications();
+
+		// Destroy the main loop
+		m_MainLoop = nullptr;
+
+		// Clean up any still pending objects. Normally there shouldn't any as we
+		// already do this in 'OnExit', but this could happen if the user code has
+		// somehow managed to create more of them since then or just forgot to call
+		// the base class 'OnExit'.
+		FinalizeScheduledForDestruction();
+
+		if (m_NativeAppInitialized && !m_NativeAppCleanedUp)
+		{
+			if (auto app = wxAppConsole::GetInstance())
+			{
+				app->wxAppConsole::CleanUp();
+				m_NativeAppCleanedUp = true;
+			}
+		}
+
+		KXF_SCOPEDLOG.SetSuccess();
+	}
+
+	void CoreApplication::OnExit()
+	{
+		// Finalize scheduled objects if there are anything left
+		FinalizeScheduledForDestruction();
+	}
+	int CoreApplication::OnRun()
+	{
+		KXF_SCOPEDLOG_FUNC;
+
+		if (auto mainLoop = CreateMainLoop())
+		{
+			// Save the old main loop pointer (if any), create a new loop and run it.
+			// At the end of the loop, restore the original main loop.
+			std::swap(m_MainLoop, mainLoop);
+			Utility::ScopeGuard atExit = [&]()
+			{
+				m_MainLoop = std::move(mainLoop);
+			};
+
+			// Here we're running our newly created main loop saved in place of 'm_MainLoop' pointer.
+			int code = m_MainLoop->Run();
+
+			KXF_SCOPEDLOG.LogReturn(code);
+			return code;
+		}
+
+		KXF_SCOPEDLOG.LogReturn(m_ExitCode);
+		return m_ExitCode.value_or(-1);
+	}
+
+	void CoreApplication::Exit(int exitCode)
+	{
+		KXF_SCOPEDLOG_ARGS(exitCode);
+
+		if (m_MainLoop)
+		{
+			ExitMainLoop(exitCode);
+		}
+		else
+		{
+			m_ExitCode = exitCode;
+			std::terminate();
+		}
+
+		KXF_SCOPEDLOG.SetSuccess();
+	}
+
+	void CoreApplication::AddEventFilter(std::shared_ptr<IEventFilter> eventFilter)
+	{
+		WriteLockGuard lock(m_EventFiltersLock);
+
+		m_EventFilters.emplace_back(std::move(eventFilter));
+	}
+	void CoreApplication::RemoveEventFilter(IEventFilter& eventFilter)
+	{
+		WriteLockGuard lock(m_EventFiltersLock);
+
+		m_EventFilters.remove_if([&](auto& item)
+		{
+			return item.get() == &eventFilter;
+		});
+	}
+	IEventFilter::Result CoreApplication::FilterEvent(IEvent& event)
+	{
+		using Result = IEventFilter::Result;
+
+		ReadLockGuard lock(m_EventFiltersLock);
+		for (auto& eventFilter: m_EventFilters)
+		{
+			const Result result = eventFilter->FilterEvent(event);
+			if (result != Result::Skip)
+			{
+				return result;
+			}
+		}
+
+		// Do nothing by default if there are no event filters
+		return Result::Skip;
+	}
+
+	std::shared_ptr<wxWidgets::Application> CoreApplication::CreateWXApp()
+	{
+		return std::make_shared<wxWidgets::ApplicationWrapperConsole>(*this);
 	}
 }

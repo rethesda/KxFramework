@@ -5,6 +5,7 @@
 #include "LegacyVolume.h"
 #include "kxf/Core/DataSize.h"
 #include "kxf/Core/Enumerator.h"
+#include "kxf/System/SystemWindow.h"
 class wxWindow;
 
 namespace kxf
@@ -14,21 +15,21 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API RecycleBin final
+	class KXF_API RecycleBin final
 	{
 		private:
 			XChar m_Path[4] = {};
 			LegacyVolume m_Volume;
-			IFileSystem* m_FileSystem = nullptr;
-			wxWindow* m_Window = nullptr;
+			std::shared_ptr<IFileSystem> m_FileSystem;
+			SystemWindow m_Window;
 
 		public:
-			RecycleBin(LegacyVolume volume = {});
-			RecycleBin(LegacyVolume volume, IFileSystem& fileSystem);
+			RecycleBin(LegacyVolume volume);
+			RecycleBin(LegacyVolume volume, std::shared_ptr<IFileSystem> fileSystem = nullptr);
 
 		public:
 			bool IsEnabled() const;
-			void SetWindow(wxWindow* window);
+			void SetWindow(SystemWindow window);
 
 			DataSize GetSize() const;
 			size_t GetItemCount() const;

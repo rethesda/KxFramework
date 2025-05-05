@@ -5,73 +5,48 @@
 
 namespace lunasvg
 {
-	class SVGDocument;
+	class Document;
 }
 
 namespace kxf
 {
-	class KX_API SVGImage final: public RTTI::DynamicImplementation<SVGImage, IVectorImage>
+	class KXF_API SVGImage final: public RTTI::DynamicImplementation<SVGImage, IVectorImage>
 	{
-		KxRTTI_DeclareIID_Using(SVGImage, ImageFormat::SVG.ToNativeUUID());
-		
+		kxf_RTTI_DeclareIID_Using(SVGImage, ImageFormat::SVG.ToNativeUUID());
+
 		friend struct BinarySerializer<SVGImage>;
 
 		private:
-			std::shared_ptr<lunasvg::SVGDocument> m_Document;
+			std::shared_ptr<lunasvg::Document> m_Document;
 			int m_DPI = -1;
 
 		private:
-			void AllocExclusive();
+			void CopyFrom(const SVGImage& other);
+			void MoveFrom(SVGImage& other) noexcept;
+
+			std::string Serialize() const;
+			bool Deserialize(const std::string& svgData);
 
 		public:
-			SVGImage() = default;
-			SVGImage(const SVGImage& other)
-			{
-				*this = other;
-			}
-			SVGImage(SVGImage&& other)
-			{
-				*this = std::move(other);
-			}
-			~SVGImage() = default;
+			SVGImage();
+			SVGImage(const SVGImage& other);
+			SVGImage(SVGImage&& other) noexcept;
+			~SVGImage();
 
 		public:
 			// IImage2D
-			bool IsNull() const
-			{
-				return m_Document == nullptr;
-			}
-			bool IsSameAs(const IImage2D& other) const override
-			{
-				if (this == &other)
-				{
-					return true;
-				}
-				else if (auto svg = other.QueryInterface<SVGImage>())
-				{
-					return m_Document == svg->m_Document;
-				}
-				return false;
-			}
-			std::unique_ptr<IImage2D> CloneImage2D() const override;
+			bool IsNull() const;
+			bool IsSameAs(const IImage2D& other) const override;
+			std::shared_ptr<IImage2D> CloneImage2D() const override;
 
-			// IImage2D: Create, save and load
-			void Create(const Size& size);
+			bool Create(const Size& size);
 			bool Load(IInputStream& stream, const UniversallyUniqueID& format = ImageFormat::Any, size_t index = npos);
 			bool Save(IOutputStream& stream, const UniversallyUniqueID& format) const;
 
-			// IImage2D: Properties
 			Size GetSize() const override;
-			ColorDepth GetColorDepth() const override
-			{
-				return ColorDepthDB::BPP32;
-			}
-			UniversallyUniqueID GetFormat() const override
-			{
-				return ImageFormat::SVG;
-			}
+			ColorDepth GetColorDepth() const override;
+			UniversallyUniqueID GetFormat() const override;
 
-			// IImage2D: Options
 			std::optional<String> GetOption(const String& name) const override
 			{
 				return {};
@@ -83,23 +58,38 @@ namespace kxf
 			{
 			}
 
-			// IImage2D: Conversion
 			BitmapImage ToBitmapImage(const Size& size = Size::UnspecifiedSize(), InterpolationQuality interpolationQuality = InterpolationQuality::Default) const override;
 
-		public:
 			// IVectorImage
 			Rect GetBoundingBox() const override;
 
 		public:
-			SVGImage& operator=(const SVGImage& other);
-			SVGImage& operator=(SVGImage&& other) noexcept;
+			explicit operator bool() const noexcept
+			{
+				return !IsNull();
+			}
+			bool operator!() const noexcept
+			{
+				return IsNull();
+			}
+
+			SVGImage& operator=(const SVGImage& other)
+			{
+				CopyFrom(other);
+				return *this;
+			}
+			SVGImage& operator=(SVGImage&& other) noexcept
+			{
+				MoveFrom(other);
+				return *this;
+			}
 	};
 }
 
 namespace kxf
 {
 	template<>
-	struct KX_API BinarySerializer<SVGImage> final
+	struct KXF_API BinarySerializer<SVGImage> final
 	{
 		uint64_t Serialize(IOutputStream& stream, const SVGImage& value) const;
 		uint64_t Deserialize(IInputStream& stream, SVGImage& value) const;

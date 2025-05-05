@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "ArchiveUpdateCallback.h"
 #include "InStreamWrapper.h"
 #include "Utility.h"
@@ -101,7 +101,7 @@ namespace kxf::SevenZip::Private::Callback
 					}
 					case kpidPath:
 					{
-						return fileItem.GetFullPath().GetFullPath();
+						return fileItem.GetPath().GetFullPath();
 					}
 					case kpidIsDir:
 					{
@@ -230,7 +230,7 @@ namespace kxf::SevenZip::Private::Callback
 		if (index < m_Files.size())
 		{
 			FileItem item = m_Files[index];
-			item.SetFullPath(item.GetFullPath().GetAfter(m_Directory));
+			item.SetPath(item.GetPath().GetAfter(m_Directory));
 
 			return item;
 		}
@@ -241,7 +241,7 @@ namespace kxf::SevenZip::Private::Callback
 		size_t index = item.GetUniqueID().ToLocallyUniqueID().ToInt();
 		if (index < m_Files.size())
 		{
-			return m_FileSystem.OpenToRead(m_Files[index].GetFullPath());
+			return m_FileSystem.OpenToRead(m_Files[index].GetPath());
 		}
 		return nullptr;
 	}

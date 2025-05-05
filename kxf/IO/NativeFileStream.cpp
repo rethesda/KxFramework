@@ -1,9 +1,11 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "NativeFileStream.h"
 #include "kxf/System/Win32Error.h"
 #include "kxf/FileSystem/Private/NativeFSUtility.h"
 #include "kxf/Utility/ScopeGuard.h"
-#include "kxf/Utility/String.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {
@@ -52,27 +54,14 @@ namespace
 		{
 			return size.QuadPart;
 		}
-		return wxInvalidOffset;
+		return -1;
 	}
 	int64_t GetOffsetByHandle(HANDLE handle) noexcept
 	{
 		LARGE_INTEGER offset = {};
 		::SetFilePointerEx(handle, offset, &offset, FILE_CURRENT);
+
 		return offset.QuadPart;
-	}
-	FSPath GetPathByHandle(HANDLE handle)
-	{
-		constexpr DWORD flags = VOLUME_NAME_DOS|FILE_NAME_NORMALIZED;
-		const DWORD length = ::GetFinalPathNameByHandleW(handle, nullptr, 0, flags);
-		if (length != 0)
-		{
-			String result;
-			if (::GetFinalPathNameByHandleW(handle, Utility::StringBuffer(result, length), length, flags) != 0)
-			{
-				return FSPath(std::move(result));
-			}
-		}
-		return {};
 	}
 }
 
@@ -207,7 +196,7 @@ namespace kxf
 		if (buffer)
 		{
 			DWORD lastRead = 0;
-			if (::ReadFile(m_Handle, buffer, size, &lastRead, nullptr))
+			if (::ReadFile(m_Handle, buffer, static_cast<DWORD>(size), &lastRead, nullptr))
 			{
 				if (lastRead == 0 && size != 0 && GetOffsetByHandle(m_Handle) == GetSizeByHandle(m_Handle))
 				{
@@ -250,7 +239,7 @@ namespace kxf
 		if (buffer)
 		{
 			DWORD lastWrite = 0;
-			if (::WriteFile(m_Handle, buffer, size, &lastWrite, nullptr))
+			if (::WriteFile(m_Handle, buffer, static_cast<DWORD>(size), &lastWrite, nullptr))
 			{
 				m_LastError = Win32Error::Success();
 			}
@@ -299,12 +288,12 @@ namespace kxf
 	}
 
 	// IReadableOutputStream
-	std::unique_ptr<IInputStream> NativeFileStream::CreateInputStream() const
+	std::shared_ptr<IInputStream> NativeFileStream::CreateInputStream() const
 	{
 		NativeFileStream stream(GetFilePath(), IOStreamAccess::Read, IOStreamDisposition::OpenExisting, IOStreamShare::Everything, m_Flags);
 		if (stream)
 		{
-			return std::make_unique<NativeFileStream>(std::move(stream));
+			return std::make_shared<NativeFileStream>(std::move(stream));
 		}
 		return nullptr;
 	}
@@ -424,7 +413,7 @@ namespace kxf
 	// IStreamOnFileSystem
 	FSPath NativeFileStream::GetFilePath() const
 	{
-		return GetPathByHandle(m_Handle);
+		return FileSystem::Private::GetFileFullPath(m_Handle);
 	}
 	UniversallyUniqueID NativeFileStream::GetFileUniqueID() const
 	{

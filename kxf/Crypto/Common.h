@@ -1,10 +1,10 @@
 #pragma once
 #include "kxf/Common.hpp"
-#include "kxf/Core/String.h"
-#include "kxf/Core/Version.h"
+#include "kxf-crypto/Common.hpp"
 
-namespace kxf::Crypto
+namespace kxf
 {
-	KX_API String GetLibraryName();
-	KX_API Version GetLibraryVersion();
+	class String;
+	class IInputStream;
+	class IOutputStream;
 }

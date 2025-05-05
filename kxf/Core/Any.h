@@ -6,7 +6,7 @@
 
 namespace kxf
 {
-	class KX_API Any final
+	class KXF_API Any final
 	{
 		private:
 			std::any m_Any;
@@ -82,7 +82,7 @@ namespace kxf
 				}
 				else if constexpr(std::is_integral_v<T> || std::is_enum_v<T>)
 				{
-					using TIntType = Utility::UnderlyingTypeEx_t<T>;
+					using TIntType = Utility::any_underlying_type_t<T>;
 
 					// Convert to an integer
 					if constexpr(std::is_signed_v<TIntType>)

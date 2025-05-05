@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "CoroutineImpl.h"
 #include "kxf/Application/ICoreApplication.h"
 #include <chrono>
@@ -10,12 +10,12 @@ namespace kxf::Async
 		CoroutineBase::QueueExecution(std::move(m_Coroutine));
 	}
 
-	std::unique_ptr<CoroutineBase> CoroutineTimer::Relinquish()
+	std::shared_ptr<CoroutineBase> CoroutineTimer::Relinquish()
 	{
 		Stop();
 		return std::move(m_Coroutine);
 	}
-	void CoroutineTimer::Wait(std::unique_ptr<CoroutineBase> coroutine, const TimeSpan& time)
+	void CoroutineTimer::Wait(std::shared_ptr<CoroutineBase> coroutine, const TimeSpan& time)
 	{
 		m_Coroutine = std::move(coroutine);
 		Start(time);
@@ -24,7 +24,7 @@ namespace kxf::Async
 
 namespace kxf::Async
 {
-	CoroutineExecutor::CoroutineExecutor(std::unique_ptr<CoroutineBase> coroutine)
+	CoroutineExecutor::CoroutineExecutor(std::shared_ptr<CoroutineBase> coroutine)
 		:m_Coroutine(std::move(coroutine))
 	{
 	}
@@ -37,7 +37,7 @@ namespace kxf::Async
 
 namespace kxf::Async
 {
-	CoroutineBase* CoroutineBase::Run(std::unique_ptr<CoroutineBase> coroutine)
+	CoroutineBase* CoroutineBase::Run(std::shared_ptr<CoroutineBase> coroutine)
 	{
 		if (coroutine)
 		{
@@ -48,11 +48,11 @@ namespace kxf::Async
 		return nullptr;
 	}
 
-	void CoroutineBase::QueueExecution(std::unique_ptr<CoroutineBase> coroutine)
+	void CoroutineBase::QueueExecution(std::shared_ptr<CoroutineBase> coroutine)
 	{
 		ICoreApplication::GetInstance()->QueueEvent(std::make_unique<CoroutineExecutor>(std::move(coroutine)));
 	}
-	void CoroutineBase::DelayExecution(std::unique_ptr<CoroutineBase> coroutine, const TimeSpan& time)
+	void CoroutineBase::DelayExecution(std::shared_ptr<CoroutineBase> coroutine, const TimeSpan& time)
 	{
 		if (time.IsPositive())
 		{
@@ -64,9 +64,9 @@ namespace kxf::Async
 			QueueExecution(std::move(coroutine));
 		}
 	}
-	void CoroutineBase::AbortExecution(std::unique_ptr<CoroutineBase> coroutine)
+	void CoroutineBase::AbortExecution(std::shared_ptr<CoroutineBase> coroutine)
 	{
-		wxApp::GetInstance()->ScheduleForDestruction(coroutine.release());
+		ICoreApplication::GetInstance()->ScheduleForDestruction(coroutine->QueryInterface<IObject>());
 	}
 
 	void CoroutineBase::BeforeExecute()
@@ -88,7 +88,7 @@ namespace kxf::Async
 	{
 		m_TimeStampAfter = GetCurrentExecutionTime();
 	}
-	void CoroutineBase::RunExecute(std::unique_ptr<CoroutineBase> coroutine)
+	void CoroutineBase::RunExecute(std::shared_ptr<CoroutineBase> coroutine)
 	{
 		if (m_Instruction.GetType() == InstructionType::Terminate)
 		{

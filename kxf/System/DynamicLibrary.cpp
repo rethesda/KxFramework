@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "DynamicLibrary.h"
 #include "kxf/System/NativeAPI.h"
 #include "kxf/System/Private/System.h"
@@ -14,11 +14,11 @@
 #include "kxf/Utility/String.h"
 #include "kxf/Utility/ScopeGuard.h"
 
+#include <cwchar>
 #include <Windows.h>
 #include <DbgHelp.h>
-#include <cwchar>
-#include "UndefWindows.h"
-#pragma comment(lib, "DbgHelp.lib")
+#include "kxf/Win32/LinkLibs-System.h"
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {

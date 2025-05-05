@@ -6,13 +6,15 @@
 
 namespace kxf::Utility
 {
-	template<class T> requires(std::is_arithmetic_v<T>)
+	template<class T>
+	requires(std::is_arithmetic_v<T>)
 	constexpr T Abs(T value) noexcept
 	{
 		return value < static_cast<T>(0) ? -value : value;
 	}
 
-	template<class T1, class T2> requires(std::is_arithmetic_v<T1> && std::is_unsigned_v<T2>)
+	template<class T1, class T2>
+	requires(std::is_arithmetic_v<T1> && std::is_unsigned_v<T2>)
 	constexpr T1 Pow(T1 value, T2 pow) noexcept
 	{
 		T1 result = value;
@@ -23,13 +25,15 @@ namespace kxf::Utility
 		return result;
 	}
 
-	template<class T> requires(std::is_floating_point_v<T>)
+	template<class T>
+	requires(std::is_floating_point_v<T>)
 	constexpr T Floor(T value) noexcept
 	{
 		return static_cast<T>(static_cast<int64_t>(value));
 	}
 
-	template<class T> requires(std::is_floating_point_v<T>)
+	template<class T>
+	requires(std::is_floating_point_v<T>)
 	constexpr T ModF(T value, T* integerPart = nullptr) noexcept
 	{
 		const int64_t intPart = static_cast<int64_t>(value);
@@ -41,7 +45,8 @@ namespace kxf::Utility
 		return static_cast<T>(value - intPart);
 	}
 
-	template<class T> requires(std::is_floating_point_v<T>)
+	template<class T>
+	requires(std::is_floating_point_v<T>)
 	constexpr bool AlmostEqual(T left, T right, size_t units = 2) noexcept
 	{
 		// https://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
@@ -54,19 +59,22 @@ namespace kxf::Utility
 		return diff <= (std::numeric_limits<T>::epsilon() * sum * units) || diff < std::numeric_limits<T>::min();
 	}
 
-	template<class T> requires(std::is_floating_point_v<T>)
+	template<class T>
+	requires(std::is_floating_point_v<T>)
 	constexpr bool AlmostZero(T value, size_t units = 2) noexcept
 	{
 		return AlmostEqual(value, static_cast<T>(0), units);
 	}
 
-	template<class T> requires(std::is_integral_v<T>)
+	template<class T>
+	requires(std::is_integral_v<T>)
 	constexpr bool TestRange(T value, T min = std::numeric_limits<T>::min(), T max = std::numeric_limits<T>::max()) noexcept
 	{
 		return value == std::clamp(value, min, max);
 	}
 
-	template<class T> requires(std::is_floating_point_v<T>)
+	template<class T>
+	requires(std::is_floating_point_v<T>)
 	constexpr bool TestRange(T value, T min = std::numeric_limits<T>::lowest(), T max = std::numeric_limits<T>::max()) noexcept
 	{
 		return value == std::clamp(value, min, max);
@@ -75,7 +83,8 @@ namespace kxf::Utility
 
 namespace kxf::Utility
 {
-	template<class T> requires(std::is_integral_v<T>)
+	template<class T>
+	requires(std::is_integral_v<T>)
 	constexpr T FirstDecimalDigit(T quantity) noexcept
 	{
 		while (quantity >= static_cast<T>(10))
@@ -85,7 +94,8 @@ namespace kxf::Utility
 		return quantity;
 	}
 
-	template<class T> requires(std::is_integral_v<T>)
+	template<class T>
+	requires(std::is_integral_v<T>)
 	constexpr T LastDecimalDigit(T quantity) noexcept
 	{
 		return quantity % static_cast<T>(10);

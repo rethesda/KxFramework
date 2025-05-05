@@ -7,7 +7,7 @@
 
 namespace kxf
 {
-	class KX_API NativeFileStream: public RTTI::Implementation<NativeFileStream, IInputStream, IOutputStream, IReadableOutputStream, INativeStream, IStreamOnFileSystem>
+	class KXF_API NativeFileStream: public RTTI::Implementation<NativeFileStream, IInputStream, IOutputStream, IReadableOutputStream, INativeStream, IStreamOnFileSystem>
 	{
 		private:
 			void* m_Handle = nullptr;
@@ -103,7 +103,7 @@ namespace kxf
 			bool SetAllocationSize(DataSize allocationSize) override;
 
 			// IReadableOutputStream
-			std::unique_ptr<IInputStream> CreateInputStream() const override;
+			std::shared_ptr<IInputStream> CreateInputStream() const override;
 
 			// INativeStream
 			void* GetHandle() const override

@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "IWebResponse.h"
 #include "WebRequestHeader.h"
 #include "kxf/Core/RegEx.h"
@@ -7,11 +7,6 @@
 #include "kxf/FileSystem/FSPath.h"
 #include "kxf/Serialization/JSON.h"
 #include "kxf/Serialization/XML.h"
-
-namespace
-{
-	kxf::NullWebResponse g_NullWebResponse;
-}
 
 namespace kxf
 {
@@ -65,11 +60,6 @@ namespace kxf
 
 namespace kxf
 {
-	IWebResponse& NullWebResponse::Get()
-	{
-		return g_NullWebResponse;
-	}
-
 	Enumerator<WebRequestHeader> NullWebResponse::EnumHeaders() const
 	{
 		return {};
@@ -83,7 +73,7 @@ namespace kxf
 	{
 		return {};
 	}
-	std::unique_ptr<IInputStream> NullWebResponse::GetStream() const
+	std::shared_ptr<IInputStream> NullWebResponse::GetStream() const
 	{
 		return nullptr;
 	}

@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "MemoryStream.h"
 
 namespace kxf
@@ -18,8 +18,8 @@ namespace kxf
 namespace kxf
 {
 	// IReadableOutputStream
-	std::unique_ptr<IInputStream> MemoryOutputStream::CreateInputStream() const
+	std::shared_ptr<IInputStream> MemoryOutputStream::CreateInputStream() const
 	{
-		return std::make_unique<MemoryInputStream>(m_StreamBuffer.GetBufferStart(), m_StreamBuffer.GetBufferEnd());
+		return std::make_shared<MemoryInputStream>(m_StreamBuffer.GetBufferStart(), m_StreamBuffer.GetBufferEnd());
 	}
 }

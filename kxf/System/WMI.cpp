@@ -1,19 +1,18 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "WMI.h"
 #include "SafeArray.h"
 #include "VariantProperty.h"
 #include "kxf/Utility/Enumerator.h"
+
 #include <Windows.h>
 #include <wbemcli.h>
-#include "UndefWindows.h"
-#pragma comment(lib, "wbemuuid.lib")
+#include "kxf/Win32/LinkLibs-COM.h"
 
 #include "Private/BeginIncludeCOM.h"
 namespace
 {
-	Kx_MakeWinUnicodeCallWrapper(FormatMessage);
+	kxf_MakeWinUnicodeCallWrapper(FormatMessage);
 }
-#include <comdef.h>
 #include "Private/EndIncludeCOM.h"
 
 namespace

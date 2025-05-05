@@ -1,8 +1,8 @@
 #pragma once
 #include "../Common.h"
 #include "kxf/RTTI/RTTI.h"
-#include "kxf/Core/DateTime.h"
 #include "kxf/Drawing/Geometry.h"
+#include "kxf/DateTime/TimeSpan.h"
 
 namespace kxf
 {
@@ -12,9 +12,9 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API ISystemWindow: public RTTI::Interface<ISystemWindow>
+	class KXF_API ISystemWindow: public RTTI::Interface<ISystemWindow>
 	{
-		KxRTTI_DeclareIID(ISystemWindow, {0xc1663541, 0xe5e3, 0x4610, {0x8a, 0x66, 0xab, 0xdc, 0x16, 0x82, 0x58, 0xb7}});
+		kxf_RTTI_DeclareIID(ISystemWindow, {0xc1663541, 0xe5e3, 0x4610, {0x8a, 0x66, 0xab, 0xdc, 0x16, 0x82, 0x58, 0xb7}});
 
 		public:
 			virtual ~ISystemWindow() = default;
@@ -39,8 +39,12 @@ namespace kxf
 			virtual bool PostMessage(uint32_t message, intptr_t wParam, intptr_t lParam) = 0;
 			virtual std::optional<intptr_t> SendMessage(uint32_t message, intptr_t wParam, intptr_t lParam, FlagSet<uint32_t> flags = {}, TimeSpan timeout = {}) = 0;
 
+			virtual bool IsVisible() const = 0;
 			virtual bool Show(SHWindowCommand command, bool async = false) = 0;
 			virtual bool Close() = 0;
 			virtual bool Destroy() = 0;
+
+			virtual bool IsEnabled() const = 0;
+			virtual bool SetEnabled(bool enable = true) = 0;
 	};
 }

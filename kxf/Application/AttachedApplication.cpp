@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "AttachedApplication.h"
 
 namespace kxf
@@ -13,7 +13,7 @@ namespace kxf
 		ICoreApplication::SetInstance(nullptr);
 	}
 
-	// Application::IMainEoventLoop
+	// ICoreApplication -> Main Event Loop
 	std::shared_ptr<IEventLoop> AttachedApplication::CreateMainLoop()
 	{
 		return nullptr;

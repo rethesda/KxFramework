@@ -1,15 +1,17 @@
 #pragma once
 #include "EventWrapper.h"
 #include "ClientObject.h"
+#include "IWithEvent.h"
 #include "kxf/EventSystem/EvtHandler.h"
 #include "kxf/Core/OptionalPtr.h"
 #include <wx/event.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace kxf::wxWidgets
 {
 	inline bool ForwardBind(IEvtHandler& evtHandler, wxEvtHandler& evtHandlerWx, EventSystem::EventItem& eventItem)
 	{
-		if (EventID id = eventItem.GetEventID(); id.IsWxWidgetsID())
+		if (EventID id = eventItem.GetEventID(); id.IsWXID())
 		{
 			evtHandlerWx.Bind(wxEventTypeTag<wxEvent>(id.AsInt()), [evtHandler = &evtHandler, executor = eventItem.GetExecutor()](wxEvent& event)
 			{
@@ -24,6 +26,58 @@ namespace kxf::wxWidgets
 	{
 		wxWidgets::EventWrapper wrapper(event);
 		return evtHandler.ProcessEvent(wrapper, event.GetEventType(), ProcessEventFlag::Locally);
+	}
+}
+
+namespace kxf::wxWidgets
+{
+	namespace Private
+	{
+		template<class TEvent, class TFunc>
+		void DoCallWxEvent(IEvent& event, TFunc&& func) noexcept(std::is_nothrow_invocable_v<TFunc, TEvent&>)
+		{
+			if (auto withEvent = event.QueryInterface<IWithEvent>())
+			{
+				std::invoke(func, static_cast<TEvent&>(withEvent->GetEvent()));
+			}
+			else
+			{
+				event.Skip();
+			}
+		}
+	}
+
+	// Bind free or static function
+	template<std::derived_from<wxEvent> TEvent, class TEventArg>
+	LocallyUniqueID BindWXEvent(IEvtHandler& evtHandler, wxEventTypeTag<TEvent> eventTag, void(*func)(TEventArg&), FlagSet<BindEventFlag> flags = BindEventFlag::Direct)
+	{
+		return evtHandler.Bind(EventTag<IEvent>(eventTag), [func](IEvent& event)
+		{
+			Private::DoCallWxEvent<TEventArg>(event, func);
+		}, flags);
+	}
+
+	// Bind a generic callable
+	template<std::derived_from<wxEvent> TEvent, class TCallable>
+	LocallyUniqueID BindWXEvent(IEvtHandler& evtHandler, wxEventTypeTag<TEvent> eventTag, TCallable&& callable, FlagSet<BindEventFlag> flags = BindEventFlag::Direct)
+	{
+		return evtHandler.Bind(EventTag<IEvent>(eventTag), [callable = std::move(callable)](IEvent& event) mutable
+		{
+			Private::DoCallWxEvent<TEvent>(event, callable);
+		}, flags);
+	}
+
+	// Bind a member function
+	template<std::derived_from<wxEvent> TEvent, class TClass, class TEventArg, class TEventHandler>
+	LocallyUniqueID BindWXEvent(IEvtHandler& evtHandler, wxEventTypeTag<TEvent> eventTag, void(TClass::* method)(TEventArg&), TEventHandler* handler, FlagSet<BindEventFlag> flags = BindEventFlag::Direct)
+	{
+		return evtHandler.Bind(EventTag<IEvent>(eventTag), [method, handler](IEvent& event)
+		{
+			Private::DoCallWxEvent<TEventArg>(event, [&](TEventArg& event)
+			{
+				std::invoke(method, handler, event);
+			});
+		}, flags);
 	}
 }
 

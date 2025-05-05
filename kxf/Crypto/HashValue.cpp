@@ -1,18 +1,21 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "HashValue.h"
-#include "kxf/Core/String.h"
 
 namespace kxf::Crypto::Private
 {
-	String HashValueToString(std::span<const std::byte> data)
+	String HashValueToString(std::span<const std::byte> hashData)
 	{
-		String result;
-		result.reserve(data.size() * 2);
-
-		for (std::byte x: data)
+		if (!hashData.empty())
 		{
-			result += Format("{:02x}", x);
-		};
-		return result;
+			String result;
+			result.reserve(hashData.size() * 2);
+
+			for (auto c: hashData)
+			{
+				result.Format(kxfS("{:02x}"), c);
+			}
+			return result;
+		}
+		return {};
 	}
 }

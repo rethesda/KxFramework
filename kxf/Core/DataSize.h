@@ -20,12 +20,12 @@ namespace kxf
 		Fractional = 1 << 0,
 		WithLabel = 1 << 1,
 	};
-	KxFlagSet_Declare(DataSizeFormat);
+	kxf_FlagSet_Declare(DataSizeFormat);
 }
 
 namespace kxf
 {
-	class KX_API DataSize final
+	class KXF_API DataSize final
 	{
 		public:
 			static constexpr DataSize FromBytes(int64_t bytes) noexcept
@@ -33,31 +33,36 @@ namespace kxf
 				return bytes;
 			}
 			
-			template<class T> requires(std::is_arithmetic_v<T>)
+			template<class T>
+			requires(std::is_arithmetic_v<T>)
 			static constexpr DataSize FromKB(T value) noexcept
 			{
-				return FromBytes(value * 1024);
+				return FromBytes(static_cast<int64_t>(value * 1024));
 			}
 			
-			template<class T> requires(std::is_arithmetic_v<T>)
+			template<class T>
+			requires(std::is_arithmetic_v<T>)
 			static constexpr DataSize FromMB(T value) noexcept
 			{
-				return FromKB(value * 1024);
+				return FromKB(static_cast<T>(value * 1024));
 			}
 			
-			template<class T> requires(std::is_arithmetic_v<T>)
+			template<class T>
+			requires(std::is_arithmetic_v<T>)
 			static constexpr DataSize FromGB(T value) noexcept
 			{
-				return FromMB(value * 1024);
+				return FromMB(static_cast<T>(value * 1024));
 			}
 			
-			template<class T> requires(std::is_arithmetic_v<T>)
+			template<class T>
+			requires(std::is_arithmetic_v<T>)
 			static constexpr DataSize FromTB(T value) noexcept
 			{
-				return FromGB(value * 1024);
+				return FromGB(static_cast<T>(value * 1024));
 			}
 
-			template<class T> requires(std::is_arithmetic_v<T>)
+			template<class T>
+			requires(std::is_arithmetic_v<T>)
 			static constexpr DataSize FromUnit(T value, DataSizeUnit unit) noexcept
 			{
 				switch (unit)
@@ -90,13 +95,15 @@ namespace kxf
 			int64_t m_Value = -1;
 
 		private:
-			template<class T> requires(std::is_integral_v<T>)
+			template<class T>
+			requires(std::is_integral_v<T>)
 			constexpr T GetAs(int64_t value) const noexcept
 			{
 				return static_cast<T>(value / 1024);
 			}
 
-			template<class T> requires(std::is_floating_point_v<T>)
+			template<class T>
+			requires(std::is_floating_point_v<T>)
 			constexpr T GetAs(int64_t value) const noexcept
 			{
 				return static_cast<T>(value / 1024.0);
@@ -129,37 +136,43 @@ namespace kxf
 			}
 
 			// Conversion
-			template<class T = int64_t> requires(std::is_arithmetic_v<T>)
+			template<class T = int64_t>
+			requires(std::is_arithmetic_v<T>)
 			constexpr T ToBytes() const noexcept
 			{
 				return static_cast<T>(m_Value);
 			}
 			
-			template<class T = int64_t> requires(std::is_arithmetic_v<T>)
+			template<class T = int64_t>
+			requires(std::is_arithmetic_v<T>)
 			constexpr T ToKB() const noexcept
 			{
 				return GetAs<T>(m_Value);
 			}
 			
-			template<class T = int64_t> requires(std::is_arithmetic_v<T>)
+			template<class T = int64_t>
+			requires(std::is_arithmetic_v<T>)
 			constexpr T ToMB() const noexcept
 			{
 				return GetAs<T>(ToKB());
 			}
 			
-			template<class T = int64_t> requires(std::is_arithmetic_v<T>)
+			template<class T = int64_t>
+			requires(std::is_arithmetic_v<T>)
 			constexpr T ToGB() const noexcept
 			{
 				return GetAs<T>(ToMB());
 			}
 			
-			template<class T = int64_t> requires(std::is_arithmetic_v<T>)
+			template<class T = int64_t>
+			requires(std::is_arithmetic_v<T>)
 			constexpr T ToTB() const noexcept
 			{
 				return GetAs<T>(ToGB());
 			}
 			
-			template<class T = int64_t> requires(std::is_arithmetic_v<T>)
+			template<class T = int64_t>
+			requires(std::is_arithmetic_v<T>)
 			constexpr T ToUnit(DataSizeUnit unit) const noexcept
 			{
 				switch (unit)
@@ -210,7 +223,7 @@ namespace kxf
 			}
 			constexpr DataSize operator*(double n) const noexcept
 			{
-				return m_Value * n;
+				return static_cast<int64_t>(m_Value * n);
 			}
 			constexpr DataSize operator/(int64_t n) const noexcept
 			{
@@ -218,7 +231,7 @@ namespace kxf
 			}
 			constexpr DataSize operator/(double n) const noexcept
 			{
-				return m_Value / n;
+				return static_cast<int64_t>(m_Value / n);
 			}
 
 			constexpr DataSize& operator+=(const DataSize& other) noexcept
@@ -238,7 +251,7 @@ namespace kxf
 			}
 			constexpr DataSize& operator*=(double n) noexcept
 			{
-				m_Value *= n;
+				m_Value = static_cast<int64_t>(m_Value * n);
 				return *this;
 			}
 			constexpr DataSize& operator/=(int64_t n) noexcept
@@ -248,7 +261,7 @@ namespace kxf
 			}
 			constexpr DataSize& operator/=(double n) noexcept
 			{
-				m_Value /= n;
+				m_Value = static_cast<int64_t>(m_Value / n);
 				return *this;
 			}
 

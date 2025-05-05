@@ -3,7 +3,7 @@
 
 namespace kxf
 {
-	class KX_API RunningSystemThread: public ISystemThread
+	class KXF_API RunningSystemThread: public ISystemThread
 	{
 		public:
 			static RunningSystemThread GetCurrentThread();
@@ -52,7 +52,7 @@ namespace kxf
 			bool Suspend() override;
 			bool Resume() override;
 
-			size_t EnumWindows(std::function<CallbackCommand(SystemWindow)> func) const override;
+			CallbackResult<size_t> EnumWindows(CallbackFunction<SystemWindow> func) const override;
 
 			// RunningSystemThread
 			bool Open(uint32_t tid, FlagSet<SystemThreadAccess> access, bool inheritHandle = false);

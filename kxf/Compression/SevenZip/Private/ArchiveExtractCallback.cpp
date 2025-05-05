@@ -1,4 +1,4 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "ArchiveExtractCallback.h"
 #include "OutStreamWrapper.h"
 #include "Utility.h"
@@ -121,7 +121,7 @@ namespace kxf::SevenZip::Private::Callback
 		const bool hasTargetPath = GetTargetPath(item, m_TargetPath);
 		if (!hasTargetPath)
 		{
-			m_TargetPath = m_Directory / item.GetFullPath();
+			m_TargetPath = m_Directory / item.GetPath();
 		}
 		if (!m_TargetPath)
 		{

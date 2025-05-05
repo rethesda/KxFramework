@@ -1,6 +1,9 @@
-#include "KxfPCH.h"
+#include "kxf-pch.h"
 #include "Library.h"
 #include "kxf/System/HResult.h"
+
+#include <Windows.h>
+#include "kxf/Win32/UndefMacros.h"
 
 namespace
 {

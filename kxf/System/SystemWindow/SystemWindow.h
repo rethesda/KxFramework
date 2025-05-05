@@ -4,13 +4,16 @@
 
 namespace kxf
 {
-	class KX_API SystemWindow: public ISystemWindow
+	class KXF_API SystemWindow: public ISystemWindow
 	{
 		public:
 			static SystemWindow GetShellWindow();
 			static SystemWindow GetDesktopWindow();
 			static SystemWindow GetBroadcastWindow();
 			static SystemWindow GetForegroundWindow();
+			static SystemWindow GetFocusedWindow();
+			static SystemWindow GetActiveWindow();
+
 			static SystemWindow GetWindowFromPoint(const Point& position);
 			static SystemWindow GetWindowFromPhysicalPoint(const Point& position);
 
@@ -51,9 +54,13 @@ namespace kxf
 			bool PostMessage(uint32_t message, intptr_t wParam, intptr_t lParam) override;
 			std::optional<intptr_t> SendMessage(uint32_t message, intptr_t wParam, intptr_t lParam, FlagSet<uint32_t> flags = {}, TimeSpan timeout = {}) override;
 
+			bool IsVisible() const;
 			bool Show(SHWindowCommand command, bool async) override;
 			bool Close() override;
 			bool Destroy() override;
+
+			bool IsEnabled() const override;
+			bool SetEnabled(bool enable = true) override;
 
 			// SystemWindow
 			RunningSystemProcess OpenOwningProcess() const;
@@ -114,7 +121,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KX_API OwningSystemWindow final: public SystemWindow
+	class KXF_API OwningSystemWindow final: public SystemWindow
 	{
 		public:
 			OwningSystemWindow(void* hwnd = nullptr)

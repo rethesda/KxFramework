@@ -1,0 +1,13 @@
+diff --git a/src/msw/app.cpp b/src/msw/app.cpp
+index d8b19f0295df2b4c1051be47d901f9b951d6d803..4bff9deb61ef91b77662f896888a111ff545706d 100644
+--- a/src/msw/app.cpp
++++ b/src/msw/app.cpp
+@@ -650,7 +650,7 @@ bool wxApp::Initialize(int& argc_, wxChar **argv_)
+     // ensure that base cleanup is done if we return too early
+     wxCallBaseCleanup callBaseCleanup(this);
+ 
+-    InitCommonControls();
++    //InitCommonControls();
+ 
+     wxSetKeyboardHook(true);
+ 
