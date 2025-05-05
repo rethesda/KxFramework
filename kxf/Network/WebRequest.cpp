@@ -17,7 +17,7 @@ namespace kxf::Network
 		DWORD flags = 0;
 		return ::InternetGetConnectedState(&flags, 0);
 	}
-	String LookupIP(const URI& uri, NetworkHostType ip)
+	std::vector<IPAddress> LookupIP(const URI& uri, NetworkHostType ip)
 	{
 		if (ip == NetworkHostType::IPv4 || ip == NetworkHostType::IPv6)
 		{
@@ -31,26 +31,54 @@ namespace kxf::Network
 			});
 
 			String hostName = uri.GetServer();
-			WORD type = ip == NetworkHostType::IPv6 ? DNS_TYPE_A6 : DNS_TYPE_A;
-			DWORD flags = DNS_QUERY_STANDARD|DNS_QUERY_BYPASS_CACHE;
+			WORD type = ip == NetworkHostType::IPv6 ? DNS_TYPE_AAAA : DNS_TYPE_A;
+			DWORD flags = DNS_QUERY_STANDARD|DNS_QUERY_NO_HOSTS_FILE|DNS_QUERY_WIRE_ONLY|DNS_QUERY_BYPASS_CACHE;
 			if (::DnsQuery_W(hostName.wc_str(), type, flags, nullptr, &infoDNS, nullptr) == 0 && infoDNS)
 			{
-				bool isSuccess = false;
-				wchar_t buffer[64] = {};
+				std::vector<IPAddress> results;
+				auto LookFor = [&infoDNS, &results](WORD type)
+				{
+					for (auto record = infoDNS; ; record = record->pNext)
+					{
+						if (record->wType == type)
+						{
+							if (record->wType == DNS_TYPE_A)
+							{
+								if (!results.emplace_back(IPAddress::FromIPv4(record->Data.A.IpAddress, NetworkByteOrder::Network)))
+								{
+									results.pop_back();
+								}
+							}
+							else if (record->wType == DNS_TYPE_AAAA)
+							{
+								auto& ipv6 = record->Data.AAAA.Ip6Address;
+								static_assert(sizeof(ipv6) == 16);
 
-				if (ip == NetworkHostType::IPv6)
-				{
-					isSuccess = ::InetNtopW(AF_INET6, &infoDNS->Data.AAAA.Ip6Address, buffer, std::size(buffer)) != nullptr;
-				}
-				else
-				{
-					isSuccess = ::InetNtopW(AF_INET, &infoDNS->Data.A.IpAddress, buffer, std::size(buffer)) != nullptr;
-				}
+								std::array<uint8_t, 16> data;
+								std::memcpy(data.data(), &ipv6, sizeof(ipv6));
+								if (!results.emplace_back(IPAddress::FromIPv6(data)))
+								{
+									results.pop_back();
+								}
+							}
+						}
 
-				if (isSuccess)
+						if (!record->pNext)
+						{
+							break;
+						}
+					}
+				};
+
+				if (ip == NetworkHostType::IPv4)
 				{
-					return buffer;
+					LookFor(DNS_TYPE_A);
 				}
+				else if (ip == NetworkHostType::IPv6)
+				{
+					LookFor(DNS_TYPE_AAAA);
+				}
+				return results;
 			}
 		}
 		return {};
