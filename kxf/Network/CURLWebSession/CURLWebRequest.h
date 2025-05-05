@@ -113,7 +113,7 @@ namespace kxf
 
 		public:
 			// IWebRequest: Common
-			bool Start() override;
+			std::shared_ptr<IAsyncTask> Start() override;
 			bool Pause() override;
 			bool Resume() override;
 			bool Cancel() override;

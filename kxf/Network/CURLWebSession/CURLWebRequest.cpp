@@ -437,7 +437,7 @@ namespace kxf
 	}
 
 	// IWebRequest: Common
-	bool CURLWebRequest::Start()
+	std::shared_ptr<IAsyncTask> CURLWebRequest::Start()
 	{
 		if (m_State == WebRequestState::Idle)
 		{
@@ -447,7 +447,7 @@ namespace kxf
 			DoSetRequestHeaders();
 			return m_Session.StartRequest(*this);
 		}
-		return false;
+		return nullptr;
 	}
 	bool CURLWebRequest::Pause()
 	{

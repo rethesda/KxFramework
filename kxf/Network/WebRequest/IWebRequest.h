@@ -14,6 +14,9 @@
 
 namespace kxf
 {
+	class IAsyncTask;
+	class IAsyncTaskExecutor;
+
 	class IWebSession;
 	class IWebResponse;
 	class IWebAuthChallenge;
@@ -30,7 +33,7 @@ namespace kxf
 
 		public:
 			// Common
-			virtual bool Start() = 0;
+			virtual std::shared_ptr<IAsyncTask> Start() = 0;
 			virtual bool Pause() = 0;
 			virtual bool Resume() = 0;
 			virtual bool Cancel() = 0;

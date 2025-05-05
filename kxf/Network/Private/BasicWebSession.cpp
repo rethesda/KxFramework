@@ -76,16 +76,15 @@ namespace kxf::Private
 	{
 		return m_TaskExecutor == nullptr;
 	}
-	bool BasicWebSession::StartRequest(BasicWebRequest& request)
+	std::shared_ptr<IAsyncTask> BasicWebSession::StartRequest(BasicWebRequest& request)
 	{
 		if (auto locked = request.LockRef())
 		{
-			m_TaskExecutor->QueueTask([request = std::move(locked)]()
+			return m_TaskExecutor->QueueTask([request = std::move(locked)]()
 			{
 				request->PerformRequest();
 			});
-			return true;
 		}
-		return false;
+		return nullptr;
 	}
 }

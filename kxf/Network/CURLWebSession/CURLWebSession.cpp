@@ -22,7 +22,8 @@ Except as contained in this notice, the name of a copyright holder shall not be 
 
 namespace kxf
 {
-	CURLWebSession::CURLWebSession(std::shared_ptr<IAsyncTaskExecutor> taskExecutor)
+	CURLWebSession::CURLWebSession(std::shared_ptr<IAsyncTaskExecutor> taskExecutor, const URI& uri)
+		:m_BaseURI(uri)
 	{
 		if (CURL::Private::Initialize())
 		{

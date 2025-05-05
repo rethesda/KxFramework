@@ -125,6 +125,6 @@ namespace kxf::Private
 		public:
 			// BasicWebSession
 			bool IsNull() const noexcept;
-			bool StartRequest(BasicWebRequest& request);
+			std::shared_ptr<IAsyncTask> StartRequest(BasicWebRequest& request);
 	};
 }
