@@ -92,7 +92,7 @@ namespace kxf
 	}
 	bool DefaultAsyncTaskExecutor::IsRunning() const
 	{
-		if (std::unique_lock lock(m_ThreadPoolLock); m_ThreadPool.empty())
+		if (std::unique_lock lock(m_ThreadPoolLock); !m_ThreadPool.empty())
 		{
 			return true;
 		}
