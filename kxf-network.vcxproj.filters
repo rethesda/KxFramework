@@ -126,6 +126,9 @@
     <ClInclude Include="kxf-network\+Resources\kxf-resources.h">
       <Filter>kxf-network/+Resources</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\Network\IPAddress.h">
+      <Filter>kxf\Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-network\+PCH\kxf-pch.cpp">
@@ -169,6 +172,9 @@
     </ClCompile>
     <ClCompile Include="kxf\Network\WebRequest\WebRequestHeader.cpp">
       <Filter>kxf\Network\WebRequest</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\Network\IPAddress.cpp">
+      <Filter>kxf\Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

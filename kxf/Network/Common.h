@@ -19,4 +19,10 @@ namespace kxf
 		IPv4 = 4, // Host is IPv4 address: '192.168.1.100:5050'
 		IPv6 = 6, // Host is IPv6 address: '[aa:aa:aa:aa::aa:aa]:5050'
 	};
+
+	enum class NetworkByteOrder
+	{
+		Network = 0,
+		Native
+	};
 }

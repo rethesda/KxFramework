@@ -201,6 +201,7 @@
     <ClInclude Include="kxf\Network\CURLWebSession\CURLWebSession.h" />
     <ClInclude Include="kxf\Network\CURLWebSession\LibCURL.h" />
     <ClInclude Include="kxf\Network\CURLWebSession\LibCURLUtility.h" />
+    <ClInclude Include="kxf\Network\IPAddress.h" />
     <ClInclude Include="kxf\Network\Private\BasicWebRequest.h" />
     <ClInclude Include="kxf\Network\Private\BasicWebSession.h" />
     <ClInclude Include="kxf\Network\WebRequest.h" />
@@ -236,6 +237,7 @@
     <ClCompile Include="kxf\Network\CURLWebSession\CURLWebResponse.cpp" />
     <ClCompile Include="kxf\Network\CURLWebSession\CURLWebSession.cpp" />
     <ClCompile Include="kxf\Network\CURLWebSession\LibCURLUtility.cpp" />
+    <ClCompile Include="kxf\Network\IPAddress.cpp" />
     <ClCompile Include="kxf\Network\Private\BasicWebSession.cpp" />
     <ClCompile Include="kxf\Network\WebRequest.cpp" />
     <ClCompile Include="kxf\Network\WebRequest\IWebRequestOptions.cpp" />
