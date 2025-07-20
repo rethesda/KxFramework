@@ -124,6 +124,7 @@ namespace kxf
 			}
 
 			CallbackResult<void> EnumKeyNames(CallbackFunction<String> func) const;
+			CallbackResult<void> EnumAttributeValues(const String& name, CallbackFunction<String> func) const;
 
 		public:
 			INIDocumentSection& operator=(const INIDocumentSection&) = default;
@@ -253,6 +254,7 @@ namespace kxf
 
 			CallbackResult<void> EnumSectionNames(CallbackFunction<String> func) const;
 			CallbackResult<void> EnumKeyNames(const String& sectionName, CallbackFunction<String> func) const;
+			CallbackResult<void> EnumKeyValues(const String& sectionName, const String& keyName, CallbackFunction<String> func) const;
 			using INIDocumentSection::EnumKeyNames;
 
 			bool HasSection(const String& sectionName) const;

@@ -167,6 +167,14 @@ namespace kxf
 		}
 		return {};
 	}
+	CallbackResult<void> INIDocumentSection::EnumAttributeValues(const String& name, CallbackFunction<String> func) const
+	{
+		if (m_Ref)
+		{
+			return m_Ref->EnumKeyValues(m_SectionName, name, std::move(func));
+		}
+		return {};
+	}
 }
 
 namespace kxf
@@ -638,6 +646,27 @@ namespace kxf
 
 				return func.Invoke(std::move(keyName)).GetLastCommand();
 			}, sectionName, SortOrder::Ascending);
+		}
+		return {};
+	}
+	CallbackResult<void> INIDocument::EnumKeyValues(const String& sectionName, const String& keyName, CallbackFunction<String> func) const
+	{
+		if (m_Document)
+		{
+			return m_Document->ForEachValue([&, options = GetOptions()](const INIDocumentImpl::Entry& entry)
+			{
+				auto value = String::FromUTF8(entry.pItem);
+				if (options.Contains(INIDocumentOption::InlineComments) && StartsWithInlineComment(value))
+				{
+					return CallbackCommand::Discard;
+				}
+				if (options.Contains(INIDocumentOption::Quotes))
+				{
+					RemoveQuotes(value);
+				}
+
+				return func.Invoke(std::move(value)).GetLastCommand();
+			}, sectionName, keyName, SortOrder::Ascending);
 		}
 		return {};
 	}
