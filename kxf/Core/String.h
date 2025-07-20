@@ -141,7 +141,7 @@ namespace kxf
 
 		public:
 			template<class T1, class T2>
-			static int MatchesWildcards(T1&& name, T2&& expression, FlagSet<StringActionFlag> flags = {}) noexcept
+			static bool MatchesWildcards(T1&& name, T2&& expression, FlagSet<StringActionFlag> flags = {}) noexcept
 			{
 				return DoMatchesWildcards(StringViewOf(std::forward<T1>(name)), StringViewOf(std::forward<T2>(expression)), flags);
 			}
