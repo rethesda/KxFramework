@@ -20,7 +20,7 @@ namespace kxf::Private
 
 		// Value in hex and dec
 		auto value = error.GetValue();
-		formatted.Format(":[0x{:08x}/{} -> {}", value, value, error.IsSuccess() ? "Success" : "Fail");
+		formatted.Format("[0x{:08x}/{} -> {}", value, value, error.IsSuccess() ? "Success" : "Fail");
 
 		// Symbolic name for the value (for example 'ERROR_ACCESS_DENIED' for Win32Error = 5)
 		if (auto str = error.ToString(); !str.IsEmpty())
