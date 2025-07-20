@@ -739,6 +739,7 @@ namespace kxf
 				}
 			}
 		}
+		m_TaskExecutor.Run();
 
 		KXF_SCOPEDLOG.SetSuccess();
 		return true;
@@ -766,6 +767,7 @@ namespace kxf
 				m_NativeAppCleanedUp = true;
 			}
 		}
+		m_TaskExecutor.Terminate();
 
 		KXF_SCOPEDLOG.SetSuccess();
 	}
