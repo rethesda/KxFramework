@@ -877,6 +877,11 @@ namespace kxf
 				}
 				return *this;
 			}
+			String& Clear()
+			{
+				m_String.clear();
+				return *this;
+			}
 
 			size_t TrimScanLeft(const String& chars = {}, FlagSet<StringActionFlag> flags = {}) const
 			{
