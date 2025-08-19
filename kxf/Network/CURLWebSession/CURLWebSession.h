@@ -10,8 +10,8 @@ namespace kxf
 		friend class CURLWebRequest;
 
 		private:
-			IFileSystem* m_FileSystem = nullptr;
 			std::vector<WebRequestHeader> m_CommonHeaders;
+			std::shared_ptr<IFileSystem> m_FileSystem;
 			URI m_BaseURI;
 
 		private:
@@ -40,8 +40,8 @@ namespace kxf
 				m_CommonHeaders.clear();
 			}
 
-			IFileSystem& GetFileSystem() const override;
-			void SetFileSystem(IFileSystem& fileSystem) override;
+			std::shared_ptr<IFileSystem> GetFileSystem() const override;
+			void SetFileSystem(std::shared_ptr<IFileSystem> fileSystem) override;
 
 			String GetDefaultUserAgent() const override;
 			void* GetNativeHandle() const override

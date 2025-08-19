@@ -1,6 +1,8 @@
 #pragma once
 #include "kxf/Network/Common.h"
+#include "kxf/Network/WebRequest/Options.h"
 #include "kxf/Core/String.h"
+#include "kxf/Core/FlagSet.h"
 
 namespace kxf
 {
@@ -117,4 +119,7 @@ namespace kxf::CURL::Private
 	bool Initialize() noexcept;
 
 	std::string_view EasyErrorCodeToString(int easyErrorCode) noexcept;
+
+	String MapProtocolSet(FlagSet<WebRequestProtocol> protocols);
+	WebRequestProtocol MapProtocol(const String& scheme);
 }

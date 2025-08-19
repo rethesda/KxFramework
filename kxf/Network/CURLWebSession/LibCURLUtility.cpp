@@ -1,6 +1,7 @@
 #include "kxf-pch.h"
 #include "LibCURLUtility.h"
 #include "LibCURL.h"
+#include "kxf/Utility/String.h"
 #include "kxf/Utility/ScopeGuard.h"
 #include "kxf/wxWidgets/RTTI.h"
 
@@ -98,6 +99,48 @@ namespace
 			throw std::bad_alloc();
 		}
 		return result == CURLE_OK;
+	}
+
+	auto& GetSchemeMap()
+	{
+		using namespace kxf;
+
+		static const Utility::MapIC<StringView, WebRequestProtocol> schemeMap
+		{
+			{kxfS("DICT"), WebRequestProtocol::DICT},
+			{kxfS("FILE"), WebRequestProtocol::FILE},
+			{kxfS("FTP"), WebRequestProtocol::FTP},
+			{kxfS("FTPS"), WebRequestProtocol::FTPS},
+			{kxfS("GOPHER"), WebRequestProtocol::GOPHER},
+			{kxfS("HTTP"), WebRequestProtocol::HTTP},
+			{kxfS("HTTPS"), WebRequestProtocol::HTTPS},
+			{kxfS("IMAP"), WebRequestProtocol::IMAP},
+			{kxfS("IMAPS"), WebRequestProtocol::IMAPS},
+			{kxfS("LDAP"), WebRequestProtocol::LDAP},
+			{kxfS("LDAPS"), WebRequestProtocol::LDAPS},
+			{kxfS("POP3"), WebRequestProtocol::POP3},
+			{kxfS("POP3S"), WebRequestProtocol::POP3S},
+			{kxfS("RTMP"), WebRequestProtocol::RTMP},
+			{kxfS("RTMPE"), WebRequestProtocol::RTMPE},
+			{kxfS("RTMPS"), WebRequestProtocol::RTMPS},
+			{kxfS("RTMPT"), WebRequestProtocol::RTMPT},
+			{kxfS("RTMPTE"), WebRequestProtocol::RTMPTE},
+			{kxfS("RTMPTS"), WebRequestProtocol::RTMPTS},
+			{kxfS("RTSP"), WebRequestProtocol::RTSP},
+			{kxfS("SCP"), WebRequestProtocol::SCP},
+			{kxfS("SFTP"), WebRequestProtocol::SFTP},
+			{kxfS("SMB"), WebRequestProtocol::SMB},
+			{kxfS("SMBS"), WebRequestProtocol::SMBS},
+			{kxfS("SMTP"), WebRequestProtocol::SMTP},
+			{kxfS("SMTPS"), WebRequestProtocol::SMTPS},
+			{kxfS("TELNET"), WebRequestProtocol::TELNET},
+			{kxfS("TFTP"), WebRequestProtocol::TFTP},
+			{kxfS("MQTT"), WebRequestProtocol::MQTT},
+			{kxfS("WS"), WebRequestProtocol::WS},
+			{kxfS("WSS"), WebRequestProtocol::WSS}
+		};
+
+		return schemeMap;
 	}
 }
 
@@ -309,6 +352,47 @@ namespace kxf::CURL::Private
 		}
 		return {};
 	}
+
+	String MapProtocolSet(FlagSet<WebRequestProtocol> protocols)
+	{
+		if (protocols == WebRequestProtocol::Everything)
+		{
+			return kxfS("ALL");
+		}
+		else
+		{
+			auto& schemeMap = GetSchemeMap();
+
+			String result;
+			for (auto [scheme, protocol]: schemeMap)
+			{
+				if (protocols & protocol)
+				{
+					if (!result.IsEmpty())
+					{
+						result += kxfS(',');
+					}
+					result += scheme;
+				}
+			}
+
+			result.MakeLower();
+			return result;
+		}
+		return {};
+	}
+	WebRequestProtocol MapProtocol(const String& scheme)
+	{
+		if (!scheme.IsEmpty())
+		{
+			auto& schemeMap = GetSchemeMap();
+			if (auto it = schemeMap.find(scheme.view()); it != schemeMap.end())
+			{
+				return it->second;
+			}
+		}
+		return WebRequestProtocol::None;
+	}
 }
 
 namespace kxf::CURL::Private
@@ -329,5 +413,6 @@ namespace kxf::CURL::Private
 				}
 			}
 	};
+
 }
 

@@ -212,6 +212,7 @@
     <ClInclude Include="kxf\Network\WebRequest\IWebRequestOptions.h" />
     <ClInclude Include="kxf\Network\WebRequest\IWebRequestProxyOptions.h" />
     <ClInclude Include="kxf\Network\WebRequest\IWebRequestSecurityOptions.h" />
+    <ClInclude Include="kxf\Network\WebRequest\IWebRequestWSOptions.h" />
     <ClInclude Include="kxf\Network\WebRequest\IWebResponse.h" />
     <ClInclude Include="kxf\Network\WebRequest\IWebSession.h" />
     <ClInclude Include="kxf\Network\WebRequest\Options.h" />

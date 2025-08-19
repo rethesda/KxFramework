@@ -45,123 +45,9 @@ namespace kxf
 	}
 	WebRequestProtocol CURLWebResponse::GetProtocol() const
 	{
-		if (auto protocol = GetRequestHandle().GetOptionUInt32(CURLINFO_PROTOCOL))
+		if (auto scheme = GetRequestHandle().GetOptionString(CURLINFO_SCHEME); scheme)
 		{
-			switch (*protocol)
-			{
-				case CURLPROTO_DICT:
-				{
-					return WebRequestProtocol::DICT;
-				}
-				case CURLPROTO_FILE:
-				{
-					return WebRequestProtocol::FILE;
-				}
-				case CURLPROTO_FTP:
-				{
-					return WebRequestProtocol::FTP;
-				}
-				case CURLPROTO_FTPS:
-				{
-					return WebRequestProtocol::FTPS;
-				}
-				case CURLPROTO_GOPHER:
-				{
-					return WebRequestProtocol::GOPHER;
-				}
-				case CURLPROTO_HTTP:
-				{
-					return WebRequestProtocol::HTTP;
-				}
-				case CURLPROTO_HTTPS:
-				{
-					return WebRequestProtocol::HTTPS;
-				}
-				case CURLPROTO_IMAP:
-				{
-					return WebRequestProtocol::IMAP;
-				}
-				case CURLPROTO_IMAPS:
-				{
-					return WebRequestProtocol::IMAPS;
-				}
-				case CURLPROTO_LDAP:
-				{
-					return WebRequestProtocol::LDAP;
-				}
-				case CURLPROTO_LDAPS:
-				{
-					return WebRequestProtocol::LDAPS;
-				}
-				case CURLPROTO_POP3:
-				{
-					return WebRequestProtocol::POP3;
-				}
-				case CURLPROTO_POP3S:
-				{
-					return WebRequestProtocol::POP3S;
-				}
-				case CURLPROTO_RTMP:
-				{
-					return WebRequestProtocol::RTMP;
-				}
-				case CURLPROTO_RTMPE:
-				{
-					return WebRequestProtocol::RTMPE;
-				}
-				case CURLPROTO_RTMPS:
-				{
-					return WebRequestProtocol::RTMPS;
-				}
-				case CURLPROTO_RTMPT:
-				{
-					return WebRequestProtocol::RTMPT;
-				}
-				case CURLPROTO_RTMPTE:
-				{
-					return WebRequestProtocol::RTMPTE;
-				}
-				case CURLPROTO_RTMPTS:
-				{
-					return WebRequestProtocol::RTMPTS;
-				}
-				case CURLPROTO_RTSP:
-				{
-					return WebRequestProtocol::RTSP;
-				}
-				case CURLPROTO_SCP:
-				{
-					return WebRequestProtocol::SCP;
-				}
-				case CURLPROTO_SFTP:
-				{
-					return WebRequestProtocol::SFTP;
-				}
-				case CURLPROTO_SMB:
-				{
-					return WebRequestProtocol::SMB;
-				}
-				case CURLPROTO_SMBS:
-				{
-					return WebRequestProtocol::SMBS;
-				}
-				case CURLPROTO_SMTP:
-				{
-					return WebRequestProtocol::SMTP;
-				}
-				case CURLPROTO_SMTPS:
-				{
-					return WebRequestProtocol::SMTPS;
-				}
-				case CURLPROTO_TELNET:
-				{
-					return WebRequestProtocol::TELNET;
-				}
-				case CURLPROTO_TFTP:
-				{
-					return WebRequestProtocol::TFTP;
-				}
-			};
+			return CURL::Private::MapProtocol(*scheme);
 		}
 		return WebRequestProtocol::None;
 	}
@@ -199,6 +85,10 @@ namespace kxf
 	String CURLWebResponse::GetContentType() const
 	{
 		return GetRequestHandle().GetOptionString(CURLINFO_CONTENT_TYPE).value_or(NullString);
+	}
+	std::optional<int> CURLWebResponse::GetResponseCode() const
+	{
+		return GetRequestHandle().GetOptionInt32(CURLINFO_RESPONSE_CODE);
 	}
 
 	String CURLWebResponse::GetHeader(const String& name) const
