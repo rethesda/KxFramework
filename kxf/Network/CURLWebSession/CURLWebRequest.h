@@ -12,13 +12,29 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API_NETWORK CURLWebRequest final: public RTTI::Implementation<CURLWebRequest, Private::BasicWebRequest, IWebRequestOptions, IWebRequestAuthOptions, IWebRequestSecurityOptions>
+	class KXF_API_NETWORK CURLWebRequest final: public RTTI::Implementation<CURLWebRequest, Private::BasicWebRequest,
+		IWebRequestOptions,
+		IWebRequestAuthOptions,
+		IWebRequestSecurityOptions,
+		IWebRequestWSOptions,
+		IWebRequestWebSocket
+	>
 	{
 		friend class CURLWebResponse;
 		friend class CURLWebAuthChallenge;
 
 		private:
 			using TCURLOffset = int64_t;
+			enum class WSFrame
+			{
+				None = -1,
+
+				Wait,
+				Fail,
+				Close,
+				Message,
+				Ping
+			};
 
 		private:
 			static size_t OnReadDataCB(char* data, size_t size, size_t count, void* userData)
@@ -43,6 +59,9 @@ namespace kxf
 			CURLWebSession& m_Session;
 			std::atomic<WebRequestState> m_State = WebRequestState::None;
 			std::atomic<WebRequestState> m_NextState = WebRequestState::None;
+
+			std::array<char, 256> m_StatusTextBuffer = {};
+			std::optional<int> m_StatusCode;
 
 			// Request data
 			CURL::Private::RequestHandle m_Handle;
@@ -71,21 +90,32 @@ namespace kxf
 			std::atomic<int64_t> m_BytesSent = -1;
 			std::atomic<int64_t> m_BytesExpectedToSend = -1;
 
+			// WebSockets
+			FlagSet<int> m_WebSocketsOptions;
+			std::atomic<WebRequestState> m_WebSocketsState = WebRequestState::None;
+			std::condition_variable m_WebSocketsCondition;
+			mutable std::mutex m_WebSocketsLock;
+
 		private:
-			void NotifyEvent(EventTag<WebRequestEvent> eventID, WebRequestEvent& event)
+			void NotifyEvent(const kxf::EventID& eventID, WebRequestEvent& event)
 			{
 				m_EvtHandler.ProcessEvent(event, eventID, ProcessEventFlag::HandleExceptions);
 			}
-			void NotifyStateChange(WebRequestState state, std::optional<int> statusCode = {}, String statusText = {})
+			void NotifyWithEvent(const kxf::EventID& eventID, WebRequestState state)
 			{
-				WebRequestEvent event(LockRef(), state, std::move(statusCode), std::move(statusText));
-				NotifyEvent(WebRequestEvent::EvtStateChanged, event);
+				WebRequestEvent event(LockRef(), *m_Response, state);
+				NotifyEvent(eventID, event);
 			}
-			void ChangeStateAndNotify(WebRequestState state, std::optional<int> statusCode = {}, String statusText = {})
+			void NotifyStateChange(WebRequestState state)
+			{
+				NotifyWithEvent(WebRequestEvent::EvtStateChanged, state);
+			}
+			void ChangeStateAndNotify(WebRequestState state)
 			{
 				m_State = state;
-				NotifyStateChange(state, std::move(statusCode), std::move(statusText));
+				NotifyStateChange(state);
 			}
+			void UpdateStatusText(int code);
 
 			void DoFreeRequestHeaders();
 			void DoSetRequestHeaders();
@@ -100,6 +130,9 @@ namespace kxf
 			size_t OnReceiveHeader(char* data, size_t size, size_t count);
 			int OnProgressNotify(int64_t bytesReceived, int64_t bytesExpectedToReceive, int64_t bytesSent, int64_t bytesExpectedToSend);
 			bool OnSetAuthChallengeCredentials(WebAuthChallengeSource source, UserCredentials credentials);
+
+			WebRequestState HandleWebSocket();
+			WSFrame ReceiveWebSocket(int& reason, String& payload);
 
 			// Private::BasicWebRequest
 			void PerformRequest() override
@@ -183,6 +216,10 @@ namespace kxf
 			}
 			TransferRate GetReceiveRate() const override;
 
+			// IWebRequestWebSocket
+			bool SendText(const String& text) override;
+			std::optional<String> ReceiveText();
+
 		public:
 			// IWebRequestOptions
 			bool SetURI(const URI& uri) override;
@@ -192,6 +229,7 @@ namespace kxf
 			bool SetAllowedProtocols(FlagSet<WebRequestProtocol> protocols) override;
 			bool SetHTTPVersion(WebRequestHTTPVersion option) override;
 			bool SetIPVersion(WebRequestIPVersion option) override;
+			bool SetConnectOnly(WebRequestConnectOnly option) override;
 
 			bool SetServiceName(const String& name) override;
 			bool SetAllowRedirection(WebRequestOption2 option) override;
@@ -223,6 +261,10 @@ namespace kxf
 			bool SetVerifyPeer(WebRequestOption2 option) override;
 			bool SetVerifyHost(WebRequestOption2 option) override;
 			bool SetVerifyStatus(WebRequestOption2 option) override;
+
+			// IWebRequestWSOptions
+			bool SetRawMode(WebRequestOption2 option) override;
+			bool SetAutoPong(WebRequestOption2 option) override;
 
 		public:
 			// CURLWebRequest

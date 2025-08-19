@@ -32,6 +32,7 @@ namespace kxf
 			}
 
 		public:
+			// IWebResponse
 			URI GetURI() const override;
 			String GetMethod() const override;
 			String GetPrimaryIP() const override;
@@ -40,6 +41,7 @@ namespace kxf
 			WebRequestHTTPVersion GetHTTPVersion() const override;
 			DataSize GetContentLength() const override;
 			String GetContentType() const override;
+			std::optional<int> GetResponseCode() const override;
 
 			std::optional<int> GetStatusCode() const override
 			{
@@ -55,5 +57,12 @@ namespace kxf
 			Enumerator<String> EnumCookies() const override;
 
 			std::shared_ptr<IInputStream> GetStream() const override;
+
+			// CURLWebResponse
+			void SetStatus(std::optional<int> statusCode = {}, String statusText = {})
+			{
+				m_StatusText = std::move(statusText);
+				m_StatusCode = std::move(statusCode);
+			}
 	};
 }

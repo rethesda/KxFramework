@@ -69,3 +69,14 @@ namespace kxf
 			virtual TransferRate GetReceiveRate() const = 0;
 	};
 }
+
+namespace kxf
+{
+	class KXF_API_NETWORK IWebRequestWebSocket: public RTTI::Interface<IWebRequestWebSocket>
+	{
+		kxf_RTTI_DeclareIID(IWebRequestWebSocket, {0xe25dd515, 0x6103, 0x4713, {0x9c, 0x45, 0xc8, 0x1c, 0x9d, 0xe3, 0xe0, 0xa9}});
+
+		public:
+			virtual bool SendText(const String& text) = 0;
+	};
+}

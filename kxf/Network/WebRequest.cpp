@@ -1,7 +1,6 @@
 #include "kxf-pch.h"
 #include "WebRequest.h"
 #include "URI.h"
-//#include "WSPPWebSession/WSPPWebSession.h"
 #include "CURLWebSession/CURLWebSession.h"
 #include "kxf/Utility/ScopeGuard.h"
 
@@ -84,28 +83,8 @@ namespace kxf::Network
 		return {};
 	}
 
-	std::shared_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor)
+	std::shared_ptr<IWebSession> CreateWebSession(std::shared_ptr<IAsyncTaskExecutor> taskExecutor, const URI& uri)
 	{
-		if (uri)
-		{
-			std::shared_ptr<IWebSession> session;
-
-			const auto scheme = uri.GetScheme();
-			if (scheme.IsSameAs("ws", StringActionFlag::IgnoreCase) || scheme.IsSameAs("wss", StringActionFlag::IgnoreCase))
-			{
-				//session = std::make_shared<WSPPWebSession>(std::move(taskExecutor));
-			}
-			else
-			{
-				session = std::make_shared<CURLWebSession>(std::move(taskExecutor));
-			}
-
-			if (session)
-			{
-				session->SetBaseURI(uri);
-			}
-			return session;
-		}
-		return nullptr;
+		return std::make_shared<CURLWebSession>(std::move(taskExecutor), uri);
 	}
 }

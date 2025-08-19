@@ -16,6 +16,7 @@ namespace kxf
 			virtual bool SetAllowedProtocols(FlagSet<WebRequestProtocol> protocols) = 0;
 			virtual bool SetHTTPVersion(WebRequestHTTPVersion option) = 0;
 			virtual bool SetIPVersion(WebRequestIPVersion option) = 0;
+			virtual bool SetConnectOnly(WebRequestConnectOnly option) = 0;
 
 			virtual bool SetServiceName(const String& name) = 0;
 			virtual bool SetAllowRedirection(WebRequestOption2 option) = 0;

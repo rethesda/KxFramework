@@ -24,6 +24,7 @@ namespace kxf
 			virtual WebRequestProtocol GetProtocol() const = 0;
 			virtual DataSize GetContentLength() const = 0;
 			virtual String GetContentType() const = 0;
+			virtual std::optional<int> GetResponseCode() const = 0;
 
 			virtual std::optional<int> GetStatusCode() const = 0;
 			virtual String GetStatusText() const = 0;
@@ -82,6 +83,10 @@ namespace kxf
 				return {};
 			}
 			String GetContentType() const override
+			{
+				return {};
+			}
+			std::optional<int> GetResponseCode() const override
 			{
 				return {};
 			}

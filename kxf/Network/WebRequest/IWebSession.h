@@ -21,8 +21,8 @@ namespace kxf
 			virtual bool SetCommonHeader(const WebRequestHeader& header, FlagSet<WebRequestHeaderFlag> flags) = 0;
 			virtual void ClearCommonHeaders() = 0;
 
-			virtual IFileSystem& GetFileSystem() const = 0;
-			virtual void SetFileSystem(IFileSystem& fileSystem) = 0;
+			virtual std::shared_ptr<IFileSystem> GetFileSystem() const = 0;
+			virtual void SetFileSystem(std::shared_ptr<IFileSystem> fileSystem) = 0;
 
 			virtual String GetDefaultUserAgent() const = 0;
 			virtual void* GetNativeHandle() const = 0;

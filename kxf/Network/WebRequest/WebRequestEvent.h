@@ -15,14 +15,12 @@ namespace kxf
 
 			kxf_EVENT_MEMBER(WebRequestEvent, DataSent);
 			kxf_EVENT_MEMBER(WebRequestEvent, DataReceived);
+			kxf_EVENT_MEMBER(WebRequestEvent, DataProgress);
 
-		private:
+		protected:
 			std::shared_ptr<IWebRequest> m_Request;
 			IWebResponse* m_Response = nullptr;
 			WebRequestState m_State = WebRequestState::None;
-
-			std::optional<int> m_Status;
-			String m_StatusText;
 
 			WebRequestHeader m_Header;
 			const void* m_Buffer = nullptr;
@@ -33,29 +31,8 @@ namespace kxf
 				:m_Request(std::move(request)), m_State(state)
 			{
 			}
-			WebRequestEvent(std::shared_ptr<IWebRequest> request, WebRequestState state, WebRequestHeader header)
-				:m_Request(std::move(request)), m_State(state), m_Header(std::move(header))
-			{
-			}
-			WebRequestEvent(std::shared_ptr<IWebRequest> request, WebRequestState state, const void* buffer, size_t bufferSize)
-				:m_Request(std::move(request)), m_State(state), m_Buffer(buffer), m_BufferSize(bufferSize)
-			{
-			}
-			WebRequestEvent(std::shared_ptr<IWebRequest> request, WebRequestState state, std::optional<int> status = {}, String statusText = {})
-				:m_Request(std::move(request)), m_State(state), m_Status(status), m_StatusText(std::move(statusText))
-			{
-			}
-
-			WebRequestEvent(std::shared_ptr<IWebRequest> request, IWebResponse& response, WebRequestState state, const void* buffer, size_t bufferSize)
-				:m_Request(std::move(request)), m_Response(&response), m_State(state), m_Buffer(buffer), m_BufferSize(bufferSize)
-			{
-			}
-			WebRequestEvent(std::shared_ptr<IWebRequest> request, IWebResponse& response, WebRequestState state, std::optional<int> status = {}, String statusText = {})
-				:m_Request(std::move(request)), m_Response(&response), m_State(state), m_Status(status), m_StatusText(std::move(statusText))
-			{
-			}
-			WebRequestEvent(std::shared_ptr<IWebRequest> request, IWebResponse& response, std::optional<int> status = {}, String statusText = {})
-				:m_Request(std::move(request)), m_Response(&response), m_State(WebRequestState::Completed), m_Status(status), m_StatusText(std::move(statusText))
+			WebRequestEvent(std::shared_ptr<IWebRequest> request, IWebResponse& response, WebRequestState state)
+				:m_Request(std::move(request)), m_Response(&response), m_State(state)
 			{
 			}
 
@@ -88,18 +65,9 @@ namespace kxf
 			{
 				return std::move(m_Header);
 			}
-
-			std::optional<int> GetStatusCode() const
+			void SetHeader(WebRequestHeader header)
 			{
-				return m_Status;
-			}
-			const String& GetStatusText() const&
-			{
-				return m_StatusText;
-			}
-			String GetStatusText() &&
-			{
-				return std::move(m_StatusText);
+				m_Header = std::move(header);
 			}
 
 			const void* GetBuffer() const
@@ -109,6 +77,53 @@ namespace kxf
 			size_t GetBufferSize() const
 			{
 				return m_BufferSize;
+			}
+			void SetBuffer(const void* ptr, size_t size)
+			{
+				m_Buffer = ptr;
+				m_BufferSize = size;
+			}
+	};
+}
+
+namespace kxf
+{
+	class KXF_API_NETWORK WebRequestWSEvent: public WebRequestEvent
+	{
+		public:
+			kxf_EVENT_MEMBER(WebRequestWSEvent, WebSocketOpen);
+			kxf_EVENT_MEMBER(WebRequestWSEvent, WebSocketClose);
+			kxf_EVENT_MEMBER(WebRequestWSEvent, WebSocketPing);
+			kxf_EVENT_MEMBER(WebRequestWSEvent, WebSocketMessage);
+
+		private:
+			String m_Payload;
+
+		public:
+			WebRequestWSEvent(std::shared_ptr<IWebRequest> request, IWebResponse& response, WebRequestState state)
+				:WebRequestEvent(std::move(request), response, state)
+			{
+			}
+
+		public:
+			// IEvent
+			std::unique_ptr<IEvent> Move() noexcept override
+			{
+				return std::make_unique<WebRequestWSEvent>(std::move(*this));
+			}
+
+			// WebRequestWSEvent
+			const String& GetPayload() const&
+			{
+				return m_Payload;
+			}
+			String GetPayload() &&
+			{
+				return std::move(m_Payload);
+			}
+			void SetPayload(String payload)
+			{
+				m_Payload = std::move(payload);
 			}
 	};
 }

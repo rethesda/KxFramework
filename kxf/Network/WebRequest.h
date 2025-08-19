@@ -10,6 +10,7 @@
 #include "WebRequest/IWebRequestAuthOptions.h"
 #include "WebRequest/IWebRequestProxyOptions.h"
 #include "WebRequest/IWebRequestSecurityOptions.h"
+#include "WebRequest/IWebRequestWSOptions.h"
 #include "WebRequest/WebRequestEvent.h"
 #include "WebRequest/WebRequestHeader.h"
 
@@ -23,5 +24,5 @@ namespace kxf::Network
 	KXF_API_NETWORK bool IsInternetAvailable() noexcept;
 	KXF_API_NETWORK std::vector<IPAddress> LookupIP(const URI& uri, NetworkHostType ip);
 
-	KXF_API_NETWORK std::shared_ptr<IWebSession> CreateWebSession(const URI& uri, std::shared_ptr<IAsyncTaskExecutor> taskExecutor = {});
+	KXF_API_NETWORK std::shared_ptr<IWebSession> CreateWebSession(std::shared_ptr<IAsyncTaskExecutor> taskExecutor = {}, const URI& uri = {});
 }
