@@ -123,7 +123,7 @@ namespace kxf
 				m_Comment = std::move(comment);
 			}
 
-			CallbackResult<void> EnumKeyNames(CallbackFunction<String> func) const;
+			CallbackResult<void> EnumKeyNames(CallbackFunction<String> func, bool uniqueOnly = false) const;
 			CallbackResult<void> EnumAttributeValues(const String& name, CallbackFunction<String> func) const;
 
 		public:
@@ -186,6 +186,7 @@ namespace kxf
 			bool RemoveQuotes(String& value) const;
 			bool RemoveInlineComments(String& value, String* comment = nullptr) const;
 			bool StartsWithInlineComment(const String& value) const;
+			std::optional<String> ProcessItem(const char* rawData, FlagSet<INIDocumentOption> options) const;
 
 		public:
 			INIDocument();
@@ -253,7 +254,8 @@ namespace kxf
 			void SetOptions(FlagSet<INIDocumentOption> options);
 
 			CallbackResult<void> EnumSectionNames(CallbackFunction<String> func) const;
-			CallbackResult<void> EnumKeyNames(const String& sectionName, CallbackFunction<String> func) const;
+			CallbackResult<void> EnumSectionItems(const String& sectionName, CallbackFunction<String, String> func) const;
+			CallbackResult<void> EnumKeyNames(const String& sectionName, CallbackFunction<String> func, bool uniqueOnly = false) const;
 			CallbackResult<void> EnumKeyValues(const String& sectionName, const String& keyName, CallbackFunction<String> func) const;
 			using INIDocumentSection::EnumKeyNames;
 

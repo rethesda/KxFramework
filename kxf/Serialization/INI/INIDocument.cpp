@@ -83,6 +83,21 @@ namespace kxf
 				}
 				return {};
 			}
+			CallbackResult<void> ForEachSectionItem(CallbackFunction<const Entry&, const char*> func, const String& sectionName) const
+			{
+				if (auto sectionData = GetSection(sectionName.utf8_str()))
+				{
+					for (auto& [name, value]: *sectionData)
+					{
+						if (func.Invoke(name, value).ShouldTerminate())
+						{
+							break;
+						}
+					}
+					return func.Finalize();
+				}
+				return {};
+			}
 	};
 }
 
@@ -159,11 +174,11 @@ namespace kxf
 	}
 
 	// INIDocumentSection
-	CallbackResult<void> INIDocumentSection::EnumKeyNames(CallbackFunction<String> func) const
+	CallbackResult<void> INIDocumentSection::EnumKeyNames(CallbackFunction<String> func, bool uniqueOnly) const
 	{
 		if (m_Ref)
 		{
-			return m_Ref->EnumKeyNames(m_SectionName, std::move(func));
+			return m_Ref->EnumKeyNames(m_SectionName, std::move(func), uniqueOnly);
 		}
 		return {};
 	}
@@ -404,6 +419,20 @@ namespace kxf
 		}
 		return false;
 	}
+	std::optional<String> INIDocument::ProcessItem(const char* rawData, FlagSet<INIDocumentOption> options) const
+	{
+		auto item = String::FromUTF8(rawData);
+		if (options.Contains(INIDocumentOption::InlineComments) && StartsWithInlineComment(item))
+		{
+			return {};
+		}
+		if (options.Contains(INIDocumentOption::Quotes))
+		{
+			RemoveQuotes(item);
+		}
+
+		return item;
+	}
 
 	INIDocument::INIDocument()
 		:INIDocumentSection(*this, {})
@@ -628,24 +657,50 @@ namespace kxf
 		}
 		return {};
 	}
-	CallbackResult<void> INIDocument::EnumKeyNames(const String& sectionName, CallbackFunction<String> func) const
+	CallbackResult<void> INIDocument::EnumSectionItems(const String& sectionName, CallbackFunction<String, String> func) const
 	{
 		if (m_Document)
 		{
-			return m_Document->ForEachKey([&, options = GetOptions()](const INIDocumentImpl::Entry& entry)
+			return m_Document->ForEachSectionItem([&, options = GetOptions()](const INIDocumentImpl::Entry& nameEntry, const char* rawValue)
 			{
-				auto keyName = String::FromUTF8(entry.pItem);
-				if (options.Contains(INIDocumentOption::InlineComments) && StartsWithInlineComment(keyName))
-				{
-					return CallbackCommand::Discard;
-				}
-				if (options.Contains(INIDocumentOption::Quotes))
-				{
-					RemoveQuotes(keyName);
-				}
+				auto keyName = ProcessItem(nameEntry.pItem, options);
+				auto value = ProcessItem(rawValue, options);
 
-				return func.Invoke(std::move(keyName)).GetLastCommand();
-			}, sectionName, SortOrder::Ascending);
+				if (keyName && value)
+				{
+					return func.Invoke(*std::move(keyName), *std::move(value)).GetLastCommand();
+				}
+				return CallbackCommand::Discard;
+			}, sectionName);
+		}
+		return {};
+	}
+	CallbackResult<void> INIDocument::EnumKeyNames(const String& sectionName, CallbackFunction<String> func, bool uniqueOnly) const
+	{
+		if (m_Document)
+		{
+			if (uniqueOnly)
+			{
+				return m_Document->ForEachKey([&, options = GetOptions()](const INIDocumentImpl::Entry& entry)
+				{
+					if (auto keyName = ProcessItem(entry.pItem, options))
+					{
+						return func.Invoke(*std::move(keyName)).GetLastCommand();
+					}
+					return CallbackCommand::Discard;
+				}, sectionName, SortOrder::Ascending);
+			}
+			else
+			{
+				return m_Document->ForEachSectionItem([&, options = GetOptions()](const INIDocumentImpl::Entry& nameEntry, const char* rawValue)
+				{
+					if (auto keyName = ProcessItem(nameEntry.pItem, options))
+					{
+						return func.Invoke(*std::move(keyName)).GetLastCommand();
+					}
+					return CallbackCommand::Discard;
+				}, sectionName);
+			}
 		}
 		return {};
 	}
@@ -655,17 +710,11 @@ namespace kxf
 		{
 			return m_Document->ForEachValue([&, options = GetOptions()](const INIDocumentImpl::Entry& entry)
 			{
-				auto value = String::FromUTF8(entry.pItem);
-				if (options.Contains(INIDocumentOption::InlineComments) && StartsWithInlineComment(value))
+				if (auto value = ProcessItem(entry.pItem, options))
 				{
-					return CallbackCommand::Discard;
+					return func.Invoke(*std::move(value)).GetLastCommand();
 				}
-				if (options.Contains(INIDocumentOption::Quotes))
-				{
-					RemoveQuotes(value);
-				}
-
-				return func.Invoke(std::move(value)).GetLastCommand();
+				return CallbackCommand::Discard;
 			}, sectionName, keyName, SortOrder::Ascending);
 		}
 		return {};
