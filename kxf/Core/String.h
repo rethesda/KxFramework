@@ -16,7 +16,8 @@ namespace kxf
 	using StringView = std::basic_string_view<XChar>;
 	KXF_API extern const String NullString;
 
-	#define kxfS(x)	L ## x
+	#define kxfS(x)		L ## x
+	#define kxfSV(x)	kxf::StringView(kxfS(x))
 
 	enum class StringActionFlag: uint32_t
 	{
