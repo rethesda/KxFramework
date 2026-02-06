@@ -76,27 +76,3 @@ namespace kxf::Utility
 		};
 	}
 }
-
-namespace kxf::Utility
-{
-	std::optional<bool> ParseBool(const String& value)
-	{
-		if (value == kxfS("false") || value == kxfS("FALSE"))
-		{
-			return false;
-		}
-		else if (value == kxfS("true") || value == kxfS("TRUE"))
-		{
-			return true;
-		}
-		else if (auto iValue = value.ToInteger<int>())
-		{
-			return *iValue != 0;
-		}
-		else if (auto fValue = value.ToFloatingPoint())
-		{
-			return *fValue != 0;
-		}
-		return {};
-	}
-}

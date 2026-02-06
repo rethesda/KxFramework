@@ -95,27 +95,27 @@ namespace
 
 			if (items.size() == shortVariant || items.size() == longVariant)
 			{
-				uuid.Data1 = items[0].ToInteger<uint32_t>(16).value_or(0);
-				uuid.Data2 = items[1].ToInteger<uint16_t>(16).value_or(0);
-				uuid.Data3 = items[2].ToInteger<uint16_t>(16).value_or(0);
+				uuid.Data1 = items[0].ParseInteger<uint32_t>(16).value_or(0);
+				uuid.Data2 = items[1].ParseInteger<uint16_t>(16).value_or(0);
+				uuid.Data3 = items[2].ParseInteger<uint16_t>(16).value_or(0);
 
 				if (items.size() == shortVariant)
 				{
 					const String& data4_01 = items[3];
-					uuid.Data4[0] = data4_01.SubLeft(2).ToInteger<uint8_t>(16).value_or(0);
-					uuid.Data4[1] = data4_01.SubRight(2).ToInteger<uint8_t>(16).value_or(0);
+					uuid.Data4[0] = data4_01.SubLeft(2).ParseInteger<uint8_t>(16).value_or(0);
+					uuid.Data4[1] = data4_01.SubRight(2).ParseInteger<uint8_t>(16).value_or(0);
 
 					const String& data4_27 = items[4];
 					for (size_t i = 2; i < std::size(uuid.Data4); i++)
 					{
-						uuid.Data4[i] = data4_27.SubMid((i - 2) * 2, 2).ToInteger<uint8_t>(16).value_or(0);
+						uuid.Data4[i] = data4_27.SubMid((i - 2) * 2, 2).ParseInteger<uint8_t>(16).value_or(0);
 					}
 				}
 				else if (items.size() == longVariant)
 				{
 					for (size_t i = 0; i < std::size(uuid.Data4); i++)
 					{
-						uuid.Data4[i] = items[3 + i].ToInteger<uint8_t>(16).value_or(0);
+						uuid.Data4[i] = items[3 + i].ParseInteger<uint8_t>(16).value_or(0);
 					}
 				}
 				return uuid;

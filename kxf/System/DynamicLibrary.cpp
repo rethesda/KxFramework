@@ -30,7 +30,7 @@ namespace
 	}
 	LPCWSTR GetNameOrID(const String& name)
 	{
-		if (auto id = name.ToInteger<ULONG>())
+		if (auto id = name.ParseInteger<ULONG>())
 		{
 			return MAKEINTRESOURCEW(*id);
 		}
@@ -531,7 +531,7 @@ namespace kxf
 			if (locale && !locale.IsInvariant())
 			{
 				// http://forum.sources.ru/index.php?showtopic=375357
-				if (auto stringID = name.ToInteger<size_t>())
+				if (auto stringID = name.ParseInteger<size_t>())
 				{
 					auto data = GetResource(System::Private::ResourceTypeToName(RT_STRING), System::Private::ResourceTypeToName(*stringID / 16 + 1), locale);
 					if (!data.empty())
@@ -562,7 +562,7 @@ namespace kxf
 			}
 			else
 			{
-				if (auto id = name.ToInteger<int>())
+				if (auto id = name.ParseInteger<int>())
 				{
 					LPWSTR string = nullptr;
 					int length = LoadStringW(AsHMODULE(*m_Handle), *id, reinterpret_cast<LPWSTR>(&string), 0);

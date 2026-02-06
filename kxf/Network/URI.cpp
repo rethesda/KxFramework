@@ -505,7 +505,7 @@ namespace kxf
 	}
 	std::optional<uint16_t> URI::GetPortInt() const
 	{
-		return GetPort().ToInteger<uint16_t>();
+		return GetPort().ParseInteger<uint16_t>();
 	}
 	String URI::GetPort() const
 	{

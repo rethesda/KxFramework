@@ -146,7 +146,7 @@ namespace
 		kxf::String value = element.GetStyleAttribute(name);
 		ExtractInt(value);
 
-		return value.ToInteger<int>();
+		return value.ParseInteger<int>();
 	}
 
 	template<class TName>
@@ -154,7 +154,7 @@ namespace
 	{
 		kxf::String value = element.GetStyleAttribute(name);
 		ExtractFloat(value);
-		return value.ToFloatingPoint<double>();
+		return value.ParseFloatingPoint<double>();
 	}
 
 	void SC_CALLBACK ExtractStringLength(const wchar_t* value, UINT length, void* context)

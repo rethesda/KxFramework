@@ -49,7 +49,7 @@ namespace kxf::Math
 		{
 			// That's not really how you should do it, but eh... whatever
 			String formatted = Format("{:.{}f}", x, std::min(truncateTo, DBL_DIG));
-			if (auto value = formatted.ToFloatingPoint())
+			if (auto value = formatted.ParseFloatingPoint())
 			{
 				return *value;
 			}
@@ -191,7 +191,7 @@ namespace kxf::Math
 
 	std::optional<int64_t> FromBase(const String& x, int base)
 	{
-		return x.ToInteger<int64_t>(base);
+		return x.ParseInteger<int64_t>(base);
 	}
 	String ToBase(int64_t x, int base)
 	{

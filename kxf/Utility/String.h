@@ -150,8 +150,3 @@ namespace kxf::Utility
 			}
 	};
 }
-
-namespace kxf::Utility
-{
-	std::optional<bool> ParseBool(const String& value);
-}

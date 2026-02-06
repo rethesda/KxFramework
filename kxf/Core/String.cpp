@@ -5,6 +5,7 @@
 #include "kxf/IO/IStream.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/wxWidgets/String.h"
+#include <charconv>
 #include <cctype>
 
 #include <Windows.h>
@@ -228,37 +229,42 @@ namespace
 	}
 
 	template<class T, class TFunc>
-	bool ConvertToInteger(T& value, int base, std::basic_string_view<kxf::XChar> buffer, TFunc&& func) noexcept
+	bool ConvertToInteger(T& value, int base, std::basic_string_view<kxf::XChar> source, TFunc&& func) noexcept
 	{
+		if (base == 0 || source.empty())
+		{
+			return false;
+		}
+
 		bool negate = false;
 		if (base < 0)
 		{
 			if constexpr(std::is_signed_v<T>)
 			{
-				if (buffer.starts_with('-'))
+				if (source.starts_with('-'))
 				{
 					negate = true;
-					buffer.remove_prefix(1);
+					source.remove_prefix(1);
 				}
 			}
 
-			const auto temp = buffer;
-			if (buffer.starts_with('0'))
+			const auto temp = source;
+			if (source.starts_with('0'))
 			{
-				buffer.remove_prefix(1);
-				if (buffer.starts_with('x') || buffer.starts_with('X'))
+				source.remove_prefix(1);
+				if (source.starts_with('x') || source.starts_with('X'))
 				{
-					buffer.remove_prefix(1);
+					source.remove_prefix(1);
 					base = 16;
 				}
-				else if (buffer.starts_with('o') || buffer.starts_with('O'))
+				else if (source.starts_with('o') || source.starts_with('O'))
 				{
-					buffer.remove_prefix(1);
+					source.remove_prefix(1);
 					base = 8;
 				}
-				else if (buffer.starts_with('b') || buffer.starts_with('B'))
+				else if (source.starts_with('b') || source.starts_with('B'))
 				{
-					buffer.remove_prefix(1);
+					source.remove_prefix(1);
 					base = 2;
 				}
 			}
@@ -266,19 +272,24 @@ namespace
 			if (base < 0)
 			{
 				base = 10;
-				buffer = temp;
+				source = temp;
 			}
 		}
 
-		if (!buffer.empty())
+		if (!source.empty())
 		{
-			const kxf::XChar* start = buffer.data();
-			kxf::XChar* end = nullptr;
+			kxf::XChar buffer[64] = {0};
+			if (source.size() >= std::size(buffer))
+			{
+				return false;
+			}
+			std::copy_n(source.begin(), source.size(), buffer);
 
 			errno = 0;
-			auto result = std::invoke(func, start, &end, base);
+			kxf::XChar* end = nullptr;
+			auto result = std::invoke(func, buffer, &end, base);
 
-			if (end != start && errno == 0)
+			if (end == buffer + source.size() && errno == 0)
 			{
 				if constexpr(std::is_signed_v<T>)
 				{
@@ -296,18 +307,40 @@ namespace
 	}
 
 	template<class T, class TFunc>
-	bool ConvertToFloat(T& value, const kxf::XChar* start, TFunc&& func) noexcept
+	bool ConvertToFloat(T& value, std::basic_string_view<kxf::XChar> source, TFunc&& func) noexcept
 	{
-		errno = 0;
-		kxf::XChar* end = nullptr;
-		auto result = std::invoke(func, start, &end);
-
-		if (end != start && errno == 0)
+		if (!source.empty())
 		{
-			value = result;
-			return true;
+			kxf::XChar buffer[128] = {0};
+			if (source.size() >= std::size(buffer))
+			{
+				return false;
+			}
+			std::copy_n(source.begin(), source.size(), buffer);
+
+			errno = 0;
+			kxf::XChar* end = nullptr;
+			auto result = std::invoke(func, buffer, &end);
+
+			if (end == buffer + source.size() && errno == 0)
+			{
+				value = result;
+				return true;
+			}
 		}
 		return false;
+	}
+
+	template<class TBuffer, class TValue>
+	bool IntToChars(TBuffer&& buffer, TValue value, int base = 10)
+	{
+		return std::to_chars(std::begin(buffer), std::end(buffer), value, base).ec == std::errc();
+	}
+
+	template<class TBuffer, class TValue>
+	bool FloatToChars(TBuffer&& buffer, TValue value, int precision)
+	{
+		return std::to_chars(std::begin(buffer), std::end(buffer), value, std::chars_format::fixed, precision).ec == std::errc();
 	}
 }
 
@@ -384,9 +417,46 @@ namespace kxf
 	{
 		return EncodingConverter_WhateverWorks.ToWideChar(unknown.GetView());
 	}
+
+	String String::FromInteger(int64_t value, int base)
+	{
+		char buffer[64] = {0};
+		if (IntToChars(buffer, value, base))
+		{
+			return StringViewOf(buffer);
+		}
+		return {};
+	}
+	String String::FromInteger(uint64_t value, int base)
+	{
+		char buffer[64] = {0};
+		if (IntToChars(buffer, value, base))
+		{
+			return StringViewOf(buffer);
+		}
+		return {};
+	}
+	String String::FromPointer(void* value)
+	{
+		char buffer[64] = "0x";
+		if (std::to_chars(std::begin(buffer) + 2, std::end(buffer) - 2, reinterpret_cast<uintptr_t>(value), 16).ec == std::errc())
+		{
+			return StringViewOf(buffer);
+		}
+		return {};
+	}
+	String String::FromBoolean(bool value)
+	{
+		return value ? kxfSV("true") : kxfSV("false");
+	}
 	String String::FromFloatingPoint(double value, int precision)
 	{
-		return wxString::FromCDouble(value, precision);
+		char buffer[128] = {0};
+		if (FloatToChars(buffer, value, precision))
+		{
+			return StringViewOf(buffer);
+		}
+		return {};
 	}
 
 	// String length
@@ -855,25 +925,63 @@ namespace kxf
 	}
 
 	// Conversion to numbers
-	bool String::DoToFloatingPoint(float& value) const noexcept
+	bool String::DoParseFloatingPoint(float& value) const noexcept
 	{
 		return ConvertToFloat(value, wc_str(), std::wcstof);
 	}
-	bool String::DoToFloatingPoint(double& value) const noexcept
+	bool String::DoParseFloatingPoint(double& value) const noexcept
 	{
 		return ConvertToFloat(value, wc_str(), std::wcstod);
 	}
-	bool String::DoToSignedInteger(int64_t& value, int base) const noexcept
+	bool String::DoParseSignedInteger(int64_t& value, int base) const noexcept
 	{
 		return ConvertToInteger(value, base, view(), std::wcstoll);
 	}
-	bool String::DoToUnsignedInteger(uint64_t& value, int base) const noexcept
+	bool String::DoParseUnsignedInteger(uint64_t& value, int base) const noexcept
 	{
 		return ConvertToInteger(value, base, view(), std::wcstoull);
 	}
 
+	std::optional<void*> String::ParsePointer() const
+	{
+		auto str = view();
+		if (str.starts_with(kxfSV("0x")) || str.starts_with(kxfSV("0X")))
+		{
+			str.remove_prefix(2);
+			if (uintptr_t value = 0; ConvertToInteger(value, 16, str, std::wcstoull))
+			{
+				// Could truncate, maybe just return uint64_t instead?
+				return reinterpret_cast<void*>(value);
+			}
+		}
+		return {};
+	}
+	std::optional<bool> String::ParseBoolean() const noexcept
+	{
+		if (m_String == kxfSV("true") || m_String == kxfSV("TRUE"))
+		{
+			return true;
+		}
+		else if (m_String == kxfSV("false") || m_String == kxfSV("FALSE"))
+		{
+			return false;
+		}
+		else if (auto iValue = ParseInteger<int>())
+		{
+			if (*iValue == 1)
+			{
+				return true;
+			}
+			else if (*iValue == 0)
+			{
+				return false;
+			}
+		}
+		return {};
+	}
+
 	// Miscellaneous
-	size_t kxf::String::TrimScan(const String& chars, FlagSet<StringActionFlag> flags, bool left) const
+	size_t String::TrimScan(const String& chars, FlagSet<StringActionFlag> flags, bool left) const
 	{
 		auto ScanChar = [&chars, &flags](size_t& count, UniChar c)
 		{

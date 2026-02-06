@@ -216,42 +216,42 @@ namespace kxf
 		{
 			if (value.front() == '#')
 			{
-				auto r = value.SubMid(1, 2).ToInteger<uint8_t>(16);
-				auto g = value.SubMid(3, 2).ToInteger<uint8_t>(16);
-				auto b = value.SubMid(5, 2).ToInteger<uint8_t>(16);
+				auto r = value.SubMid(1, 2).ParseInteger<uint8_t>(16);
+				auto g = value.SubMid(3, 2).ParseInteger<uint8_t>(16);
+				auto b = value.SubMid(5, 2).ParseInteger<uint8_t>(16);
 				if (r && g && b)
 				{
 					Utility::SetIfNotNull(colorSpace, ColorSpace::RGB);
 
-					auto a = value.SubMid(7, 2).ToInteger<uint8_t>(16);
+					auto a = value.SubMid(7, 2).ParseInteger<uint8_t>(16);
 					return FromFixed8(*r, *g, *b, a.value_or(255));
 				}
 			}
 			else if (RegEx regEx(wxS(R"(rgba?\((\d+),\s+(\d+),\s+(\d+),?\s*([\d\.]*)\))")); regEx.Matches(value))
 			{
-				auto r = regEx.GetMatch(value, 1).ToInteger<uint8_t>();
-				auto g = regEx.GetMatch(value, 2).ToInteger<uint8_t>();
-				auto b = regEx.GetMatch(value, 3).ToInteger<uint8_t>();
+				auto r = regEx.GetMatch(value, 1).ParseInteger<uint8_t>();
+				auto g = regEx.GetMatch(value, 2).ParseInteger<uint8_t>();
+				auto b = regEx.GetMatch(value, 3).ParseInteger<uint8_t>();
 
 				if (r && g && b)
 				{
 					Utility::SetIfNotNull(colorSpace, ColorSpace::RGB);
 
-					auto a = regEx.GetMatch(value, 4).ToFloatingPoint<float>();
+					auto a = regEx.GetMatch(value, 4).ParseFloatingPoint<float>();
 					return FromFixed8(*r, *g, *b, a.value_or(1) * 255);
 				}
 			}
 			else if (RegEx regEx(wxS(R"(hsla?\(([\d\.]+),\s+([\d\.]+),\s+([\d\.]+),?\s*([\d\.]*)\))")); regEx.Matches(value))
 			{
-				auto h = regEx.GetMatch(value, 1).ToFloatingPoint<float>();
-				auto s = regEx.GetMatch(value, 2).ToFloatingPoint<float>();
-				auto l = regEx.GetMatch(value, 3).ToFloatingPoint<float>();
+				auto h = regEx.GetMatch(value, 1).ParseFloatingPoint<float>();
+				auto s = regEx.GetMatch(value, 2).ParseFloatingPoint<float>();
+				auto l = regEx.GetMatch(value, 3).ParseFloatingPoint<float>();
 
 				if (h && s && l)
 				{
 					Utility::SetIfNotNull(colorSpace, ColorSpace::HSL);
 
-					auto a = regEx.GetMatch(value, 4).ToFloatingPoint<float>();
+					auto a = regEx.GetMatch(value, 4).ParseFloatingPoint<float>();
 					return FromHSL(PackedHSL{Angle::FromDegrees(*h), *s, *l, a.value_or(1)});
 				}
 			}

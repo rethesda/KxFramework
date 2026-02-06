@@ -62,7 +62,7 @@ namespace kxf
 			requires(std::is_integral_v<T> || std::is_enum_v<T>)
 			std::optional<T> ToInt() const noexcept
 			{
-				return GetPath().ToInteger<T>();
+				return GetPath().ParseInteger<T>();
 			}
 
 			// URI

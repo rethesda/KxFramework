@@ -99,7 +99,7 @@ namespace
 				{
 					if (extraData)
 					{
-						if (auto index = icon.AfterLast(',').ToInteger<int>())
+						if (auto index = icon.AfterLast(',').ParseInteger<int>())
 						{
 							*extraData = std::abs(*index);
 						}

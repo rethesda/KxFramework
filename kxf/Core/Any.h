@@ -90,7 +90,7 @@ namespace kxf
 						// Convert to signed int
 						if (const String* ptr = any.AsPtr<String>())
 						{
-							if (auto iValue = ptr->ToInteger<int64_t>())
+							if (auto iValue = ptr->ParseInteger<int64_t>())
 							{
 								value = static_cast<T>(*iValue);
 								return true;
@@ -102,7 +102,7 @@ namespace kxf
 						// Convert to unsigned int
 						if (const String* ptr = any.AsPtr<String>())
 						{
-							if (auto iValue = ptr->ToInteger<uint64_t>())
+							if (auto iValue = ptr->ParseInteger<uint64_t>())
 							{
 								value = static_cast<T>(*iValue);
 								return true;
@@ -126,7 +126,7 @@ namespace kxf
 					// Convert to float or double
 					if (const String* ptr = any.AsPtr<String>())
 					{
-						if (auto fValue = ptr->ToFloatingPoint<double>())
+						if (auto fValue = ptr->ParseFloatingPoint<double>())
 						{
 							value = *fValue;
 							return true;

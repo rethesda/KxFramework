@@ -164,6 +164,11 @@ namespace kxf
 			static String FromASCII(CStrViewAdapter ascii);
 			static String FromLocalEncoding(CStrViewAdapter local);
 			static String FromUnknownEncoding(CStrViewAdapter unknown);
+
+			static String FromInteger(int64_t value, int base = 10);
+			static String FromInteger(uint64_t value, int base = 10);
+			static String FromPointer(void* value);
+			static String FromBoolean(bool value);
 			static String FromFloatingPoint(double value, int precision = -1);
 
 			// Substring extraction
@@ -797,22 +802,19 @@ namespace kxf
 
 		private:
 			// Conversion to numbers
-			bool DoToFloatingPoint(float& value) const noexcept;
-			bool DoToFloatingPoint(double& value) const noexcept;
-			bool DoToSignedInteger(int64_t& value, int base) const noexcept;
-			bool DoToUnsignedInteger(uint64_t& value, int base) const noexcept;
-
-			// Misc
-			size_t TrimScan(const String& chars, FlagSet<StringActionFlag> flags, bool left) const;
+			bool DoParseFloatingPoint(float& value) const noexcept;
+			bool DoParseFloatingPoint(double& value) const noexcept;
+			bool DoParseSignedInteger(int64_t& value, int base) const noexcept;
+			bool DoParseUnsignedInteger(uint64_t& value, int base) const noexcept;
 
 		public:
 			template<class T = double> requires(std::is_floating_point_v<T>)
-			std::optional<T> ToFloatingPoint() const noexcept
+			std::optional<T> ParseFloatingPoint() const noexcept
 			{
-				if constexpr(std::is_same_v<T, float>)
+				if constexpr (std::is_same_v<T, float>)
 				{
 					float value = 0;
-					if (DoToFloatingPoint(value))
+					if (DoParseFloatingPoint(value))
 					{
 						return static_cast<T>(value);
 					}
@@ -820,39 +822,46 @@ namespace kxf
 				else
 				{
 					double value = 0;
-					if (DoToFloatingPoint(value))
+					if (DoParseFloatingPoint(value))
 					{
 						return static_cast<T>(value);
 					}
 				}
 				return {};
 			}
-
+			
 			template<class T = int> requires(std::is_integral_v<T>)
-			std::optional<T> ToInteger(int base = 10) const noexcept
+			std::optional<T> ParseInteger(int base = 10) const noexcept
 			{
 				using Limits = std::numeric_limits<T>;
 				using TInt = std::conditional_t<std::is_unsigned_v<T>, uint64_t, int64_t>;
 
 				TInt value = 0;
-				bool isSuccess = false;
+				bool success = false;
 				if constexpr(std::is_unsigned_v<T>)
 				{
-					isSuccess = DoToUnsignedInteger(value, base);
+					success = DoParseUnsignedInteger(value, base);
 				}
 				else
 				{
-					isSuccess = DoToSignedInteger(value, base);
+					success = DoParseSignedInteger(value, base);
 				}
 
-				if (isSuccess && value == std::clamp<TInt>(value, Limits::min(), Limits::max()))
+				if (success && value == std::clamp<TInt>(value, Limits::min(), Limits::max()))
 				{
 					return static_cast<T>(value);
 				}
 				return {};
 			}
 
+			std::optional<void*> ParsePointer() const;
+			std::optional<bool> ParseBoolean() const noexcept;
+
+		private:
 			// Misc
+			size_t TrimScan(const String& chars, FlagSet<StringActionFlag> flags, bool left) const;
+
+		public:
 			bool IsASCII() const noexcept
 			{
 				for (const auto& c: m_String)
