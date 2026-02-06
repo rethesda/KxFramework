@@ -57,11 +57,22 @@ namespace kxf
 		return {};
 	}
 
+	// This version is for bounded arrays and will *always* create the view of an entire array
+	// without taking any possible null separators into consideration. It will, however, skip
+	// the last element of the array if it's null (as it often is the case with string literals).
 	template<class T, size_t N>
 	constexpr auto StringViewOf(const T (&buffer)[N]) noexcept
 	{
 		using Tx = std::remove_pointer_t<std::decay_t<T>>;
-		return std::basic_string_view<Tx>(std::data(buffer), N != 0 ? N - 1 : N);
+
+		if (N != 0 && buffer[N - 1] == 0)
+		{
+			return std::basic_string_view<Tx>(std::data(buffer), N - 1);
+		}
+		else
+		{
+			return std::basic_string_view<Tx>(std::data(buffer), N);
+		}
 	}
 
 	constexpr inline UniChar UniCharOf(char c) noexcept
