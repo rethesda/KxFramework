@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "UniChar.h"
+#include "CallbackFunction.h"
 #include "kxf/Serialization/BinarySerializer.h"
 #include "Private/String.h"
 #include <format>
@@ -915,6 +916,10 @@ namespace kxf
 			String& TrimLeft(const String& chars = {}, FlagSet<StringActionFlag> flags = {});
 			String& TrimRight(const String& chars = {}, FlagSet<StringActionFlag> flags = {});
 			String& TrimBoth(const String& chars = {}, FlagSet<StringActionFlag> flags = {});
+
+			String& EscapeCString(CallbackFunction<UniChar> func);
+			String& EscapeCStringChars(const String& charsToEscape);
+			String& UnescapeCString();
 
 			// Iterator interface
 			iterator begin() noexcept

@@ -1064,6 +1064,77 @@ namespace kxf
 		return *this;
 	}
 
+	String& String::EscapeCString(CallbackFunction<UniChar> func)
+	{
+		if (!m_String.empty())
+		{
+			for (size_t i = 0; i < m_String.length(); i++)
+			{
+				auto c = m_String[i];
+				auto DoEscape = [&]()
+				{
+					XChar buffer[2] = {'\\', c};
+					m_String.replace(i, 1, StringViewOf(buffer));
+
+					i++;
+				};
+
+				if (c == '\\')
+				{
+					DoEscape();
+				}
+				else
+				{
+					func.Invoke(c);
+					if (func.GetLastCommand() == CallbackCommand::Continue)
+					{
+						DoEscape();
+					}
+					else if (func.ShouldTerminate())
+					{
+						break;
+					}
+				}
+			}
+		}
+		return *this;
+	}
+	String& String::EscapeCStringChars(const String& charsToEscape)
+	{
+		if (charsToEscape.IsEmpty())
+		{
+			return EscapeCString({});
+		}
+		else
+		{
+			return EscapeCString([&](UniChar c)
+			{
+				for (UniChar e: charsToEscape)
+				{
+					if (c == e)
+					{
+						return CallbackCommand::Continue;
+					}
+				}
+				return CallbackCommand::Discard;
+			});
+		}
+	}
+	String& String::UnescapeCString()
+	{
+		if (!m_String.empty())
+		{
+			for (auto it = m_String.begin(); it != m_String.end(); ++it)
+			{
+				if (*it == '\\' && (it + 1) != m_String.end())
+				{
+					m_String.erase(it);
+				}
+			}
+		}
+		return *this;
+	}
+
 	// Conversion
 	String::operator wxString() const
 	{
