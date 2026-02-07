@@ -1269,6 +1269,9 @@
     <ClInclude Include="kxf\EventSystem\KeyEvent.h">
       <Filter>kxf\EventSystem\&lt;Events&gt;</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\Serialization\StringTokenizer.h">
+      <Filter>kxf\Serialization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf\EventSystem\EventBuilder.cpp">
@@ -1825,6 +1828,9 @@
     </ClCompile>
     <ClCompile Include="kxf\EventSystem\KeyEvent.cpp">
       <Filter>kxf\EventSystem\&lt;Events&gt;</Filter>
+    </ClCompile>
+    <ClCompile Include="kxf\Serialization\StringTokenizer.cpp">
+      <Filter>kxf\Serialization</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -371,6 +371,7 @@
     <ClInclude Include="kxf\Serialization\JSON.h" />
     <ClInclude Include="kxf\Serialization\JSON\JSONDocument.h" />
     <ClInclude Include="kxf\Serialization\Private\XDocument.h" />
+    <ClInclude Include="kxf\Serialization\StringTokenizer.h" />
     <ClInclude Include="kxf\Serialization\TextDocument.h" />
     <ClInclude Include="kxf\Serialization\XDocument.h" />
     <ClInclude Include="kxf\Serialization\XML.h" />
@@ -667,6 +668,7 @@
     <ClCompile Include="kxf\Serialization\HTML\Private\serialize.cpp" />
     <ClCompile Include="kxf\Serialization\INI\INIDocument.cpp" />
     <ClCompile Include="kxf\Serialization\JSON\JSONDocument.cpp" />
+    <ClCompile Include="kxf\Serialization\StringTokenizer.cpp" />
     <ClCompile Include="kxf\Serialization\TextDocument.cpp" />
     <ClCompile Include="kxf\Serialization\XDocument.cpp" />
     <ClCompile Include="kxf\Serialization\XML\XMLAttribute.cpp" />
