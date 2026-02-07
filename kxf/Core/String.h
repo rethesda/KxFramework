@@ -3,6 +3,7 @@
 #include "UniChar.h"
 #include "CallbackFunction.h"
 #include "kxf/Serialization/BinarySerializer.h"
+#include "kxf/Utility/TypeTraits.h"
 #include "Private/String.h"
 #include <format>
 #include <string>
@@ -166,11 +167,45 @@ namespace kxf
 			static String FromLocalEncoding(CStrViewAdapter local);
 			static String FromUnknownEncoding(CStrViewAdapter unknown);
 
-			static String FromInteger(int64_t value, int base = 10);
-			static String FromInteger(uint64_t value, int base = 10);
+		private:
+			static String DoFromFloatingPoint(float value, int precision);
+			static String DoFromFloatingPoint(double value, int precision);
+			static String DoFromSignedInteger(int64_t value, int base);
+			static String DoFromUnsignedInteger(uint64_t value, int base);
+
+		public:
+			template<class T = int>
+			requires(std::is_integral_v<T> || std::is_enum_v<T>)
+			static String FromInteger(T value, int base = 10)
+			{
+				using Tx = Utility::any_underlying_type_t<T>;
+
+				if constexpr(std::is_signed_v<Tx>)
+				{
+					return DoFromSignedInteger(static_cast<int64_t>(value), base);
+				}
+				else
+				{
+					return DoFromUnsignedInteger(static_cast<uint64_t>(value), base);
+				}
+			}
+
+			template<class T = double>
+			requires(std::is_floating_point_v<T>)
+			static String FromFloatingPoint(T value, int precision = -1)
+			{
+				if constexpr(std::is_same_v<T, float>)
+				{
+					return DoFromFloatingPoint(static_cast<float>(value), precision);
+				}
+				else
+				{
+					return DoFromFloatingPoint(static_cast<double>(value), precision);
+				}
+			}
+
 			static String FromPointer(void* value);
 			static String FromBoolean(bool value);
-			static String FromFloatingPoint(double value, int precision = -1);
 
 			// Substring extraction
 			template<class TFunc>
@@ -809,10 +844,11 @@ namespace kxf
 			bool DoParseUnsignedInteger(uint64_t& value, int base) const noexcept;
 
 		public:
-			template<class T = double> requires(std::is_floating_point_v<T>)
+			template<class T = double>
+			requires(std::is_floating_point_v<T>)
 			std::optional<T> ParseFloatingPoint() const noexcept
 			{
-				if constexpr (std::is_same_v<T, float>)
+				if constexpr(std::is_same_v<T, float>)
 				{
 					float value = 0;
 					if (DoParseFloatingPoint(value))
@@ -831,13 +867,15 @@ namespace kxf
 				return {};
 			}
 			
-			template<class T = int> requires(std::is_integral_v<T>)
+			template<class T = int>
+			requires(std::is_integral_v<T> || std::is_enum_v<T>)
 			std::optional<T> ParseInteger(int base = 10) const noexcept
 			{
-				using Limits = std::numeric_limits<T>;
-				using TInt = std::conditional_t<std::is_unsigned_v<T>, uint64_t, int64_t>;
+				using Tx = Utility::any_underlying_type_t<T>;
+				using TxLimits = std::numeric_limits<Tx>;
+				using TxLargest = std::conditional_t<std::is_unsigned_v<Tx>, uint64_t, int64_t>;
 
-				TInt value = 0;
+				TxLargest value = 0;
 				bool success = false;
 				if constexpr(std::is_unsigned_v<T>)
 				{
@@ -848,7 +886,7 @@ namespace kxf
 					success = DoParseSignedInteger(value, base);
 				}
 
-				if (success && value == std::clamp<TInt>(value, Limits::min(), Limits::max()))
+				if (success && value == std::clamp<TxLargest>(value, TxLimits::min(), TxLimits::max()))
 				{
 					return static_cast<T>(value);
 				}

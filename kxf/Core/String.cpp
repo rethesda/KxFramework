@@ -418,7 +418,25 @@ namespace kxf
 		return EncodingConverter_WhateverWorks.ToWideChar(unknown.GetView());
 	}
 
-	String String::FromInteger(int64_t value, int base)
+	String String::DoFromFloatingPoint(float value, int precision)
+	{
+		char buffer[128] = {0};
+		if (FloatToChars(buffer, value, precision))
+		{
+			return StringViewOf(buffer);
+		}
+		return {};
+	}
+	String String::DoFromFloatingPoint(double value, int precision)
+	{
+		char buffer[128] = {0};
+		if (FloatToChars(buffer, value, precision))
+		{
+			return StringViewOf(buffer);
+		}
+		return {};
+	}
+	String String::DoFromSignedInteger(int64_t value, int base)
 	{
 		char buffer[64] = {0};
 		if (IntToChars(buffer, value, base))
@@ -427,7 +445,7 @@ namespace kxf
 		}
 		return {};
 	}
-	String String::FromInteger(uint64_t value, int base)
+	String String::DoFromUnsignedInteger(uint64_t value, int base)
 	{
 		char buffer[64] = {0};
 		if (IntToChars(buffer, value, base))
@@ -436,6 +454,7 @@ namespace kxf
 		}
 		return {};
 	}
+
 	String String::FromPointer(void* value)
 	{
 		char buffer[64] = "0x";
@@ -448,15 +467,6 @@ namespace kxf
 	String String::FromBoolean(bool value)
 	{
 		return value ? kxfSV("true") : kxfSV("false");
-	}
-	String String::FromFloatingPoint(double value, int precision)
-	{
-		char buffer[128] = {0};
-		if (FloatToChars(buffer, value, precision))
-		{
-			return StringViewOf(buffer);
-		}
-		return {};
 	}
 
 	// String length
