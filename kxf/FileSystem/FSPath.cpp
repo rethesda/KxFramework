@@ -303,7 +303,7 @@ namespace kxf
 	std::vector<StringView> FSPath::EnumComponents() const
 	{
 		std::vector<StringView> parts;
-		m_Path.SplitBySeparator(g_PathSeparatorBackward, [&](StringView view)
+		m_Path.SplitBySeparator(UniChar(g_PathSeparatorBackward), [&](StringView view)
 		{
 			if (!view.empty())
 			{

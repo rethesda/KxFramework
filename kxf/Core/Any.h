@@ -30,12 +30,17 @@ namespace kxf
 					}
 					else if (auto charPtr = any.AsPtr<char>())
 					{
-						value = *charPtr;
+						value = String(*charPtr, 1);
 						return true;
 					}
 					else if (auto wcharPtr = any.AsPtr<wchar_t>())
 					{
-						value = *wcharPtr;
+						value = String(*wcharPtr, 1);
+						return true;
+					}
+					else if (auto uniCharPtr = any.AsPtr<UniChar>())
+					{
+						value = String(*uniCharPtr, 1);
 						return true;
 					}
 					else if (auto stringView = any.AsPtr<std::string_view>())
