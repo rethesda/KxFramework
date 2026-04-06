@@ -1,12 +1,16 @@
 #include "kxf-pch.h"
 #include "CURLWebRequest.h"
 #include "CURLWebSession.h"
+#include "LibCURLUtility.h"
 #include "LibCURL.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/IO/MemoryStream.h"
 #include "kxf/Core/Enumerator.h"
-#include "kxf/Utility/ScopeGuard.h"
+#include "kxf/Utility/Common.h"
 #include "kxf/Utility/Container.h"
+#include "kxf/Utility/ScopeGuard.h"
+#include <chrono>
+#include <cstdlib>
 
 namespace
 {
@@ -49,51 +53,6 @@ namespace
 		}
 		return {};
 	}
-
-	constexpr kxf::FlagSet<uint32_t> MapProtocolSet(kxf::FlagSet<kxf::WebRequestProtocol> protocols) noexcept
-	{
-		using kxf::WebRequestProtocol;
-
-		if (protocols == WebRequestProtocol::Everything)
-		{
-			return CURLPROTO_ALL;
-		}
-		else if (protocols)
-		{
-			kxf::FlagSet<uint32_t> curlProtocols;
-			curlProtocols.Add(CURLPROTO_DICT, protocols & WebRequestProtocol::DICT);
-			curlProtocols.Add(CURLPROTO_FILE, protocols & WebRequestProtocol::FILE);
-			curlProtocols.Add(CURLPROTO_FTP, protocols & WebRequestProtocol::FTP);
-			curlProtocols.Add(CURLPROTO_FTPS, protocols & WebRequestProtocol::FTPS);
-			curlProtocols.Add(CURLPROTO_GOPHER, protocols & WebRequestProtocol::GOPHER);
-			curlProtocols.Add(CURLPROTO_HTTP, protocols & WebRequestProtocol::HTTP);
-			curlProtocols.Add(CURLPROTO_HTTPS, protocols & WebRequestProtocol::HTTPS);
-			curlProtocols.Add(CURLPROTO_IMAP, protocols & WebRequestProtocol::IMAP);
-			curlProtocols.Add(CURLPROTO_IMAPS, protocols & WebRequestProtocol::IMAPS);
-			curlProtocols.Add(CURLPROTO_LDAP, protocols & WebRequestProtocol::LDAP);
-			curlProtocols.Add(CURLPROTO_LDAPS, protocols & WebRequestProtocol::LDAPS);
-			curlProtocols.Add(CURLPROTO_POP3, protocols & WebRequestProtocol::POP3);
-			curlProtocols.Add(CURLPROTO_POP3S, protocols & WebRequestProtocol::POP3S);
-			curlProtocols.Add(CURLPROTO_RTMP, protocols & WebRequestProtocol::RTMP);
-			curlProtocols.Add(CURLPROTO_RTMPE, protocols & WebRequestProtocol::RTMPE);
-			curlProtocols.Add(CURLPROTO_RTMPS, protocols & WebRequestProtocol::RTMPS);
-			curlProtocols.Add(CURLPROTO_RTMPT, protocols & WebRequestProtocol::RTMPT);
-			curlProtocols.Add(CURLPROTO_RTMPTE, protocols & WebRequestProtocol::RTMPTE);
-			curlProtocols.Add(CURLPROTO_RTMPTS, protocols & WebRequestProtocol::RTMPTS);
-			curlProtocols.Add(CURLPROTO_RTSP, protocols & WebRequestProtocol::RTSP);
-			curlProtocols.Add(CURLPROTO_SCP, protocols & WebRequestProtocol::SCP);
-			curlProtocols.Add(CURLPROTO_SFTP, protocols & WebRequestProtocol::SFTP);
-			curlProtocols.Add(CURLPROTO_SMB, protocols & WebRequestProtocol::SMB);
-			curlProtocols.Add(CURLPROTO_SMBS, protocols & WebRequestProtocol::SMBS);
-			curlProtocols.Add(CURLPROTO_SMTP, protocols & WebRequestProtocol::SMTP);
-			curlProtocols.Add(CURLPROTO_SMTPS, protocols & WebRequestProtocol::SMTPS);
-			curlProtocols.Add(CURLPROTO_TELNET, protocols & WebRequestProtocol::TELNET);
-			curlProtocols.Add(CURLPROTO_TFTP, protocols & WebRequestProtocol::TFTP);
-
-			return curlProtocols;
-		}
-		return {};
-	}
 }
 
 namespace kxf
@@ -104,7 +63,7 @@ namespace kxf
 		{
 			m_NextState = WebRequestState::None;
 
-			result = isWrite ? 0 : CURL_READFUNC_ABORT;
+			result = isWrite ? CURL_WRITEFUNC_ERROR : CURL_READFUNC_ABORT;
 			return true;
 		}
 		else if (m_NextState == WebRequestState::Paused)
@@ -129,7 +88,8 @@ namespace kxf
 			const size_t length = size * count;
 			m_SendStream->Read(data, length);
 
-			WebRequestEvent event(LockRef(), m_State, data, length);
+			WebRequestEvent event(LockRef(), m_State);
+			event.SetBuffer(data, length);
 			NotifyEvent(WebRequestEvent::EvtDataSent, event);
 
 			return m_SendStream->LastRead().ToBytes();
@@ -139,21 +99,39 @@ namespace kxf
 	size_t CURLWebRequest::OnWriteData(char* data, size_t size, size_t count)
 	{
 		size_t result = 0;
-		if (OnCallbackCommon(false, result))
+		if (OnCallbackCommon(true, result))
 		{
 			return result;
 		}
 		else if (m_ReceiveStream)
 		{
 			const size_t length = size * count;
-			m_ReceiveStream->Write(data, size * count);
+			switch (m_ReceiveMode)
+			{
+				case WebRequestReceiveMode::Append:
+				{
+					m_ReceiveStream->Write(data, length);
+					break;
+				}
+				case WebRequestReceiveMode::Overwrite:
+				{
+					m_ReceiveStream->RewindO();
+					m_ReceiveStream->SetAllocationSize(0);
+					m_ReceiveStream->SetLastWrite(0);
+					m_ReceiveStream->SetLastError(StreamError::Success());
 
-			WebRequestEvent event(LockRef(), m_State, data, length);
+					m_ReceiveStream->Write(data, length);
+					break;
+				}
+			};
+
+			WebRequestEvent event(LockRef(), m_State);
+			event.SetBuffer(data, length);
 			NotifyEvent(WebRequestEvent::EvtDataReceived, event);
 
 			return m_ReceiveStream->LastWrite().ToBytes();
 		}
-		return 0;
+		return size * count;
 	}
 	size_t CURLWebRequest::OnReceiveHeader(char* data, size_t size, size_t count)
 	{
@@ -162,7 +140,8 @@ namespace kxf
 		WebRequestHeader header(GetHeaderName(data, length), GetHeaderValue(data, length));
 		if (CURLWebSession::SetHeader(m_ResponseHeaders, header, WebRequestHeaderFlag::Add|WebRequestHeaderFlag::CoalesceSemicolon))
 		{
-			WebRequestEvent event(LockRef(), m_State, std::move(header));
+			WebRequestEvent event(LockRef(), m_State);
+			event.SetHeader(std::move(header));
 			NotifyEvent(WebRequestEvent::EvtHeaderReceived, event);
 		}
 		return length;
@@ -234,6 +213,184 @@ namespace kxf
 		return false;
 	}
 
+	WebRequestState CURLWebRequest::HandleWebSocket()
+	{
+		m_WebSocketsState = WebRequestState::Active;
+
+		WebRequestWSEvent event(LockRef(), *m_Response, WebRequestState::Active);
+		NotifyEvent(WebRequestWSEvent::EvtWebSocketOpen, event);
+
+		size_t waitCount = 0;
+		TimeSpan timeStart = TimeSpan::Now();
+		while (m_WebSocketsState == WebRequestState::Active)
+		{
+			if (std::unique_lock lock(m_WebSocketsLock); true)
+			{
+				using namespace std::literals::chrono_literals;
+				m_WebSocketsCondition.wait_for(lock, 250ms);
+
+				int reason = 0;
+				String payload;
+				switch (ReceiveWebSocket(reason, payload))
+				{
+					case WSFrame::Wait:
+					{
+						// Socket is not ready, try again
+						waitCount++;
+
+						break;
+					}
+					case WSFrame::Fail:
+					{
+						m_WebSocketsState = WebRequestState::Failed;
+						return WebRequestState::Failed;
+					}
+					case WSFrame::Close:
+					{
+						m_WebSocketsState = WebRequestState::Completed;
+
+						WebRequestWSEvent event(LockRef(), *m_Response, WebRequestState::Active);
+						event.SetPayload(std::move(payload));
+						NotifyEvent(WebRequestWSEvent::EvtWebSocketClose, event);
+
+						return WebRequestState::Completed;
+					}
+					case WSFrame::Ping:
+					{
+						waitCount = 0;
+
+						WebRequestWSEvent event(LockRef(), *m_Response, WebRequestState::Active);
+						event.SetPayload(std::move(payload));
+						NotifyEvent(WebRequestWSEvent::EvtWebSocketPing, event);
+
+						break;
+					}
+					case WSFrame::Message:
+					{
+						waitCount = 0;
+
+						WebRequestWSEvent event(LockRef(), *m_Response, WebRequestState::Active);
+						event.SetPayload(std::move(payload));
+						NotifyEvent(WebRequestWSEvent::EvtWebSocketMessage, event);
+
+						break;
+					}
+				};
+
+				if (m_WebSocketsTimeOut.IsPositive() && TimeSpan::Now() - timeStart > m_WebSocketsTimeOut)
+				{
+					m_WebSocketsState = WebRequestState::Failed;
+
+					WebRequestWSEvent event(LockRef(), *m_Response, WebRequestState::Active);
+					NotifyEvent(WebRequestWSEvent::EvtWebSocketClose, event);
+					break;
+				}
+			}
+		};
+		return m_WebSocketsState;
+	}
+	CURLWebRequest::WSFrame CURLWebRequest::ReceiveWebSocket(int& reason, String& payload)
+	{
+		if (m_WebSocketsState != WebRequestState::Active)
+		{
+			return WSFrame::Fail;
+		}
+
+		reason = 0;
+		payload.Clear();
+
+		FlagSet<int> frameFlags;
+		std::array<char, 1024> buffer = {};
+		do
+		{
+			const struct curl_ws_frame* meta = nullptr;
+			size_t read = 0;
+
+			buffer.fill(0);
+			auto status = ::curl_ws_recv(*m_Handle, buffer.data(), buffer.size(), &read, &meta);
+			if (status == CURLE_OK)
+			{
+				frameFlags = meta->flags;
+				if (frameFlags.Contains(CURLWS_PING))
+				{
+					payload = String::FromUTF8({buffer.data(), read});
+					return WSFrame::Ping;
+				}
+				else if (frameFlags.Contains(CURLWS_CLOSE))
+				{
+					reason = static_cast<int>(Utility::CompositeInteger<uint8_t>(*std::bit_cast<uint16_t*>(buffer.data())).SwapParts().GetFull());
+					payload = String::FromUTF8({buffer.data() + 2, read - 2});
+
+					return WSFrame::Close;
+				}
+				else if (frameFlags.Contains(CURLWS_TEXT) || frameFlags.Contains(CURLWS_BINARY))
+				{
+					switch (m_ReceiveMode)
+					{
+						case WebRequestReceiveMode::Append:
+						{
+							m_ReceiveStream->Write(buffer.data(), read);
+							break;
+						}
+						case WebRequestReceiveMode::Overwrite:
+						{
+							// We should only overwrite the data if we've got the full message content
+							if (!frameFlags.Contains(CURLWS_CONT))
+							{
+								m_ReceiveStream->RewindO();
+								m_ReceiveStream->SetAllocationSize(0);
+								m_ReceiveStream->SetLastWrite(0);
+								m_ReceiveStream->SetLastError(StreamError::Success());
+							}
+
+							m_ReceiveStream->Write(buffer.data(), read);
+							break;
+						}
+					};
+
+					// Send full small text fragments directly into the payload
+					if (!frameFlags.Contains(CURLWS_CONT) && frameFlags.Contains(CURLWS_TEXT))
+					{
+						payload = String::FromUTF8({buffer.data(), read});
+					}
+
+					if (!frameFlags.Contains(CURLWS_CONT))
+					{
+						return WSFrame::Message;
+					}
+					// And continue to the next fragment
+				}
+			}
+			else if (status == CURLE_AGAIN || status == CURLE_GOT_NOTHING)
+			{
+				return WSFrame::Wait;
+			}
+			else
+			{
+				return WSFrame::Fail;
+			}
+		}
+		while (frameFlags.Contains(CURLWS_CONT));
+
+		// We shouldn't get here, but in case we did
+		return WSFrame::Fail;
+	}
+
+	void CURLWebRequest::UpdateStatusText(int code)
+	{
+		m_StatusCode = code;
+
+		if (strnlen(m_StatusTextBuffer.data(), m_StatusTextBuffer.size()) == 0)
+		{
+			m_StatusTextBuffer.fill(0);
+
+			auto status = CURL::Private::EasyErrorCodeToString(code);
+			std::copy_n(status.data(), std::min(status.size(), m_StatusTextBuffer.size()), m_StatusTextBuffer.data());
+		}
+
+		m_Response->SetStatus(m_StatusCode, m_StatusTextBuffer.data());
+	}
+
 	void CURLWebRequest::DoFreeRequestHeaders()
 	{
 		if (m_RequestHeadersSList)
@@ -296,6 +453,10 @@ namespace kxf
 		{
 			m_ReceiveStream = std::make_shared<MemoryOutputStream>();
 		}
+		if (m_ReceiveMode == WebRequestReceiveMode::Default)
+		{
+			m_ReceiveMode = WebRequestReceiveMode::Append;
+		}
 	}
 	void CURLWebRequest::DoPerformRequest()
 	{
@@ -309,36 +470,37 @@ namespace kxf
 		DoPrepareSendData();
 		DoPrepareReceiveData();
 
-		// Set status text buffer
-		std::array<char, CURL_ERROR_SIZE * 2> statusText;
-		statusText.fill(0);
-		m_Handle.SetOption(CURLOPT_ERRORBUFFER, statusText.data());
-
-		// Active the request and notify about it
+		// Activate the request and notify about it
 		ChangeStateAndNotify(WebRequestState::Active);
 
 		// And start the request
-		const int statusCode = ::curl_easy_perform(*m_Handle);
-		if (CharTraits::length(statusText.data()) == 0)
+		if (auto scheme = m_URI.GetScheme(); scheme.IsSameAs(kxfS("ws"), StringActionFlag::IgnoreCase) || scheme.IsSameAs(kxfS("wss"), StringActionFlag::IgnoreCase))
 		{
-			statusText.fill(0);
+			// Same as CURLWebRequest::SetConnectOnly(WebRequestConnectOnly::EnabledWithResponse)
+			m_Handle.SetOption(CURLOPT_CONNECT_ONLY, 2);
 
-			auto status = CURL::Private::EasyErrorCodeToString(statusCode);
-			std::copy_n(status.data(), status.size(), statusText.data());
+			// WebSockets usually send a whole pack of independent data so overwrite mode by default is better
+			if (m_ReceiveMode == WebRequestReceiveMode::Default)
+			{
+				m_ReceiveMode = WebRequestReceiveMode::Overwrite;
+			}
 		}
 
+		const int statusCode = ::curl_easy_perform(*m_Handle);
+		UpdateStatusText(statusCode);
+
 		// Get server response code
-		const auto responseStatus = m_Handle.GetOptionInt32(CURLINFO_RESPONSE_CODE);
-		const auto effectiveProtocol = m_Handle.GetOptionUInt32(CURLINFO_PROTOCOL);
+		const auto responseStatus = m_Response->GetResponseCode();
+		const auto effectiveProtocol = m_Response->GetProtocol();
 
 		// Decide what to do next
-		if (effectiveProtocol == CURLPROTO_HTTP || effectiveProtocol == CURLPROTO_HTTPS)
+		if (effectiveProtocol == WebRequestProtocol::HTTP || effectiveProtocol == WebRequestProtocol::HTTPS)
 		{
 			HTTPStatus httpStatus = responseStatus ? static_cast<HTTPStatusCode>(*responseStatus) : HTTPStatusCode::Unknown;
 			if (httpStatus == HTTPStatusCode::Unauthorized || httpStatus == HTTPStatusCode::ProxyAuthenticationRequired)
 			{
 				m_AuthChallenge.emplace(*this, httpStatus == HTTPStatusCode::ProxyAuthenticationRequired ? WebAuthChallengeSource::ProxyServer : WebAuthChallengeSource::TargetServer);
-				ChangeStateAndNotify(WebRequestState::Unauthorized, httpStatus.GetValue(), statusText.data());
+				ChangeStateAndNotify(WebRequestState::Unauthorized);
 
 				return;
 			}
@@ -348,32 +510,35 @@ namespace kxf
 		{
 			case CURLE_OK:
 			{
-				// Create the response object
-				m_Response.emplace(*this, responseStatus, statusText.data());
-
-				// Change state and notify
-				m_State = WebRequestState::Completed;
-				WebRequestEvent event(LockRef(), *m_Response, responseStatus, statusText.data());
-				NotifyEvent(WebRequestEvent::EvtStateChanged, event);
+				WebRequestState state = WebRequestState::None;
+				if (effectiveProtocol == WebRequestProtocol::WS || effectiveProtocol == WebRequestProtocol::WSS)
+				{
+					state = HandleWebSocket();
+				}
+				else
+				{
+					state = WebRequestState::Completed;
+				}
+				ChangeStateAndNotify(state);
 
 				break;
 			}
 			case CURLE_ABORTED_BY_CALLBACK:
 			{
-				ChangeStateAndNotify(WebRequestState::Cancelled, responseStatus, statusText.data());
+				ChangeStateAndNotify(WebRequestState::Cancelled);
 				break;
 			}
 			case CURLE_LOGIN_DENIED:
 			{
 				// HTTP(S) unauthorized case is handled above, this case is for other protocols.
 				m_AuthChallenge.emplace(*this, WebAuthChallengeSource::None);
-				ChangeStateAndNotify(WebRequestState::Unauthorized, responseStatus, statusText.data());
+				ChangeStateAndNotify(WebRequestState::Unauthorized);
 
 				break;
 			}
 			default:
 			{
-				ChangeStateAndNotify(WebRequestState::Failed, responseStatus, statusText.data());
+				ChangeStateAndNotify(WebRequestState::Failed);
 				break;
 			}
 		};
@@ -381,13 +546,18 @@ namespace kxf
 	void CURLWebRequest::DoResetState()
 	{
 		m_AuthChallenge.reset();
-		m_Response.reset();
+		m_Response.emplace(*this);
 		m_ResponseHeaders.clear();
+		m_StatusTextBuffer.fill(0);
+		m_StatusCode.reset();
 
 		m_BytesReceived = -1;
 		m_BytesExpectedToReceive = -1;
 		m_BytesSent = -1;
 		m_BytesExpectedToSend = -1;
+
+		// WebSocket
+		m_WebSocketsState = WebRequestState::None;
 	}
 
 	CURLWebRequest::CURLWebRequest(CURLWebSession& session, const std::vector<WebRequestHeader>& commonHeaders, const URI& uri)
@@ -420,6 +590,12 @@ namespace kxf
 			m_Handle.SetOption(CURLOPT_XFERINFOFUNCTION, &CURLWebRequest::OnProgressNotifyCB);
 			m_Handle.SetOption(CURLOPT_NOPROGRESS, false);
 
+			// Set status text buffer
+			static_assert(Utility::ArraySize<decltype(m_StatusTextBuffer)>::value >= CURL_ERROR_SIZE, "m_StatusTextBuffer must be at CURL_ERROR_SIZE");
+
+			m_StatusTextBuffer.fill(0);
+			m_Handle.SetOption(CURLOPT_ERRORBUFFER, m_StatusTextBuffer.data());
+
 			// Set default parameters
 			CURLWebRequest::SetURI(uri);
 			CURLWebRequest::SetReceiveStorage(WebRequestStorage::Memory);
@@ -433,6 +609,9 @@ namespace kxf
 	}
 	CURLWebRequest::~CURLWebRequest() noexcept
 	{
+		// To make sure any active WebSocket thread gets released
+		m_WebSocketsState = WebRequestState::Cancelled;
+
 		DoFreeRequestHeaders();
 	}
 
@@ -539,19 +718,21 @@ namespace kxf
 	{
 		if (m_State == WebRequestState::Idle && filePath)
 		{
-			auto& fs = m_Session.GetFileSystem();
-			if (CURLWebRequest::SetSendSource(fs.OpenToRead(filePath)))
+			if (auto fs = m_Session.GetFileSystem())
 			{
-				m_SendData = {};
-				m_SendStorage = WebRequestStorage::FileSystem;
+				if (CURLWebRequest::SetSendSource(fs->OpenToRead(filePath)))
+				{
+					m_SendData = {};
+					m_SendStorage = WebRequestStorage::FileSystem;
 
-				return true;
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 
-	bool CURLWebRequest::SetReceiveStorage(WebRequestStorage storage)
+	bool CURLWebRequest::SetReceiveStorage(WebRequestStorage storage, WebRequestReceiveMode receiveMode)
 	{
 		if (m_State == WebRequestState::Idle)
 		{
@@ -562,13 +743,14 @@ namespace kxf
 				case WebRequestStorage::FileSystem:
 				{
 					m_ReceiveStorage = storage;
+					m_ReceiveMode = receiveMode;
 					return true;
 				}
 			};
 		}
 		return false;
 	}
-	bool CURLWebRequest::SetReceiveTarget(std::shared_ptr<IOutputStream> stream)
+	bool CURLWebRequest::SetReceiveTarget(std::shared_ptr<IOutputStream> stream, WebRequestReceiveMode receiveMode)
 	{
 		if (m_State == WebRequestState::Idle)
 		{
@@ -576,20 +758,24 @@ namespace kxf
 			{
 				m_ReceiveStream = std::move(stream);
 				m_ReceiveStorage = WebRequestStorage::Stream;
+				m_ReceiveMode = receiveMode;
 
 				return true;
 			}
 		}
 		return false;
 	}
-	bool CURLWebRequest::SetReceiveTarget(const FSPath& filePath)
+	bool CURLWebRequest::SetReceiveTarget(const FSPath& filePath, WebRequestReceiveMode receiveMode)
 	{
 		if (m_State == WebRequestState::Idle && filePath)
 		{
-			auto& fs = m_Session.GetFileSystem();
-			if (m_ReceiveStream = fs.OpenToWrite(filePath))
+			if (auto fs = m_Session.GetFileSystem())
 			{
-				m_ReceiveStorage = WebRequestStorage::FileSystem;
+				if (m_ReceiveStream = fs->OpenToWrite(filePath))
+				{
+					m_ReceiveStorage = WebRequestStorage::FileSystem;
+					m_ReceiveMode = receiveMode;
+				}
 			}
 		}
 		return false;
@@ -613,31 +799,52 @@ namespace kxf
 		return {};
 	}
 
+	// IWebRequestWebSocket
+	void CURLWebRequest::CloseWebSocket()
+	{
+		size_t sent = 0;
+		if (::curl_ws_send(*m_Handle, nullptr, 0, &sent, 0, CURLWS_CLOSE) != CURLE_OK)
+		{
+			// If the WebSocket didn't close itself, this will stop its thread anyway effectively abandoning the socket
+			m_WebSocketsState = WebRequestState::Failed;
+		}
+	}
+	bool CURLWebRequest::WebSocketSendText(const String& text)
+	{
+		auto utf8 = text.ToUTF8();
+
+		size_t sent = 0;
+		return ::curl_ws_send(*m_Handle, utf8.data(), utf8.size(), &sent, 0, CURLWS_TEXT) == CURLE_OK;
+	}
+	bool CURLWebRequest::WebSocketSendData(const std::span<std::byte> buffer)
+	{
+		size_t sent = 0;
+		return ::curl_ws_send(*m_Handle, buffer.data(), buffer.size_bytes(), &sent, 0, CURLWS_BINARY) == CURLE_OK;
+	}
+
 	// IWebRequestOptions
 	bool CURLWebRequest::SetURI(const URI& uri)
 	{
-		bool result = false;
 		if (m_Session.m_BaseURI && uri.IsReference())
 		{
 			// Resolve with base URI
-			result = m_Handle.SetOption(CURLOPT_URL, m_Session.ResolveURI(uri).BuildURI());
+			auto resolvedURI = m_Session.ResolveURI(uri);
+			if (m_Handle.SetOption(CURLOPT_URL, resolvedURI.BuildURI()))
+			{
+				m_URI = std::move(resolvedURI);
+				return true;
+			}
 		}
 		else
 		{
-			// Use the URI as is
-			result = m_Handle.SetOption(CURLOPT_URL, uri.BuildURI());
+			// No base URI specified or the provided for this request URI is an absolute address, use the URI as is
+			if (m_Handle.SetOption(CURLOPT_URL, uri.BuildURI()))
+			{
+				m_URI = uri;
+				return true;
+			}
 		}
-
-		if (result)
-		{
-			m_URI = uri;
-			return true;
-		}
-		else
-		{
-			m_URI = {};
-			return false;
-		}
+		return false;
 	}
 	bool CURLWebRequest::SetPort(uint16_t port)
 	{
@@ -654,7 +861,7 @@ namespace kxf
 	}
 	bool CURLWebRequest::SetAllowedProtocols(FlagSet<WebRequestProtocol> protocols)
 	{
-		return m_Handle.SetOption(CURLOPT_PROTOCOLS, MapProtocolSet(protocols));
+		return m_Handle.SetOption(CURLOPT_PROTOCOLS_STR, CURL::Private::MapProtocolSet(protocols));
 	}
 	bool CURLWebRequest::SetHTTPVersion(WebRequestHTTPVersion option)
 	{
@@ -706,6 +913,25 @@ namespace kxf
 		};
 		return false;
 	}
+	bool CURLWebRequest::SetConnectOnly(WebRequestConnectOnly option)
+	{
+		switch (option)
+		{
+			case WebRequestConnectOnly::Disabled:
+			{
+				return m_Handle.SetOption(CURLOPT_CONNECT_ONLY, 0);
+			}
+			case WebRequestConnectOnly::Enabled:
+			{
+				return m_Handle.SetOption(CURLOPT_CONNECT_ONLY, 1);
+			}
+			case WebRequestConnectOnly::EnabledWithResponse:
+			{
+				return m_Handle.SetOption(CURLOPT_CONNECT_ONLY, 2);
+			}
+		};
+		return false;
+	}
 
 	bool CURLWebRequest::SetServiceName(const String& name)
 	{
@@ -718,7 +944,7 @@ namespace kxf
 	}
 	bool CURLWebRequest::SetRedirectionProtocols(FlagSet<WebRequestProtocol> protocols)
 	{
-		return m_Handle.SetOption(CURLOPT_REDIR_PROTOCOLS, MapProtocolSet(protocols));
+		return m_Handle.SetOption(CURLOPT_REDIR_PROTOCOLS_STR, CURL::Private::MapProtocolSet(protocols));
 	}
 	bool CURLWebRequest::SetResumeOffset(DataSize offset)
 	{
@@ -903,5 +1129,22 @@ namespace kxf
 	bool CURLWebRequest::SetVerifyStatus(WebRequestOption2 option)
 	{
 		return m_Handle.SetOption(CURLOPT_SSL_VERIFYSTATUS, option == WebRequestOption2::Enabled);
+	}
+
+	// IWebRequestWebSocketsOptions
+	bool CURLWebRequest::SetRawMode(WebRequestOption2 option)
+	{
+		m_WebSocketsOptions.Mod(CURLWS_RAW_MODE, option == WebRequestOption2::Enabled);
+		return m_Handle.SetOption(CURLOPT_WS_OPTIONS, *m_WebSocketsOptions);
+	}
+	bool CURLWebRequest::SetAutoPong(WebRequestOption2 option)
+	{
+		m_WebSocketsOptions.Mod(2, option == WebRequestOption2::Disabled); // TODO: Replace with CURLWS_NOAUTOPONG when it's going to be defined
+		return m_Handle.SetOption(CURLOPT_WS_OPTIONS, *m_WebSocketsOptions);
+	}
+	bool CURLWebRequest::SetWSTimeout(TimeSpan timeout)
+	{
+		m_WebSocketsTimeOut = timeout;
+		return true;
 	}
 }

@@ -129,6 +129,9 @@
     <ClInclude Include="kxf\Network\IPAddress.h">
       <Filter>kxf\Network</Filter>
     </ClInclude>
+    <ClInclude Include="kxf\Network\WebRequest\IWebRequestWSOptions.h">
+      <Filter>kxf\Network\WebRequest</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kxf-network\+PCH\kxf-pch.cpp">

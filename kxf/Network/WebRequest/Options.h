@@ -18,12 +18,14 @@ namespace kxf
 		Disabled = 0,
 		Enabled = 1
 	};
+
 	enum class WebRequestOption3
 	{
 		Diabled,
 		Enabled,
 		Required
 	};
+
 	enum class WebRequestMethod
 	{
 		None = -1,
@@ -38,6 +40,14 @@ namespace kxf
 		CONNECT,
 		PATCH
 	};
+
+	enum class WebRequestConnectOnly
+	{
+		Disabled = 0,
+		Enabled = 1,
+		EnabledWithResponse
+	};
+
 	enum class WebRequestSSLVersion
 	{
 		Default = -1,
@@ -72,6 +82,7 @@ namespace kxf
 		IPv4,
 		IPv6
 	};
+
 	enum class WebRequestHTTPVersion
 	{
 		Any = -2,
@@ -116,8 +127,9 @@ namespace kxf
 		SMTPS = FlagSetValue<WebRequestProtocol>(25),
 		TELNET = FlagSetValue<WebRequestProtocol>(26),
 		TFTP = FlagSetValue<WebRequestProtocol>(27),
-		WS = FlagSetValue<WebRequestProtocol>(28),
-		WSS = FlagSetValue<WebRequestProtocol>(29),
+		MQTT = FlagSetValue<WebRequestProtocol>(28),
+		WS = FlagSetValue<WebRequestProtocol>(29),
+		WSS = FlagSetValue<WebRequestProtocol>(30),
 
 		Everything = std::numeric_limits<uint64_t>::max()
 	};

@@ -41,7 +41,7 @@ namespace kxf
 		try
 		{
 			AsBase() = nlohmann::json::parse(json.ToUTF8(), nullptr, false);
-			return this->empty();
+			return !this->empty();
 		}
 		catch (...)
 		{

@@ -23,6 +23,13 @@ namespace kxf
 
 	class WebRequestEvent;
 	class WebRequestHeader;
+
+	enum class WebRequestReceiveMode
+	{
+		Default = -1,
+		Append,
+		Overwrite
+	};
 }
 
 namespace kxf
@@ -53,9 +60,9 @@ namespace kxf
 			virtual bool SetSendSource(const FSPath& filePath) = 0;
 			virtual bool SetSendSource(const String& data) = 0;
 
-			virtual bool SetReceiveStorage(WebRequestStorage storage) = 0;
-			virtual bool SetReceiveTarget(std::shared_ptr<IOutputStream> stream) = 0;
-			virtual bool SetReceiveTarget(const FSPath& filePath) = 0;
+			virtual bool SetReceiveStorage(WebRequestStorage storage, WebRequestReceiveMode receiveMode = WebRequestReceiveMode::Default) = 0;
+			virtual bool SetReceiveTarget(std::shared_ptr<IOutputStream> stream, WebRequestReceiveMode receiveMode = WebRequestReceiveMode::Default) = 0;
+			virtual bool SetReceiveTarget(const FSPath& filePath, WebRequestReceiveMode receiveMode = WebRequestReceiveMode::Default) = 0;
 
 			// Progress
 			virtual WebRequestState GetState() const = 0;
@@ -67,5 +74,18 @@ namespace kxf
 			virtual DataSize GetBytesReceived() const = 0;
 			virtual DataSize GetBytesExpectedToReceive() const = 0;
 			virtual TransferRate GetReceiveRate() const = 0;
+	};
+}
+
+namespace kxf
+{
+	class KXF_API_NETWORK IWebRequestWebSocket: public RTTI::Interface<IWebRequestWebSocket>
+	{
+		kxf_RTTI_DeclareIID(IWebRequestWebSocket, {0xe25dd515, 0x6103, 0x4713, {0x9c, 0x45, 0xc8, 0x1c, 0x9d, 0xe3, 0xe0, 0xa9}});
+
+		public:
+			virtual void CloseWebSocket() = 0;
+			virtual bool WebSocketSendText(const String& text) = 0;
+			virtual bool WebSocketSendData(const std::span<std::byte> buffer) = 0;
 	};
 }

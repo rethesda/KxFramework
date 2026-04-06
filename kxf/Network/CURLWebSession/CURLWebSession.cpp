@@ -43,15 +43,15 @@ namespace kxf
 		return nullptr;
 	}
 
-	IFileSystem& CURLWebSession::GetFileSystem() const
+	std::shared_ptr<IFileSystem> CURLWebSession::GetFileSystem() const
 	{
-		return m_FileSystem ? *m_FileSystem : FileSystem::GetNullFileSystem();
+		return m_FileSystem;
 	}
-	void CURLWebSession::SetFileSystem(IFileSystem& fileSystem)
+	void CURLWebSession::SetFileSystem(std::shared_ptr<IFileSystem> fileSystem)
 	{
-		if (!fileSystem.IsNull() && fileSystem.IsLookupScoped())
+		if (!fileSystem->IsNull() && fileSystem->IsLookupScoped())
 		{
-			m_FileSystem = &fileSystem;
+			m_FileSystem = std::move(fileSystem);
 		}
 		else
 		{
