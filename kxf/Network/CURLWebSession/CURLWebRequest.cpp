@@ -63,7 +63,7 @@ namespace kxf
 		{
 			m_NextState = WebRequestState::None;
 
-			result = isWrite ? 0 : CURL_READFUNC_ABORT;
+			result = isWrite ? CURL_WRITEFUNC_ERROR : CURL_READFUNC_ABORT;
 			return true;
 		}
 		else if (m_NextState == WebRequestState::Paused)
@@ -99,7 +99,7 @@ namespace kxf
 	size_t CURLWebRequest::OnWriteData(char* data, size_t size, size_t count)
 	{
 		size_t result = 0;
-		if (OnCallbackCommon(false, result))
+		if (OnCallbackCommon(true, result))
 		{
 			return result;
 		}
@@ -131,7 +131,7 @@ namespace kxf
 
 			return m_ReceiveStream->LastWrite().ToBytes();
 		}
-		return 0;
+		return size * count;
 	}
 	size_t CURLWebRequest::OnReceiveHeader(char* data, size_t size, size_t count)
 	{
