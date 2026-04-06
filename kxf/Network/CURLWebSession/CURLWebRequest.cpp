@@ -221,6 +221,7 @@ namespace kxf
 		NotifyEvent(WebRequestWSEvent::EvtWebSocketOpen, event);
 
 		size_t waitCount = 0;
+		TimeSpan timeStart = TimeSpan::Now();
 		while (m_WebSocketsState == WebRequestState::Active)
 		{
 			if (std::unique_lock lock(m_WebSocketsLock); true)
@@ -236,13 +237,8 @@ namespace kxf
 					{
 						// Socket is not ready, try again
 						waitCount++;
-						if (waitCount < 50)
-						{
-							break;
-						}
 
-						// Otherwise assume the transfer failed
-						[[fallthrough]];
+						break;
 					}
 					case WSFrame::Fail:
 					{
@@ -280,17 +276,31 @@ namespace kxf
 						break;
 					}
 				};
+
+				if (m_WebSocketsTimeOut.IsPositive() && TimeSpan::Now() - timeStart > m_WebSocketsTimeOut)
+				{
+					m_WebSocketsState = WebRequestState::Failed;
+
+					WebRequestWSEvent event(LockRef(), *m_Response, WebRequestState::Active);
+					NotifyEvent(WebRequestWSEvent::EvtWebSocketClose, event);
+					break;
+				}
 			}
 		};
 		return m_WebSocketsState;
 	}
 	CURLWebRequest::WSFrame CURLWebRequest::ReceiveWebSocket(int& reason, String& payload)
 	{
+		if (m_WebSocketsState != WebRequestState::Active)
+		{
+			return WSFrame::Fail;
+		}
+
 		reason = 0;
 		payload.Clear();
 
 		FlagSet<int> frameFlags;
-		std::array<char, 512> buffer = {};
+		std::array<char, 1024> buffer = {};
 		do
 		{
 			const struct curl_ws_frame* meta = nullptr;
@@ -460,12 +470,13 @@ namespace kxf
 		DoPrepareSendData();
 		DoPrepareReceiveData();
 
-		// Active the request and notify about it
+		// Activate the request and notify about it
 		ChangeStateAndNotify(WebRequestState::Active);
 
 		// And start the request
 		if (auto scheme = m_URI.GetScheme(); scheme.IsSameAs(kxfS("ws"), StringActionFlag::IgnoreCase) || scheme.IsSameAs(kxfS("wss"), StringActionFlag::IgnoreCase))
 		{
+			// Same as CURLWebRequest::SetConnectOnly(WebRequestConnectOnly::EnabledWithResponse)
 			m_Handle.SetOption(CURLOPT_CONNECT_ONLY, 2);
 
 			// WebSockets usually send a whole pack of independent data so overwrite mode by default is better
@@ -544,6 +555,9 @@ namespace kxf
 		m_BytesExpectedToReceive = -1;
 		m_BytesSent = -1;
 		m_BytesExpectedToSend = -1;
+
+		// WebSocket
+		m_WebSocketsState = WebRequestState::None;
 	}
 
 	CURLWebRequest::CURLWebRequest(CURLWebSession& session, const std::vector<WebRequestHeader>& commonHeaders, const URI& uri)
@@ -595,6 +609,9 @@ namespace kxf
 	}
 	CURLWebRequest::~CURLWebRequest() noexcept
 	{
+		// To make sure any active WebSocket thread gets released
+		m_WebSocketsState = WebRequestState::Cancelled;
+
 		DoFreeRequestHeaders();
 	}
 
@@ -783,16 +800,26 @@ namespace kxf
 	}
 
 	// IWebRequestWebSocket
-	bool CURLWebRequest::SendText(const String& text)
+	void CURLWebRequest::CloseWebSocket()
+	{
+		size_t sent = 0;
+		if (::curl_ws_send(*m_Handle, nullptr, 0, &sent, 0, CURLWS_CLOSE) != CURLE_OK)
+		{
+			// If the WebSocket didn't close itself, this will stop its thread anyway effectively abandoning the socket
+			m_WebSocketsState = WebRequestState::Failed;
+		}
+	}
+	bool CURLWebRequest::WebSocketSendText(const String& text)
 	{
 		auto utf8 = text.ToUTF8();
 
 		size_t sent = 0;
 		return ::curl_ws_send(*m_Handle, utf8.data(), utf8.size(), &sent, 0, CURLWS_TEXT) == CURLE_OK;
 	}
-	std::optional<String> CURLWebRequest::ReceiveText()
+	bool CURLWebRequest::WebSocketSendData(const std::span<std::byte> buffer)
 	{
-		return {};
+		size_t sent = 0;
+		return ::curl_ws_send(*m_Handle, buffer.data(), buffer.size_bytes(), &sent, 0, CURLWS_BINARY) == CURLE_OK;
 	}
 
 	// IWebRequestOptions
@@ -1114,5 +1141,10 @@ namespace kxf
 	{
 		m_WebSocketsOptions.Mod(2, option == WebRequestOption2::Disabled); // TODO: Replace with CURLWS_NOAUTOPONG when it's going to be defined
 		return m_Handle.SetOption(CURLOPT_WS_OPTIONS, *m_WebSocketsOptions);
+	}
+	bool CURLWebRequest::SetWSTimeout(TimeSpan timeout)
+	{
+		m_WebSocketsTimeOut = timeout;
+		return true;
 	}
 }

@@ -80,6 +80,7 @@ namespace kxf
 			// Receive
 			std::shared_ptr<IOutputStream> m_ReceiveStream;
 			WebRequestStorage m_ReceiveStorage = WebRequestStorage::None;
+			WebRequestReceiveMode m_ReceiveMode = WebRequestReceiveMode::Default;
 
 			std::optional<CURLWebResponse> m_Response;
 			std::optional<CURLWebAuthChallenge> m_AuthChallenge;
@@ -92,6 +93,7 @@ namespace kxf
 
 			// WebSockets
 			FlagSet<int> m_WebSocketsOptions;
+			TimeSpan m_WebSocketsTimeOut = TimeSpan::Minutes(5);
 			std::atomic<WebRequestState> m_WebSocketsState = WebRequestState::None;
 			std::condition_variable m_WebSocketsCondition;
 			mutable std::mutex m_WebSocketsLock;
@@ -186,9 +188,9 @@ namespace kxf
 			bool SetSendSource(const FSPath& filePath) override;
 			bool SetSendSource(const String& data) override;
 
-			bool SetReceiveStorage(WebRequestStorage storage) override;
-			bool SetReceiveTarget(std::shared_ptr<IOutputStream> stream) override;
-			bool SetReceiveTarget(const FSPath& filePath) override;
+			bool SetReceiveStorage(WebRequestStorage storage, WebRequestReceiveMode receiveMode = WebRequestReceiveMode::Default) override;
+			bool SetReceiveTarget(std::shared_ptr<IOutputStream> stream, WebRequestReceiveMode receiveMode = WebRequestReceiveMode::Default) override;
+			bool SetReceiveTarget(const FSPath& filePath, WebRequestReceiveMode receiveMode = WebRequestReceiveMode::Default) override;
 
 			// IWebRequest: Progress
 			WebRequestState GetState() const override
@@ -217,8 +219,9 @@ namespace kxf
 			TransferRate GetReceiveRate() const override;
 
 			// IWebRequestWebSocket
-			bool SendText(const String& text) override;
-			std::optional<String> ReceiveText();
+			void CloseWebSocket();
+			bool WebSocketSendText(const String& text) override;
+			bool WebSocketSendData(const std::span<std::byte> buffer) override;
 
 		public:
 			// IWebRequestOptions
@@ -265,6 +268,7 @@ namespace kxf
 			// IWebRequestWSOptions
 			bool SetRawMode(WebRequestOption2 option) override;
 			bool SetAutoPong(WebRequestOption2 option) override;
+			bool SetWSTimeout(TimeSpan timeout) override;
 
 		public:
 			// CURLWebRequest

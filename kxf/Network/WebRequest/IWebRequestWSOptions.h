@@ -11,5 +11,6 @@ namespace kxf
 		public:
 			virtual bool SetRawMode(WebRequestOption2 option) = 0;
 			virtual bool SetAutoPong(WebRequestOption2 option) = 0;
+			virtual bool SetWSTimeout(TimeSpan timeout) = 0;
 	};
 }

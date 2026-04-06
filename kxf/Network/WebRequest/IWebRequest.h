@@ -84,6 +84,8 @@ namespace kxf
 		kxf_RTTI_DeclareIID(IWebRequestWebSocket, {0xe25dd515, 0x6103, 0x4713, {0x9c, 0x45, 0xc8, 0x1c, 0x9d, 0xe3, 0xe0, 0xa9}});
 
 		public:
-			virtual bool SendText(const String& text) = 0;
+			virtual void CloseWebSocket() = 0;
+			virtual bool WebSocketSendText(const String& text) = 0;
+			virtual bool WebSocketSendData(const std::span<std::byte> buffer) = 0;
 	};
 }
