@@ -20,7 +20,7 @@ namespace
 
 namespace kxf::XDocument
 {
-	std::pair<StringView, int> IXNode::ExtractIndexFromName(StringView elementName, StringView xPathSeparator)
+	std::pair<StringView, int> ExtractIndexFromElementName(StringView elementName, StringView xPathSeparator)
 	{
 		int index = 0;
 		if (!xPathSeparator.empty())
@@ -37,7 +37,7 @@ namespace kxf::XDocument
 		}
 		return {elementName, index};
 	}
-	bool IXNode::ContainsValueForbiddenCharacters(const String& value)
+	bool ContainsForbiddenCharactersForValueData(const String& value)
 	{
 		for (XChar c: value)
 		{
@@ -47,6 +47,18 @@ namespace kxf::XDocument
 			}
 		}
 		return false;
+	}
+}
+
+namespace kxf::XDocument
+{
+	std::pair<StringView, int> IXNode::ExtractIndexFromName(StringView elementName, StringView xPathSeparator)
+	{
+		return ExtractIndexFromElementName(elementName, xPathSeparator);
+	}
+	bool IXNode::ContainsValueForbiddenCharacters(const String& value)
+	{
+		return ContainsForbiddenCharactersForValueData(value);
 	}
 
 	String IXNode::FormatInt(int64_t value, int base) const
