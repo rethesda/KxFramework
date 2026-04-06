@@ -106,7 +106,24 @@ namespace kxf
 		else if (m_ReceiveStream)
 		{
 			const size_t length = size * count;
-			m_ReceiveStream->Write(data, size * count);
+			switch (m_ReceiveMode)
+			{
+				case WebRequestReceiveMode::Append:
+				{
+					m_ReceiveStream->Write(data, length);
+					break;
+				}
+				case WebRequestReceiveMode::Overwrite:
+				{
+					m_ReceiveStream->RewindO();
+					m_ReceiveStream->SetAllocationSize(0);
+					m_ReceiveStream->SetLastWrite(0);
+					m_ReceiveStream->SetLastError(StreamError::Success());
+
+					m_ReceiveStream->Write(data, length);
+					break;
+				}
+			};
 
 			WebRequestEvent event(LockRef(), m_State);
 			event.SetBuffer(data, length);
@@ -260,11 +277,6 @@ namespace kxf
 						event.SetPayload(std::move(payload));
 						NotifyEvent(WebRequestWSEvent::EvtWebSocketMessage, event);
 
-						// Reset the stream so we start writing the next chunk of data again
-						m_ReceiveStream->RewindO();
-						m_ReceiveStream->SetLastWrite(0);
-						m_ReceiveStream->SetLastError(StreamError::Success());
-
 						break;
 					}
 				};
@@ -303,7 +315,28 @@ namespace kxf
 				}
 				else if (frameFlags.Contains(CURLWS_TEXT) || frameFlags.Contains(CURLWS_BINARY))
 				{
-					m_ReceiveStream->Write(buffer.data(), read);
+					switch (m_ReceiveMode)
+					{
+						case WebRequestReceiveMode::Append:
+						{
+							m_ReceiveStream->Write(buffer.data(), read);
+							break;
+						}
+						case WebRequestReceiveMode::Overwrite:
+						{
+							// We should only overwrite the data if we've got the full message content
+							if (!frameFlags.Contains(CURLWS_CONT))
+							{
+								m_ReceiveStream->RewindO();
+								m_ReceiveStream->SetAllocationSize(0);
+								m_ReceiveStream->SetLastWrite(0);
+								m_ReceiveStream->SetLastError(StreamError::Success());
+							}
+
+							m_ReceiveStream->Write(buffer.data(), read);
+							break;
+						}
+					};
 
 					// Send full small text fragments directly into the payload
 					if (!frameFlags.Contains(CURLWS_CONT) && frameFlags.Contains(CURLWS_TEXT))
@@ -410,6 +443,10 @@ namespace kxf
 		{
 			m_ReceiveStream = std::make_shared<MemoryOutputStream>();
 		}
+		if (m_ReceiveMode == WebRequestReceiveMode::Default)
+		{
+			m_ReceiveMode = WebRequestReceiveMode::Append;
+		}
 	}
 	void CURLWebRequest::DoPerformRequest()
 	{
@@ -430,6 +467,12 @@ namespace kxf
 		if (auto scheme = m_URI.GetScheme(); scheme.IsSameAs(kxfS("ws"), StringActionFlag::IgnoreCase) || scheme.IsSameAs(kxfS("wss"), StringActionFlag::IgnoreCase))
 		{
 			m_Handle.SetOption(CURLOPT_CONNECT_ONLY, 2);
+
+			// WebSockets usually send a whole pack of independent data so overwrite mode by default is better
+			if (m_ReceiveMode == WebRequestReceiveMode::Default)
+			{
+				m_ReceiveMode = WebRequestReceiveMode::Overwrite;
+			}
 		}
 
 		const int statusCode = ::curl_easy_perform(*m_Handle);
@@ -672,7 +715,7 @@ namespace kxf
 		return false;
 	}
 
-	bool CURLWebRequest::SetReceiveStorage(WebRequestStorage storage)
+	bool CURLWebRequest::SetReceiveStorage(WebRequestStorage storage, WebRequestReceiveMode receiveMode)
 	{
 		if (m_State == WebRequestState::Idle)
 		{
@@ -683,13 +726,14 @@ namespace kxf
 				case WebRequestStorage::FileSystem:
 				{
 					m_ReceiveStorage = storage;
+					m_ReceiveMode = receiveMode;
 					return true;
 				}
 			};
 		}
 		return false;
 	}
-	bool CURLWebRequest::SetReceiveTarget(std::shared_ptr<IOutputStream> stream)
+	bool CURLWebRequest::SetReceiveTarget(std::shared_ptr<IOutputStream> stream, WebRequestReceiveMode receiveMode)
 	{
 		if (m_State == WebRequestState::Idle)
 		{
@@ -697,13 +741,14 @@ namespace kxf
 			{
 				m_ReceiveStream = std::move(stream);
 				m_ReceiveStorage = WebRequestStorage::Stream;
+				m_ReceiveMode = receiveMode;
 
 				return true;
 			}
 		}
 		return false;
 	}
-	bool CURLWebRequest::SetReceiveTarget(const FSPath& filePath)
+	bool CURLWebRequest::SetReceiveTarget(const FSPath& filePath, WebRequestReceiveMode receiveMode)
 	{
 		if (m_State == WebRequestState::Idle && filePath)
 		{
@@ -712,6 +757,7 @@ namespace kxf
 				if (m_ReceiveStream = fs->OpenToWrite(filePath))
 				{
 					m_ReceiveStorage = WebRequestStorage::FileSystem;
+					m_ReceiveMode = receiveMode;
 				}
 			}
 		}
