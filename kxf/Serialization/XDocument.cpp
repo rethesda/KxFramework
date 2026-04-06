@@ -20,7 +20,7 @@ namespace
 
 namespace kxf::XDocument
 {
-	std::pair<StringView, int> IXNode::ExtractIndexFromName(StringView elementName, StringView xPathSeparator)
+	std::pair<StringView, int> ExtractIndexFromElementName(StringView elementName, StringView xPathSeparator)
 	{
 		int index = 0;
 		if (!xPathSeparator.empty())
@@ -28,7 +28,7 @@ namespace kxf::XDocument
 			size_t indexStart = elementName.find(xPathSeparator);
 			if (indexStart != String::npos)
 			{
-				if (auto value = String(elementName.substr(indexStart + xPathSeparator.length())).ToInteger<int>(10))
+				if (auto value = String(elementName.substr(indexStart + xPathSeparator.length())).ParseInteger<int>(10))
 				{
 					index = std::clamp(*value, 0, std::numeric_limits<int>::max());
 					elementName = elementName.substr(0, indexStart);
@@ -37,7 +37,7 @@ namespace kxf::XDocument
 		}
 		return {elementName, index};
 	}
-	bool IXNode::ContainsValueForbiddenCharacters(const String& value)
+	bool ContainsForbiddenCharactersForValueData(const String& value)
 	{
 		for (XChar c: value)
 		{
@@ -47,6 +47,18 @@ namespace kxf::XDocument
 			}
 		}
 		return false;
+	}
+}
+
+namespace kxf::XDocument
+{
+	std::pair<StringView, int> IXNode::ExtractIndexFromName(StringView elementName, StringView xPathSeparator)
+	{
+		return ExtractIndexFromElementName(elementName, xPathSeparator);
+	}
+	bool IXNode::ContainsValueForbiddenCharacters(const String& value)
+	{
+		return ContainsForbiddenCharactersForValueData(value);
 	}
 
 	String IXNode::FormatInt(int64_t value, int base) const
@@ -83,14 +95,14 @@ namespace kxf::XDocument
 
 	std::optional<int64_t> IXNode::ParseInt(const String& value, int base) const
 	{
-		return value.ToInteger<int64_t>(base);
+		return value.ParseInteger<int64_t>(base);
 	}
 	std::optional<void*> IXNode::ParsePointer(const String& value) const
 	{
 		String intValue;
 		if (value.StartsWith("0x", &intValue))
 		{
-			if (auto iValue = intValue.ToInteger<size_t>(16))
+			if (auto iValue = intValue.ParseInteger<size_t>(16))
 			{
 				return reinterpret_cast<void*>(*iValue);
 			}
@@ -99,10 +111,10 @@ namespace kxf::XDocument
 	}
 	std::optional<double> IXNode::ParseFloat(const String& value) const
 	{
-		return value.ToFloatingPoint<double>();
+		return value.ParseFloatingPoint<double>();
 	}
 	std::optional<bool> IXNode::ParseBool(const String& value) const
 	{
-		return Utility::ParseBool(value);
+		return value.ParseBoolean();
 	}
 }
