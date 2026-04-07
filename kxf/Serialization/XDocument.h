@@ -72,11 +72,11 @@ namespace kxf
 			using WriteEmpty = XDocument::WriteEmpty;
 			static constexpr size_t npos = String::npos;
 
-			template<std::derived_from<XDocumentNode> TNode>
-			static String BacktrackXPath(const TNode& startAt)
+			template<std::derived_from<IXDocumentNode> TNode>
+			static String BacktrackXPath(const IXDocument& document, const TNode& startAt)
 			{
 				UniChar indexSeparator;
-				UniChar separator = startAt.GetXPathSeparator(&indexSeparator);
+				UniChar separator = document.GetXPathSeparator(&indexSeparator);
 				bool isFirst = true;
 
 				String result;
@@ -85,7 +85,7 @@ namespace kxf
 					size_t index = node.GetIndexWithinParent();
 					if (index != 0)
 					{
-						result.FormatAt(0, "{}{}{}", node.GetName(), indexSeparator, index);
+						result.FormatAt(0, "{}{}{}", node.GetName(), indexSeparator.GetAs<XChar>(), index);
 					}
 					else
 					{
