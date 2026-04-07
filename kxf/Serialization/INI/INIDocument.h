@@ -27,7 +27,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API INIDocumentValue final: public XDocumentNode,
+	class KXF_API INIDocumentValue final: public IXDocumentNode,
 										  public XDocument::RWValue<INIDocumentValue>,
 										  public XDocument::RWAttribute<INIDocumentValue>,
 										  private XDocument::DefaultConverter<INIDocumentValue>
@@ -71,7 +71,7 @@ namespace kxf
 			INIDocumentValue(INIDocument& document, String sectionName, String keyName);
 
 		public:
-			// XDocumentNode
+			// IXDocumentNode
 			bool IsNull() const override
 			{
 				return m_Ref == nullptr;
@@ -134,7 +134,7 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API INIDocumentSection final: public XDocumentNode,
+	class KXF_API INIDocumentSection final: public IXDocumentNode,
 											public XDocument::RWValue<INIDocumentSection>,
 											public XDocument::RWAttribute<INIDocumentSection>,
 											private XDocument::DefaultConverter<INIDocumentSection>
@@ -176,7 +176,7 @@ namespace kxf
 			}
 
 		public:
-			// XDocumentNode
+			// IXDocumentNode
 			bool IsNull() const override
 			{
 				return m_Ref == nullptr;

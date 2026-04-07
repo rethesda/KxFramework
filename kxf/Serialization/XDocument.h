@@ -65,7 +65,7 @@ namespace kxf
 			}
 	};
 
-	class KXF_API XDocumentNode
+	class KXF_API IXDocumentNode
 	{
 		public:
 			using AsCDATA = XDocument::AsCDATA;
@@ -102,7 +102,7 @@ namespace kxf
 			}
 
 		public:
-			virtual ~XDocumentNode() = default;
+			virtual ~IXDocumentNode() = default;
 
 		public:
 			virtual bool IsNull() const = 0;

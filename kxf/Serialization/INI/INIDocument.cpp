@@ -269,7 +269,7 @@ namespace kxf
 		}
 	}
 
-	// XDocumentNode
+	// IXDocumentNode
 	String INIDocumentValue::GetXPath() const
 	{
 		if (m_Ref)
@@ -426,7 +426,7 @@ namespace kxf
 		return m_Ref->IniDoSetValue(m_SectionName, name, value, {}, writeEmpty, asCDATA);
 	}
 
-	// XDocumentNode
+	// IXDocumentNode
 	String INIDocumentSection::GetXPath() const
 	{
 		if (m_Ref)
