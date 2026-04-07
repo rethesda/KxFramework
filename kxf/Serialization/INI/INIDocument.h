@@ -277,11 +277,6 @@ namespace kxf
 					LoadDocument(ini);
 				}
 			}
-			INIDocument(IInputStream& stream)
-				:INIDocument()
-			{
-				LoadDocument(stream);
-			}
 			INIDocument(const INIDocument&) = delete;
 			INIDocument(INIDocument&& other) noexcept;
 			~INIDocument();
