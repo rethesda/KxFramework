@@ -25,7 +25,6 @@ namespace kxf::XDocument
 	bool ContainsForbiddenCharactersForValueData(const String& value);
 }
 
-
 namespace kxf
 {
 	class KXF_API IXDocument: public RTTI::Interface<IXDocument>
@@ -50,7 +49,7 @@ namespace kxf
 				}
 				return '/';
 			}
-			virtual String GetMeta() const = 0;
+			virtual String GetDocumentMeta() const = 0;
 
 			virtual bool LoadDocument(IInputStream& stream) = 0;
 			virtual bool SaveDocument(IOutputStream& stream) const = 0;

@@ -820,7 +820,7 @@ namespace kxf
 	{
 		return !m_Document || m_Document->IsEmpty();
 	}
-	String INIDocument::GetMeta() const
+	String INIDocument::GetDocumentMeta() const
 	{
 		return {};
 	}

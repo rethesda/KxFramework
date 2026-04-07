@@ -289,7 +289,7 @@ namespace kxf
 		public:
 			// IXDocument
 			bool IsNull() const override;
-			String GetMeta() const override;
+			String GetDocumentMeta() const override;
 
 			bool LoadDocument(IInputStream& stream);
 			bool SaveDocument(IOutputStream& stream) const;
