@@ -44,7 +44,11 @@ namespace kxf
 	{
 		if (auto stream = GetStream())
 		{
-			return *stream;
+			JSONDocument document;
+			if (document.Load(*stream))
+			{
+				return document;
+			}
 		}
 		return {};
 	}
@@ -52,7 +56,11 @@ namespace kxf
 	{
 		if (auto stream = GetStream())
 		{
-			return *stream;
+			XMLDocument document;
+			if (document.LoadDocument(*stream))
+			{
+				return document;
+			}
 		}
 		return {};
 	}

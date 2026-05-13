@@ -22,7 +22,7 @@ namespace kxf
 				{
 					ResourceID id = itemNode.GetAttribute("name");
 
-					if (auto maxLength = itemNode.QueryAttributeInt("maxLength"))
+					if (auto maxLength = itemNode.QueryAttribute<int>("maxLength"))
 					{
 						item.SetMaxLength(*maxLength);
 					}
@@ -51,7 +51,7 @@ namespace kxf
 			resourcesNode.EnumChildElements([&](const XMLNode& itemNode)
 			{
 				FlagSet<LocalizationItemFlag> flags;
-				flags.Mod(LocalizationItemFlag::Translatable, itemNode.GetAttributeBool("translatable", true));
+				flags.Mod(LocalizationItemFlag::Translatable, itemNode.QueryAttribute<bool>("translatable").value_or(true));
 
 				auto itemName = itemNode.GetName();
 				if (itemName == "string")
