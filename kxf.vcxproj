@@ -375,7 +375,6 @@
     <ClInclude Include="kxf\Serialization\TextDocument.h" />
     <ClInclude Include="kxf\Serialization\XDocument.h" />
     <ClInclude Include="kxf\Serialization\XML.h" />
-    <ClInclude Include="kxf\Serialization\XML\Private\Utility.h" />
     <ClInclude Include="kxf\Serialization\XML\XMLDocument.h" />
     <ClInclude Include="kxf\System\CFunctionHook.h" />
     <ClInclude Include="kxf\System\DynamicLibrary.h" />

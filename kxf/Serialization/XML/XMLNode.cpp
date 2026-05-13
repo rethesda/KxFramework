@@ -1,19 +1,272 @@
 #include "kxf-pch.h"
 #include "XMLDocument.h"
-#include "Private/Utility.h"
+#include "kxf/IO/IStream.h"
 #include "kxf/Core/IEncodingConverter.h"
+#include "TinyXML2.h"
+
+namespace
+{
+	class XMLPrinterDefault: public tinyxml2::XMLPrinter
+	{
+		public:
+			XMLPrinterDefault(FILE* file = nullptr, bool compact = false, int depth = 0)
+				:XMLPrinter(file, compact, depth)
+			{
+			}
+
+		protected:
+			// tinyxml2::XMLPrinter
+			void PrintSpace(int depth) override
+			{
+				for (int i = 0; i < depth; i++)
+				{
+					Write("\t");
+				}
+			}
+	};
+
+	class XMLPrinterHTML5: public XMLPrinterDefault
+	{
+		private:
+			bool m_IsCompactMode = false;
+
+		private:
+			bool IsVoidElement(const char* name) const
+			{
+				// Complete list of all HTML5 "void elements": http://dev.w3.org/html5/markup/syntax.html
+				constexpr const char* voidElementNames[] =
+				{
+					"area",
+					"base",
+					"br",
+					"col",
+					"command",
+					"embed",
+					"hr",
+					"img",
+					"input",
+					"keygen",
+					"link",
+					"meta",
+					"param",
+					"source",
+					"track",
+					"wbr"
+				};
+
+				auto it = std::ranges::find_if(voidElementNames, [&](const char* item)
+				{
+					return _stricmp(item, name) == 0;
+				});
+				return it != std::end(voidElementNames);
+			}
+
+		public:
+			XMLPrinterHTML5(FILE* file = nullptr, bool compact = false, int depth = 0)
+				:XMLPrinterDefault(file, compact, depth), m_IsCompactMode(compact)
+			{
+			}
+
+		protected:
+			// tinyxml2::XMLPrinter
+			void CloseElement(bool compactMode = false) override
+			{
+				if (_elementJustOpened && !IsVoidElement(_stack.PeekTop()))
+				{
+					SealElementIfJustOpened();
+				}
+				XMLPrinterDefault::CloseElement(m_IsCompactMode);
+			}
+	};
+}
+namespace
+{
+	bool ContainsForbiddenCharactersForValueData(const kxf::String& value)
+	{
+		for (kxf::XChar c: value)
+		{
+			if (c == '&' || c == '<' || c == '>' || c == '\"' || c == '\'')
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	std::pair<kxf::StringView, int> ExtractIndexFromElementName(kxf::StringView elementName, kxf::XChar xPathSeparator)
+	{
+		int index = 0;
+
+		size_t indexStart = elementName.find(xPathSeparator);
+		if (indexStart != kxf::String::npos)
+		{
+			if (auto value = kxf::String(elementName.substr(indexStart + 1)).ParseInteger<int>(10))
+			{
+				index = std::clamp(*value, 0, std::numeric_limits<int>::max());
+				elementName = elementName.substr(0, indexStart);
+			}
+		}
+		return {elementName, index};
+	}
+
+	kxf::String CleanText(const tinyxml2::XMLNode& node, kxf::StringView separator = {})
+	{
+		using namespace kxf;
+
+		String content;
+		if (node.ToElement())
+		{
+			for (auto child = node.FirstChild(); child; child = child->NextSibling())
+			{
+				String text = CleanText(*child);
+				if (!separator.empty() && child != &node && !text.empty())
+				{
+					content += separator;
+				}
+				content += text;
+			}
+		}
+		else if (!node.ToDocument())
+		{
+			content = String::FromUTF8(node.Value());
+		}
+		return content;
+	}
+
+	template<std::derived_from<tinyxml2::XMLPrinter> TPrinter>
+	kxf::String PrintDocumentUsing(const tinyxml2::XMLDocument& document)
+	{
+		TPrinter buffer;
+		document.Print(&buffer);
+
+		return kxf::String::FromUTF8({buffer.CStr(), buffer.CStrSize() - 1});
+	}
+}
 
 namespace kxf
 {
+	// XDocument::RWValue
+	std::optional<String> XMLNode::XDocument_QueryValue() const
+	{
+		if (m_Node)
+		{
+			if (auto text = m_Node->ToText())
+			{
+				return String::FromUTF8(text->Value());
+			}
+			else if (auto element = m_Node->ToElement())
+			{
+				if (auto text = element->GetText())
+				{
+					String::FromUTF8(text);
+				}
+			}
+			else if (auto value = m_Node->Value())
+			{
+				return String::FromUTF8(value);
+			}
+		}
+		return {};
+	}
+	bool XMLNode::XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	{
+		if (value.IsEmpty() && writeEmpty == WriteEmpty::Never)
+		{
+			return false;
+		}
+
+		if (m_Node)
+		{
+			if (auto element = m_Node->ToElement())
+			{
+				tinyxml2::XMLText* textNode = nullptr;
+				if (auto firstChild = element->FirstChild())
+				{
+					textNode = firstChild->ToText();
+					if (textNode)
+					{
+						textNode->SetValue(value.utf8_str());
+					}
+				}
+				if (!textNode)
+				{
+					textNode = m_Document->m_Impl->NewText(value.utf8_str());
+					m_Node->DeleteChildren();
+					m_Node->InsertFirstChild(textNode);
+				}
+
+				switch (asCDATA)
+				{
+					case AsCDATA::Always:
+					{
+						textNode->SetCData(true);
+						break;
+					}
+					case AsCDATA::Never:
+					{
+						textNode->SetCData(false);
+						break;
+					}
+					default:
+					{
+						textNode->SetCData(ContainsForbiddenCharactersForValueData(value));
+						break;
+					}
+				};
+				return true;
+			}
+			else if (m_Node->ToText() || m_Node->ToComment() || m_Node->ToDeclaration() || m_Node->ToUnknown())
+			{
+				m_Node->SetValue(value.utf8_str());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// XDocument::RWAttribute
+	std::optional<String> XMLNode::XDocument_QueryAttribute(const String& name) const
+	{
+		if (m_Node)
+		{
+			if (auto element = m_Node->ToElement())
+			{
+				if (auto value = element->Attribute(name.utf8_str()))
+				{
+					return String::FromUTF8(value);
+				}
+			}
+		}
+		return {};
+	}
+	bool XMLNode::XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	{
+		if (value.IsEmpty() && writeEmpty == WriteEmpty::Never)
+		{
+			return false;
+		}
+
+		if (m_Node)
+		{
+			if (auto element = m_Node->ToElement())
+			{
+				element->SetAttribute(name.utf8_str(), value.utf8_str());
+				return true;
+			}
+		}
+		return false;
+	}
+
 	XMLNode XMLNode::ConstructOrQueryElement(const String& xPath, bool allowCreate)
 	{
-		if (!IsNull())
+		if (m_Document && m_Node)
 		{
-			tinyxml2::XMLDocument& document = GetDocument().m_Document;
-			tinyxml2::XMLNode* currentNode = GetNode();
+			tinyxml2::XMLDocument& document = *m_Document->m_Impl;
+			tinyxml2::XMLNode* currentNode = m_Node;
 			tinyxml2::XMLNode* previousNode = currentNode;
 
-			size_t itemCount = xPath.SplitBySeparator(GetXPathSeparator(), [&](StringView name)
+			UniChar indexSeparator;
+			UniChar xPathSeparator = m_Document->GetXPathSeparator(&indexSeparator);
+			size_t itemCount = xPath.SplitBySeparator(xPathSeparator.GetAs<XChar>(), [&](StringView name)
 			{
 				// Save previous element
 				if (!currentNode)
@@ -23,8 +276,8 @@ namespace kxf
 				previousNode = currentNode;
 
 				// Extract index from name and remove it from path, zero-based
-				// point/x -> 0, point/x::1 -> 1, point/y::0 -> 0, point/z::-7 -> 0
-				auto [elementName, index] = XNode::ExtractIndexFromName(name, StringViewOf(GetDocument().m_XPathIndexSeparator));
+				// point/x -> 0, point/x:1 -> 1, point/y:0 -> 0, point/z:-7 -> 0
+				auto [elementName, index] = ExtractIndexFromElementName(name, indexSeparator.GetAs<XChar>());
 				auto elementNameUTF8 = EncodingConverter_UTF8.ToMultiByte(name);
 
 				// Get level 0
@@ -65,229 +318,102 @@ namespace kxf
 
 			if (currentNode && itemCount != 0)
 			{
-				return XMLNode(currentNode, GetDocument());
+				return XMLNode(*m_Document, currentNode);
 			}
 		}
 		return {};
 	}
 
-	std::optional<String> XMLNode::DoGetValue() const
-	{
-		if (auto node = GetNode())
-		{
-			if (auto text = node->ToText())
-			{
-				return XML::Private::ToString(text->Value());
-			}
-			else if (auto element = node->ToElement())
-			{
-				if (const char* text = element->GetText())
-				{
-					return XML::Private::ToString(text);
-				}
-			}
-			else if (const char* value = node->Value())
-			{
-				return XML::Private::ToString(value);
-			}
-		}
-		return {};
-	}
-	std::optional<int64_t> XMLNode::DoGetValueIntWithBase(int base) const
-	{
-		if (base == 10)
-		{
-			if (auto node = GetNode())
-			{
-				if (auto element = node->ToElement())
-				{
-					int64_t value = 0;
-					if (element->QueryInt64Text(&value) == tinyxml2::XML_SUCCESS)
-					{
-						return value;
-					}
-				}
-			}
-			return {};
-		}
-		return XNode::DoGetValueIntWithBase(base);
-	}
-	std::optional<double> XMLNode::DoGetValueFloat() const
-	{
-		if (auto node = GetNode())
-		{
-			if (auto element = node->ToElement())
-			{
-				double value = 0;
-				if (element->QueryDoubleText(&value) == tinyxml2::XML_SUCCESS)
-				{
-					return value;
-				}
-			}
-		}
-		return {};
-	}
-	std::optional<bool> XMLNode::DoGetValueBool() const
-	{
-		if (auto node = GetNode())
-		{
-			if (auto element = node->ToElement())
-			{
-				bool value = false;
-				if (element->QueryBoolText(&value) == tinyxml2::XML_SUCCESS)
-				{
-					return value;
-				}
-			}
-		}
-		return {};
-	}
-	bool XMLNode::DoSetValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
-	{
-		if (writeEmpty == WriteEmpty::Never && value.IsEmpty())
-		{
-			return false;
-		}
-
-		if (auto node = GetNode())
-		{
-			if (node->ToElement())
-			{
-				if (!value.IsEmpty())
-				{
-					auto utf8 = value.ToUTF8();
-					tinyxml2::XMLText* textNode = m_Document->GetDocument()->NewText(utf8.data());
-
-					switch (asCDATA)
-					{
-						case AsCDATA::Always:
-						{
-							textNode->SetCData(true);
-							break;
-						}
-						case AsCDATA::Never:
-						{
-							textNode->SetCData(false);
-							break;
-						}
-						default:
-						{
-							textNode->SetCData(ContainsValueForbiddenCharacters(value));
-							break;
-						}
-					};
-
-					node->DeleteChildren();
-					node->InsertFirstChild(textNode);
-
-					return true;
-				}
-			}
-			else if (node->ToText() || node->ToComment() || node->ToDeclaration() || node->ToUnknown())
-			{
-				auto utf8 = value.ToUTF8();
-				node->SetValue(utf8.data());
-				return true;
-			}
-		}
-		return false;
-	}
-
-	std::optional<String> XMLNode::DoGetAttribute(const String& name) const
-	{
-		if (GetNode())
-		{
-			if (auto node = GetNode()->ToElement())
-			{
-				auto utf8 = name.ToUTF8();
-				if (const char* value = node->Attribute(utf8.data()))
-				{
-					return XML::Private::ToString(value);
-				}
-			}
-		}
-		return {};
-	}
-	std::optional<int64_t> XMLNode::DoGetAttributeIntWithBase(const String& name, int base) const
-	{
-		if (base == 10)
-		{
-			if (GetNode())
-			{
-				if (auto node = GetNode()->ToElement())
-				{
-					auto utf8 = name.ToUTF8();
-
-					int64_t value = 0;
-					if (node->QueryInt64Attribute(utf8.data(), &value) == tinyxml2::XML_SUCCESS)
-					{
-						return value;
-					}
-				}
-			}
-			return {};
-		}
-		return XNode::DoGetAttributeIntWithBase(name, base);
-	}
-	std::optional<double> XMLNode::DoGetAttributeFloat(const String& name) const
-	{
-		if (GetNode())
-		{
-			if (auto node = GetNode()->ToElement())
-			{
-				auto utf8 = name.ToUTF8();
-
-				double value = 0;
-				if (node->QueryDoubleAttribute(utf8.data(), &value) == tinyxml2::XML_SUCCESS)
-				{
-					return value;
-				}
-			}
-		}
-		return {};
-	}
-	std::optional<bool> XMLNode::DoGetAttributeBool(const String& name) const
-	{
-		if (GetNode())
-		{
-			if (auto node = GetNode()->ToElement())
-			{
-				auto utf8 = name.ToUTF8();
-
-				bool value = false;
-				if (node->QueryBoolAttribute(utf8.data(), &value) == tinyxml2::XML_SUCCESS)
-				{
-					return value;
-				}
-			}
-		}
-		return {};
-	}
-	bool XMLNode::DoSetAttribute(const String& name, const String& value, WriteEmpty writeEmpty)
-	{
-		if (writeEmpty == WriteEmpty::Never && value.IsEmpty())
-		{
-			return false;
-		}
-
-		if (GetNode())
-		{
-			if (auto node = GetNode()->ToElement())
-			{
-				auto nameUTF8 = name.ToUTF8();
-				auto valueUTF8 = value.ToUTF8();
-				node->SetAttribute(nameUTF8.data(), valueUTF8.data());
-				return true;
-			}
-		}
-		return false;
-	}
-
-	// General
+	// IXDocumentNode
 	String XMLNode::GetXPath() const
 	{
-		return ConstructXPath(*this);
+		return IXDocumentNode::BacktrackXPath(*m_Document, *this);
 	}
+
+	String XMLNode::GetName() const
+	{
+		if (m_Node)
+		{
+			if (auto element = m_Node->ToElement())
+			{
+				return String::FromUTF8(element->Name());
+			}
+		}
+		return {};
+	}
+	size_t XMLNode::GetIndexWithinParent() const
+	{
+		if (m_Node)
+		{
+			if (auto parent = m_Node->Parent())
+			{
+				size_t index = 0;
+				for (auto child = parent->FirstChild(); child; child = child->NextSibling())
+				{
+					if (child == m_Node)
+					{
+						break;
+					}
+					index++;
+				}
+				return index;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		return npos;
+	}
+	size_t XMLNode::GetRelativeIndexWithinParent() const
+	{
+		if (m_Node)
+		{
+			if (auto element = m_Node->ToElement())
+			{
+				if (auto parent = m_Node->Parent())
+				{
+					auto name = element->Name();
+
+					size_t index = 0;
+					for (auto childElement = parent->FirstChildElement(name); childElement; childElement = childElement->NextSiblingElement(name))
+					{
+						if (childElement == element)
+						{
+							break;
+						}
+						index++;
+					}
+					return index;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+			else
+			{
+				return GetIndexWithinParent();
+			}
+		}
+		return npos;
+	}
+
+	// XMLNode: Common
+	bool XMLNode::SetName(const String& name)
+	{
+		if (m_Node)
+		{
+			if (auto element = m_Node->ToElement())
+			{
+				element->SetName(name.utf8_str());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// XMLNode: Navigation
 	XMLNode XMLNode::QueryElement(const String& xPath) const
 	{
 		return const_cast<XMLNode&>(*this).ConstructOrQueryElement(xPath, false);
@@ -296,109 +422,192 @@ namespace kxf
 	{
 		return const_cast<XMLNode&>(*this).ConstructOrQueryElement(xPath, true);
 	}
-
-	String XMLNode::GetXPathIndexSeparator() const
+	XMLNode XMLNode::QueryElementByAttribute(const String& name, const String& value) const
 	{
-		return m_Document ? m_Document->GetXPathIndexSeparator() : NullString;
-	}
-	void XMLNode::SetXPathIndexSeparator(const String& value)
-	{
-		if (m_Document)
+		if (m_Node)
 		{
-			m_Document->SetXPathIndexSeparator(value);
-		}
-	}
-
-	// Node
-	size_t XMLNode::GetIndexWithinParent() const
-	{
-		if (auto node = GetNode(); node && node->ToElement())
-		{
-			if (auto parentElement = node->Parent() ? node->Parent()->ToElement() : nullptr)
+			if (GetAttribute(name) == value)
 			{
-				size_t index = 0;
-				for (const tinyxml2::XMLElement* element = parentElement->FirstChildElement(); element; element = element->NextSiblingElement())
+				return XMLNode(*m_Document, m_Node);
+			}
+			else
+			{
+				for (auto child = GetFirstChildElement(); child; child = child.GetNextSiblingElement())
 				{
-					index++;
-					if (element == node->ToElement())
+					if (auto foundElement = child.QueryElementByAttribute(name, value))
 					{
-						break;
+						return foundElement;
 					}
 				}
-				return index;
-			}
-		}
-		return 0;
-	}
-	String XMLNode::GetName() const
-	{
-		if (GetNode())
-		{
-			if (auto node = GetNode()->ToElement())
-			{
-				return XML::Private::ToString(node->Name());
 			}
 		}
 		return {};
 	}
-	bool XMLNode::SetName(const String& name)
+	XMLNode XMLNode::QueryElementByName(const String& name) const
 	{
-		if (GetNode())
+		if (m_Node)
 		{
-			if (auto node = GetNode()->ToElement())
+			if (GetName() == name)
 			{
-				auto utf8 = name.ToUTF8();
-				node->SetName(utf8.data());
-				return true;
+				return XMLNode(*m_Document, m_Node);
+			}
+			else
+			{
+				for (auto child = GetFirstChildElement(); child; child = child.GetNextSiblingElement())
+				{
+					if (auto foundElement = child.QueryElementByName(name))
+					{
+						return foundElement;
+					}
+				}
 			}
 		}
-		return false;
+		return {};
 	}
 
+	XMLNode XMLNode::GetParent() const
+	{
+		if (m_Node)
+		{
+			return XMLNode(*m_Document, m_Node->Parent());
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetPreviousSibling() const
+	{
+		if (m_Node)
+		{
+			return XMLNode(*m_Document, m_Node->PreviousSibling());
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetPreviousSiblingElement(const String& name) const
+	{
+		if (m_Node)
+		{
+			if (name.IsEmpty())
+			{
+				return XMLNode(*m_Document, m_Node->PreviousSiblingElement());
+			}
+			else
+			{
+				return XMLNode(*m_Document, m_Node->PreviousSiblingElement(name.utf8_str()));
+			}
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetNextSibling() const
+	{
+		if (m_Node)
+		{
+			return XMLNode(*m_Document, m_Node->NextSibling());
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetNextSiblingElement(const String& name) const
+	{
+		if (m_Node)
+		{
+			if (name.IsEmpty())
+			{
+				return XMLNode(*m_Document, m_Node->NextSiblingElement());
+			}
+			else
+			{
+				return XMLNode(*m_Document, m_Node->NextSiblingElement(name.utf8_str()));
+			}
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetFirstChild() const
+	{
+		if (m_Node)
+		{
+			return XMLNode(*m_Document, m_Node->FirstChild());
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetFirstChildElement(const String& name) const
+	{
+		if (m_Node)
+		{
+			if (name.IsEmpty())
+			{
+				return XMLNode(*m_Document, m_Node->FirstChildElement());
+			}
+			else
+			{
+				return XMLNode(*m_Document, m_Node->FirstChildElement(name.utf8_str()));
+			}
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetLastChild() const
+	{
+		if (m_Node)
+		{
+			return XMLNode(*m_Document, m_Node->LastChild());
+		}
+		return {};
+	}
+	XMLNode XMLNode::GetLastChildElement(const String& name) const
+	{
+		if (m_Node)
+		{
+			if (name.IsEmpty())
+			{
+				return XMLNode(*m_Document, m_Node->LastChildElement());
+			}
+			else
+			{
+				return XMLNode(*m_Document, m_Node->LastChildElement(name.utf8_str()));
+			}
+		}
+		return {};
+	}
+
+	// XMLNode: Children
 	size_t XMLNode::GetChildrenCount() const
 	{
-		size_t count = 0;
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			for (auto child = node->FirstChild(); child ; child = child->NextSibling())
+			size_t count = 0;
+			for (auto child = m_Node->FirstChild(); child ; child = child->NextSibling())
 			{
 				count++;
 			}
+			return count;
 		}
-		return count;
+		return 0;
 	}
 	bool XMLNode::HasChildren() const
 	{
-		auto node = GetNode();
-		if (node)
+		if (m_Node)
 		{
-			return !node->NoChildren();
+			return !m_Node->NoChildren();
 		}
 		return false;
 	}
-	bool XMLNode::ClearChildren()
+	void XMLNode::ClearChildren()
 	{
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			node->DeleteChildren();
-			return true;
+			m_Node->DeleteChildren();
 		}
-		return false;
 	}
-	bool XMLNode::ClearNode()
+	void XMLNode::ResetNode()
 	{
 		ClearChildren();
 		ClearAttributes();
-		return true;
 	}
 
 	CallbackResult<void> XMLNode::EnumChildren(CallbackFunction<XMLNode> func) const
 	{
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			for (auto child = node->FirstChild(); child; child = child->NextSibling())
+			for (auto child = m_Node->FirstChild(); child; child = child->NextSibling())
 			{
-				if (func.Invoke(XMLNode(child, *m_Document)).ShouldTerminate())
+				if (func.Invoke(XMLNode(*m_Document, child)).ShouldTerminate())
 				{
 					break;
 				}
@@ -410,14 +619,12 @@ namespace kxf
 	}
 	CallbackResult<void> XMLNode::EnumChildElements(CallbackFunction<XMLNode> func, const String& name) const
 	{
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			auto utf8 = name.ToUTF8();
-			auto namePtr = !name.IsEmpty() ? utf8.data() : nullptr;
-
-			for (auto child = node->FirstChildElement(namePtr); child; child = child->NextSiblingElement(namePtr))
+			auto nameUTF8 = name.utf8_str();
+			for (auto child = m_Node->FirstChildElement(nameUTF8.data_if_not_empty()); child; child = child->NextSiblingElement(nameUTF8.data_if_not_empty()))
 			{
-				if (func.Invoke(XMLNode(child, *m_Document)).ShouldTerminate())
+				if (func.Invoke(XMLNode(*m_Document, child)).ShouldTerminate())
 				{
 					break;
 				}
@@ -428,124 +635,45 @@ namespace kxf
 		return {};
 	}
 
-	String XMLNode::GetXML(SerializationFormat mode) const
-	{
-		if (auto node = GetNode())
-		{
-			tinyxml2::XMLDocument subTree;
-			node->DeepClone(&subTree);
-			return XML::Private::PrintDocument(subTree, mode == SerializationFormat::HTML5);
-		}
-		return {};
-	}
-	XML::NodeType XMLNode::GetType() const
-	{
-		auto node = GetNode();
-		if (node)
-		{
-			if (node->ToDocument())
-			{
-				return NodeType::Document;
-			}
-			else if (node->ToElement())
-			{
-				return NodeType::Element;
-			}
-			else if (node->ToText())
-			{
-				return NodeType::Text;
-			}
-			else if (node->ToComment())
-			{
-				return NodeType::Comment;
-			}
-			else if (node->ToDeclaration())
-			{
-				return NodeType::Declaration;
-			}
-			else if (node->ToUnknown())
-			{
-				return NodeType::Unknown;
-			}
-		}
-		return NodeType::None;
-	}
-	bool XMLNode::IsElement() const
-	{
-		if (GetNode())
-		{
-			return GetNode()->ToElement() != nullptr;
-		}
-		return false;
-	}
-	bool XMLNode::IsText() const
-	{
-		if (GetNode())
-		{
-			return GetNode()->ToText() != nullptr;
-		}
-		return false;
-	}
-
-	// Value
-	String XMLNode::GetValueText(const String& separator) const
-	{
-		if (auto node = GetNode())
-		{
-			return XML::Private::CleanText(*node, StringViewOf(separator));
-		}
-		return {};
-	}
-	bool XMLNode::IsCDATA() const
-	{
-		if (GetNode())
-		{
-			if (auto node = GetNode()->ToText())
-			{
-				return node->CData();
-			}
-		}
-		return false;
-	}
-	bool XMLNode::SetCDATA(bool value)
-	{
-		if (GetNode())
-		{
-			if (auto node = GetNode()->ToText())
-			{
-				node->SetCData(value);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	// Attributes
+	// XMLNode: Attributes
 	size_t XMLNode::GetAttributeCount() const
 	{
-		size_t count = 0;
-		if (GetNode())
+		if (m_Node)
 		{
-			if (auto node = GetNode()->ToElement())
+			size_t count = 0;
+			if (auto element = m_Node->ToElement())
 			{
-				for (const tinyxml2::XMLAttribute* attribute = node->FirstAttribute(); attribute != nullptr; attribute = attribute->Next())
+				for (auto attribute = element->FirstAttribute(); attribute; attribute = attribute->Next())
 				{
 					count++;
 				}
 			}
+			return count;
 		}
-		return count;
+		return 0;
 	}
 	bool XMLNode::HasAttributes() const
 	{
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			if (auto element = node->ToElement())
+			if (auto element = m_Node->ToElement())
 			{
-				return element->FirstAttribute() != nullptr;
+				return element->FirstAttribute();
 			}
 		}
 		return false;
+	}
+
+	XMLAttribute XMLNode::GetAttributeObject(const String& name) const
+	{
+		if (m_Node)
+		{
+			if (auto element = m_Node->ToElement())
+			{
+				return XMLAttribute(*m_Document, element->FindAttribute(name.utf8_str()));
+			}
+		}
+		return {};
 	}
 	CallbackResult<void> XMLNode::EnumAttributeNames(CallbackFunction<String> func) const
 	{
@@ -556,13 +684,13 @@ namespace kxf
 	}
 	CallbackResult<void> XMLNode::EnumAttributes(CallbackFunction<XMLAttribute> func) const
 	{
-		if (GetNode())
+		if (m_Node)
 		{
-			if (auto node = GetNode()->ToElement())
+			if (auto element = m_Node->ToElement())
 			{
-				for (auto attribute = node->FirstAttribute(); attribute; attribute = attribute->Next())
+				for (auto attribute = element->FirstAttribute(); attribute; attribute = attribute->Next())
 				{
-					if (func.Invoke(XMLAttribute(*this, *attribute)).ShouldTerminate())
+					if (func.Invoke(XMLAttribute(*this, attribute)).ShouldTerminate())
 					{
 						break;
 					}
@@ -575,24 +703,22 @@ namespace kxf
 
 	bool XMLNode::HasAttribute(const String& name) const
 	{
-		if (GetNode())
+		if (m_Node)
 		{
-			if (auto node = GetNode()->ToElement())
+			if (auto element = m_Node->ToElement())
 			{
-				auto utf8 = name.ToUTF8();
-				return node->Attribute(utf8.data()) != nullptr;
+				return element->Attribute(name.utf8_str());
 			}
 		}
 		return false;
 	}
 	bool XMLNode::RemoveAttribute(const String& name)
 	{
-		if (GetNode())
+		if (m_Node)
 		{
-			if (auto node = GetNode()->ToElement())
+			if (auto element = m_Node->ToElement())
 			{
-				auto tName = name.ToUTF8();
-				node->DeleteAttribute(tName.data());
+				element->DeleteAttribute(name.utf8_str());
 				return true;
 			}
 		}
@@ -600,11 +726,11 @@ namespace kxf
 	}
 	bool XMLNode::RemoveAttribute(XMLAttribute& attribute)
 	{
-		if (GetNode())
+		if (m_Node)
 		{
-			if (auto node = GetNode()->ToElement())
+			if (auto element = m_Node->ToElement())
 			{
-				node->DeleteAttribute(attribute.GetAttribute()->Name());
+				element->DeleteAttribute(attribute.m_Attribute->Name());
 				return true;
 			}
 		}
@@ -612,171 +738,18 @@ namespace kxf
 	}
 	bool XMLNode::ClearAttributes()
 	{
-		if (GetNode())
+		if (m_Node)
 		{
-			if (auto node = GetNode()->ToElement())
+			if (auto element = m_Node->ToElement())
 			{
-				for (const tinyxml2::XMLAttribute* attribute = node->FirstAttribute(); attribute != nullptr; attribute = attribute->Next())
+				for (auto attribute = element->FirstAttribute(); attribute; attribute = attribute->Next())
 				{
-					node->DeleteAttribute(attribute->Name());
+					element->DeleteAttribute(attribute->Name());
 				}
 				return true;
 			}
 		}
 		return false;
-	}
-
-	// Navigation
-	XMLNode XMLNode::GetElementByAttribute(const String& name, const String& value) const
-	{
-		if (auto node = GetNode())
-		{
-			if (GetAttribute(name) == value)
-			{
-				return XMLNode(node, *m_Document);
-			}
-			else
-			{
-				for (auto child = GetFirstChildElement(); child; child = child.GetNextSiblingElement())
-				{
-					if (auto foundElement = child.GetElementByAttribute(name, value))
-					{
-						return foundElement;
-					}
-				}
-			}
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetElementByTag(const String& tagName) const
-	{
-		auto node = GetNode();
-		if (node && node->ToElement())
-		{
-			if (GetName() == tagName)
-			{
-				return XMLNode(node, *m_Document);
-			}
-			else
-			{
-				for (auto child = GetFirstChildElement(); child; child = child.GetNextSiblingElement())
-				{
-					if (child.IsElement())
-					{
-						if (XMLNode foundElement = child.GetElementByTag(tagName))
-						{
-							return foundElement;
-						}
-					}
-				}
-			}
-		}
-		return {};
-	}
-	
-	XMLNode XMLNode::GetParent() const
-	{
-		if (auto node = GetNode())
-		{
-			return XMLNode(node->Parent(), *m_Document);
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetPreviousSibling() const
-	{
-		if (auto node = GetNode())
-		{
-			return XMLNode(node->PreviousSibling(), *m_Document);
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetPreviousSiblingElement(const String& name) const
-	{
-		if (auto node = GetNode())
-		{
-			if (name.IsEmpty())
-			{
-				return XMLNode(node->PreviousSiblingElement(), *m_Document);
-			}
-			else
-			{
-				auto utf8 = name.ToUTF8();
-				return XMLNode(node->PreviousSiblingElement(utf8.data()), *m_Document);
-			}
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetNextSibling() const
-	{
-		if (auto node = GetNode())
-		{
-			return XMLNode(node->NextSibling(), *m_Document);
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetNextSiblingElement(const String& name) const
-	{
-		if (auto node = GetNode())
-		{
-			if (name.IsEmpty())
-			{
-				return XMLNode(node->NextSiblingElement(), *m_Document);
-			}
-			else
-			{
-				auto utf8 = name.ToUTF8();
-				return XMLNode(node->NextSiblingElement(utf8.data()), *m_Document);
-			}
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetFirstChild() const
-	{
-		if (auto node = GetNode())
-		{
-			return XMLNode(node->FirstChild(), *m_Document);
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetFirstChildElement(const String& name) const
-	{
-		if (auto node = GetNode())
-		{
-			if (name.IsEmpty())
-			{
-				return XMLNode(node->FirstChildElement(), *m_Document);
-			}
-			else
-			{
-				auto utf8 = name.ToUTF8();
-				return XMLNode(node->FirstChildElement(utf8.data()), *m_Document);
-			}
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetLastChild() const
-	{
-		if (auto node = GetNode())
-		{
-			return XMLNode(node->LastChild(), *m_Document);
-		}
-		return {};
-	}
-	XMLNode XMLNode::GetLastChildElement(const String& name) const
-	{
-		if (auto node = GetNode())
-		{
-			if (name.IsEmpty())
-			{
-				return XMLNode(node->LastChildElement(), *m_Document);
-			}
-			else
-			{
-				auto utf8 = name.ToUTF8();
-				return XMLNode(node->LastChildElement(utf8.data()), *m_Document);
-			}
-		}
-		return {};
 	}
 
 	// Insertion
@@ -799,36 +772,34 @@ namespace kxf
 		};
 		return false;
 	}
-	bool XMLNode::InsertAfterChild(XMLNode& newNode)
+	bool XMLNode::InsertAfterChild(XMLNode& newNode, const XMLNode& afterThis)
 	{
-		auto thisTxNode = GetNode();
-		auto newTxNode = newNode.GetNode();
-
-		if (thisTxNode && newTxNode)
+		if (m_Node && newNode)
 		{
-			return thisTxNode->InsertAfterChild(thisTxNode, newTxNode) != nullptr;
+			if (afterThis)
+			{
+				return m_Node->InsertAfterChild(afterThis.m_Node, newNode.m_Node);
+			}
+			else
+			{
+				return m_Node->InsertAfterChild(m_Node, newNode.m_Node);
+			}
 		}
 		return false;
 	}
 	bool XMLNode::InsertFirstChild(XMLNode& newNode)
 	{
-		auto thisTxNode = GetNode();
-		auto newTxNode = newNode.GetNode();
-
-		if (thisTxNode && newTxNode)
+		if (m_Node && newNode)
 		{
-			return thisTxNode->InsertFirstChild(newTxNode) != nullptr;
+			return m_Node->InsertFirstChild(newNode.m_Node);
 		}
 		return false;
 	}
 	bool XMLNode::InsertLastChild(XMLNode& newNode)
 	{
-		auto thisTxNode = GetNode();
-		auto newTxNode = newNode.GetNode();
-
-		if (thisTxNode && newTxNode)
+		if (m_Node && newNode)
 		{
-			return thisTxNode->InsertEndChild(newTxNode) != nullptr;
+			return m_Node->InsertEndChild(newNode.m_Node);
 		}
 		return false;
 	}
@@ -890,6 +861,155 @@ namespace kxf
 			{
 				return node;
 			}
+		}
+		return {};
+	}
+
+	// XMLNode: Properties
+	bool XMLNode::IsCDATA() const
+	{
+		if (m_Node)
+		{
+			if (auto text = m_Node->ToText())
+			{
+				return text->CData();
+			}
+		}
+		return false;
+	}
+	bool XMLNode::SetCDATA(bool value)
+	{
+		if (m_Node)
+		{
+			if (auto text = m_Node->ToText())
+			{
+				text->SetCData(value);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	XML::NodeType XMLNode::GetType() const
+	{
+		if (m_Node)
+		{
+			if (m_Node->ToDocument())
+			{
+				return NodeType::Document;
+			}
+			else if (m_Node->ToElement())
+			{
+				return NodeType::Element;
+			}
+			else if (m_Node->ToText())
+			{
+				return NodeType::Text;
+			}
+			else if (m_Node->ToComment())
+			{
+				return NodeType::Comment;
+			}
+			else if (m_Node->ToDeclaration())
+			{
+				return NodeType::Declaration;
+			}
+			else if (m_Node->ToUnknown())
+			{
+				return NodeType::Unknown;
+			}
+		}
+		return NodeType::None;
+	}
+	bool XMLNode::IsElement() const
+	{
+		if (m_Node)
+		{
+			return m_Node->ToElement();
+		}
+		return false;
+	}
+	bool XMLNode::IsText() const
+	{
+		if (m_Node)
+		{
+			return m_Node->ToText();
+		}
+		return false;
+	}
+
+	// XMLNode: Serialization
+	bool XMLNode::SerializeSubtree(IOutputStream& stream, SerializationFormat format) const
+	{
+		if (m_Node)
+		{
+			auto Serialize = [&](const tinyxml2::XMLDocument& document)
+			{
+				if (format == SerializationFormat::HTML5)
+				{
+					XMLPrinterHTML5 buffer;
+					document.Print(&buffer);
+
+					return stream.WriteAll(buffer.CStr(), buffer.CStrSize() - 1);
+				}
+				else
+				{
+					XMLPrinterDefault buffer;
+					document.Print(&buffer);
+
+					return stream.WriteAll(buffer.CStr(), buffer.CStrSize() - 1);
+				}
+			};
+
+			if (auto document = m_Node->ToDocument())
+			{
+				return Serialize(*document);
+			}
+			else
+			{
+				tinyxml2::XMLDocument subTree;
+				m_Node->ShallowClone(&subTree);
+
+				return Serialize(subTree);
+			}
+		}
+		return false;
+	}
+	String XMLNode::SerializeSubtree(SerializationFormat format) const
+	{
+		if (m_Node)
+		{
+			auto Serialize = [&](const tinyxml2::XMLDocument& document)
+			{
+				if (format == SerializationFormat::HTML5)
+				{
+					return PrintDocumentUsing<XMLPrinterHTML5>(document);
+				}
+				else
+				{
+					return PrintDocumentUsing<XMLPrinterDefault>(document);
+				}
+			};
+
+			if (auto document = m_Node->ToDocument())
+			{
+				return Serialize(*document);
+			}
+			else
+			{
+				tinyxml2::XMLDocument subTree;
+				m_Node->ShallowClone(&subTree);
+
+				return Serialize(subTree);
+			}
+		}
+		return {};
+	}
+	String XMLNode::SerializeSubtreeText(const String& separator) const
+	{
+		if (m_Node)
+		{
+			return CleanText(*m_Node, StringViewOf(separator));
 		}
 		return {};
 	}
