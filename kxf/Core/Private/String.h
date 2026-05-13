@@ -105,6 +105,19 @@ namespace kxf::Private
 			{
 				return m_Data.length();
 			}
+			bool empty() const noexcept
+			{
+				return m_Data.empty();
+			}
+
+			TChar* data_if_not_empty() noexcept
+			{
+				return !m_Data.empty() ? m_Data.data() : nullptr;
+			}
+			const TChar* data_if_not_empty() const noexcept
+			{
+				return !m_Data.empty() ? m_Data.data() : nullptr;
+			}
 
 		public:
 			operator TString() const&
@@ -173,6 +186,19 @@ namespace kxf::Private
 			size_t length() const noexcept
 			{
 				return m_View.length();
+			}
+			bool empty() const noexcept
+			{
+				return m_View.empty();
+			}
+
+			TChar* data_if_not_empty() noexcept
+			{
+				return !m_View.empty() ? m_View.data() : nullptr;
+			}
+			const TChar* data_if_not_empty() const noexcept
+			{
+				return !m_View.empty() ? m_View.data() : nullptr;
 			}
 
 		public:
