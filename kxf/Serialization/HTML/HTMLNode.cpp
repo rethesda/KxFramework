@@ -361,8 +361,7 @@ namespace kxf
 	{
 		return {};
 	}
-
-	HTMLNode HTMLNode::GetElementByAttribute(const String& name, const String& value) const
+	HTMLNode HTMLNode::QueryElementByAttribute(const String& name, const String& value) const
 	{
 		if (m_Document)
 		{
@@ -370,7 +369,7 @@ namespace kxf
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::GetElementByTag(TagType tagType) const
+	HTMLNode HTMLNode::QueryElementByName(TagType tagType) const
 	{
 		if (m_Document)
 		{
@@ -378,7 +377,7 @@ namespace kxf
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::GetElementByTag(const String& tagName) const
+	HTMLNode HTMLNode::QueryElementByName(const String& tagName) const
 	{
 		if (m_Document)
 		{

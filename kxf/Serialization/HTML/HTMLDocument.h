@@ -92,18 +92,17 @@ namespace kxf
 			
 			// HTMLNode: Navigation
 			HTMLNode QueryElement(const String& XPath) const;
-
-			HTMLNode GetElementByAttribute(const String& name, const String& value) const;
-			HTMLNode GetElementByID(const String& id) const
+			HTMLNode QueryElementByAttribute(const String& name, const String& value) const;
+			HTMLNode QueryElementByID(const String& id) const
 			{
-				return GetElementByAttribute("id", id);
+				return QueryElementByAttribute("id", id);
 			}
-			HTMLNode GetElementByClass(const String & className) const
+			HTMLNode QueryElementByClass(const String & className) const
 			{
-				return GetElementByAttribute("class", className);
+				return QueryElementByAttribute("class", className);
 			}
-			HTMLNode GetElementByTag(TagType tagType) const;
-			HTMLNode GetElementByTag(const String& tagName) const;
+			HTMLNode QueryElementByName(TagType tagType) const;
+			HTMLNode QueryElementByName(const String& tagName) const;
 		
 			HTMLNode GetParent() const;
 			HTMLNode GetPreviousSibling() const;
