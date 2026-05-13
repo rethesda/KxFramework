@@ -18,14 +18,12 @@ namespace kxf
 namespace kxf
 {
 	class KXF_API HTMLNode: public IXDocumentNode,
-		public XDocument::RWValue<HTMLNode>,
-		public XDocument::RWAttribute<HTMLNode>,
+		public XDocument::ROValue<HTMLNode>,
+		public XDocument::ROAttribute<HTMLNode>,
 		private XDocument::DefaultConverter<HTMLNode>
 	{
 		friend class ROValue;
-		friend class RWValue;
 		friend class ROAttribute;
-		friend class RWAttribute;
 		friend class DefaultConverter;
 
 		public:
@@ -37,13 +35,11 @@ namespace kxf
 			const void* m_Node = nullptr;
 
 		protected:
-			// XDocument::RWValue
+			// XDocument::ROValue
 			std::optional<String> XDocument_QueryValue() const;
-			bool XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
 
-			// XDocument::RWAttribute
+			// XDocument::ROAttribute
 			std::optional<String> XDocument_QueryAttribute(const String& name) const;
-			bool XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
 
 			// HTMLNode
 			virtual const void* GetNode() const

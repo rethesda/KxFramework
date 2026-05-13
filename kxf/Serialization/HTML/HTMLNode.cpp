@@ -174,7 +174,7 @@ namespace kxf::HTML::Private
 
 namespace kxf
 {
-	// XDocument::RWValue
+	// XDocument::ROValue
 	std::optional<String> HTMLNode::XDocument_QueryValue() const
 	{
 		auto node = GetNode();
@@ -192,12 +192,8 @@ namespace kxf
 		}
 		return {};
 	}
-	bool HTMLNode::XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
-	{
-		return false;
-	}
 
-	// XDocument::RWAttribute
+	// XDocument::ROAttribute
 	std::optional<String> HTMLNode::XDocument_QueryAttribute(const String& name) const
 	{
 		if (auto node = GetNode())
@@ -209,10 +205,6 @@ namespace kxf
 			}
 		}
 		return {};
-	}
-	bool HTMLNode::XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
-	{
-		return false;
 	}
 
 	// IXDocument
@@ -244,7 +236,6 @@ namespace kxf
 	}
 
 	// HTMLNode
-
 	bool HTMLNode::IsFullNode() const
 	{
 		return HTML::Private::IsFullNode(CastGumboNode(GetNode()));
