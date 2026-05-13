@@ -1415,9 +1415,6 @@
     <ClCompile Include="kxf\Serialization\TextDocument.cpp">
       <Filter>kxf\Serialization</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Serialization\XDocument.cpp">
-      <Filter>kxf\Serialization</Filter>
-    </ClCompile>
     <ClCompile Include="kxf\Serialization\HTML\HTMLNode.cpp">
       <Filter>kxf\Serialization\HTML</Filter>
     </ClCompile>
