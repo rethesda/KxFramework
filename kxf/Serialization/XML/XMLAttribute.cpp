@@ -13,15 +13,10 @@ namespace kxf
 		}
 		return {};
 	}
-	bool XMLAttribute::XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool XMLAttribute::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
 	{
 		if (m_Attribute)
 		{
-			if (value.IsEmpty() && writeEmpty == WriteEmpty::Never)
-			{
-				return false;
-			}
-
 			m_Attribute->SetAttribute(value.utf8_str());
 			return true;
 		}

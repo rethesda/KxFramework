@@ -51,11 +51,11 @@ namespace kxf
 		private:
 			// XDocument::RWValue
 			std::optional<String> XDocument_QueryValue() const;
-			bool XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteValue(const String& value, AsCDATA asCDATA);
 
 			// XDocument::RWAttribute
 			std::optional<String> XDocument_QueryAttribute(const String& name) const;
-			bool XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
 
 			void ReadAttributes();
 			void WriteAttributes();
@@ -156,11 +156,11 @@ namespace kxf
 		private:
 			// XDocument::RWValue
 			std::optional<String> XDocument_QueryValue() const;
-			bool XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteValue(const String& value, AsCDATA asCDATA);
 
 			// XDocument::RWAttribute
 			std::optional<String> XDocument_QueryAttribute(const String& name) const;
-			bool XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
 
 		public:
 			INIDocumentSection() = default;
@@ -249,7 +249,7 @@ namespace kxf
 		private:
 			// XDocument::RWAttribute
 			std::optional<String> XDocument_QueryAttribute(const String& name) const;
-			bool XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
 
 			// IObject
 			RTTI::QueryInfo DoQueryInterface(const IID& iid) noexcept override;
@@ -260,7 +260,7 @@ namespace kxf
 			void DoUnload();
 
 			std::optional<String> IniDoGetValue(const String& sectionName, const String& keyName, String* comment = nullptr, size_t* order = nullptr) const;
-			bool IniDoSetValue(const String& sectionName, const String& keyName, const String& value, const String& comment = {}, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto);
+			bool IniDoSetValue(const String& sectionName, const String& keyName, const String& value, const String& comment = {}, AsCDATA asCDATA = AsCDATA::Auto);
 
 			bool RemoveQuotes(String& value) const;
 			bool RemoveInlineComments(String& value, String* comment = nullptr) const;
@@ -379,31 +379,31 @@ namespace kxf
 				return QuerySectionAttribute<T>(sectionName, keyName).value_or(T{});
 			}
 
-			bool SetSectionAttribute(const String& sectionName, const String& keyName, const String& value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			bool SetSectionAttribute(const String& sectionName, const String& keyName, const String& value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return IniDoSetValue(sectionName, keyName, value, {}, writeEmpty, asCDATA);
+				return IniDoSetValue(sectionName, keyName, value, {}, asCDATA);
 			}
 			bool SetSectionAttribute(const String& sectionName, const String& keyName, bool value)
 			{
-				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromBool(value), {}, WriteEmpty::Always, AsCDATA::Never);
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromBool(value), {}, AsCDATA::Never);
 			}
 			bool SetSectionAttribute(const String& sectionName, const String& keyName, void* value)
 			{
-				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromPointer(value), {}, WriteEmpty::Always, AsCDATA::Never);
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromPointer(value), {}, AsCDATA::Never);
 			}
 
 			template<class T>
 			requires(std::is_integral_v<T> && !std::is_same_v<T, bool>)
 			bool SetSectionAttribute(const String& sectionName, const String& keyName, T value)
 			{
-				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromInt<T>(value), {}, WriteEmpty::Always, AsCDATA::Never);
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromInt<T>(value), {}, AsCDATA::Never);
 			}
 
 			template<class T>
 			requires(std::is_floating_point_v<T>)
 			bool SetSectionAttribute(const String& sectionName, const String& keyName, T value, int precision = -1)
 			{
-				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromFloat<T>(value, precision), {}, WriteEmpty::Always, AsCDATA::Never);
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromFloat<T>(value, precision), {}, AsCDATA::Never);
 			}
 
 		public:

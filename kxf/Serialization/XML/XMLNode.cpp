@@ -167,13 +167,8 @@ namespace kxf
 		}
 		return {};
 	}
-	bool XMLNode::XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool XMLNode::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
 	{
-		if (value.IsEmpty() && writeEmpty == WriteEmpty::Never)
-		{
-			return false;
-		}
-
 		if (m_Node)
 		{
 			if (auto element = m_Node->ToElement())
@@ -238,13 +233,8 @@ namespace kxf
 		}
 		return {};
 	}
-	bool XMLNode::XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool XMLNode::XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA)
 	{
-		if (value.IsEmpty() && writeEmpty == WriteEmpty::Never)
-		{
-			return false;
-		}
-
 		if (m_Node)
 		{
 			if (auto element = m_Node->ToElement())

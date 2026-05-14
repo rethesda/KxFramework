@@ -115,11 +115,11 @@ namespace kxf
 		}
 		return {};
 	}
-	bool INIDocumentValue::XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool INIDocumentValue::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
 	{
 		if (!m_ExtendedSyntaxEnabled)
 		{
-			return m_Ref->IniDoSetValue(m_SectionName, m_KeyName, value, {}, writeEmpty, asCDATA);
+			return m_Ref->IniDoSetValue(m_SectionName, m_KeyName, value, {}, asCDATA);
 		}
 		return false;
 	}
@@ -136,15 +136,11 @@ namespace kxf
 		}
 		return {};
 	}
-	bool INIDocumentValue::XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool INIDocumentValue::XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA)
 	{
 		if (m_ExtendedSyntaxEnabled)
 		{
-			if (value.IsEmpty() && writeEmpty == WriteEmpty::Never)
-			{
-				return false;
-			}
-			else if (name.IsEmptyOrWhitespace())
+			if (name.IsEmptyOrWhitespace())
 			{
 				return false;
 			}
@@ -251,11 +247,11 @@ namespace kxf
 			result.TrimRight(',');
 			result += kxfSV(");");
 
-			m_Ref->IniDoSetValue(m_SectionName, m_KeyName, result, {}, WriteEmpty::Always, AsCDATA::Never);
+			m_Ref->IniDoSetValue(m_SectionName, m_KeyName, result, {}, AsCDATA::Never);
 		}
 		else
 		{
-			m_Ref->IniDoSetValue(m_SectionName, m_KeyName, {}, {}, WriteEmpty::Always, AsCDATA::Never);
+			m_Ref->IniDoSetValue(m_SectionName, m_KeyName, {}, {}, AsCDATA::Never);
 		}
 	}
 
@@ -332,7 +328,7 @@ namespace kxf
 	{
 		if (m_Ref)
 		{
-			return m_Ref->IniDoSetValue(m_SectionName, m_KeyName, {}, comment, WriteEmpty::Always, AsCDATA::Never);
+			return m_Ref->IniDoSetValue(m_SectionName, m_KeyName, {}, comment, AsCDATA::Never);
 		}
 		return false;
 	}
@@ -411,9 +407,9 @@ namespace kxf
 	{
 		return m_Ref->IniDoGetValue(m_SectionName, {});
 	}
-	bool INIDocumentSection::XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool INIDocumentSection::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
 	{
-		return m_Ref->IniDoSetValue(m_SectionName, {}, value, {}, writeEmpty, asCDATA);
+		return m_Ref->IniDoSetValue(m_SectionName, {}, value, {}, asCDATA);
 	}
 
 	// XDocument::RWAttribute
@@ -421,9 +417,9 @@ namespace kxf
 	{
 		return m_Ref->IniDoGetValue(m_SectionName, name);
 	}
-	bool INIDocumentSection::XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool INIDocumentSection::XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA)
 	{
-		return m_Ref->IniDoSetValue(m_SectionName, name, value, {}, writeEmpty, asCDATA);
+		return m_Ref->IniDoSetValue(m_SectionName, name, value, {}, asCDATA);
 	}
 
 	// IXDocumentNode
@@ -483,7 +479,7 @@ namespace kxf
 	{
 		if (m_Ref)
 		{
-			return m_Ref->IniDoSetValue(m_SectionName, {}, {}, comment, WriteEmpty::Always, AsCDATA::Never);
+			return m_Ref->IniDoSetValue(m_SectionName, {}, {}, comment, AsCDATA::Never);
 		}
 		return false;
 	}
@@ -609,9 +605,9 @@ namespace kxf
 	{
 		return IniDoGetValue({}, name);
 	}
-	bool INIDocument::XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool INIDocument::XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA)
 	{
-		return IniDoSetValue({}, name, value, {}, writeEmpty, asCDATA);
+		return IniDoSetValue({}, name, value, {}, asCDATA);
 	}
 
 	// INIDocument
@@ -692,29 +688,22 @@ namespace kxf
 		}
 		return {};
 	}
-	bool INIDocument::IniDoSetValue(const String& sectionName, const String& keyName, const String& value, const String& comment, WriteEmpty writeEmpty, AsCDATA asCDATA)
+	bool INIDocument::IniDoSetValue(const String& sectionName, const String& keyName, const String& value, const String& comment, AsCDATA asCDATA)
 	{
-		if (writeEmpty == WriteEmpty::Never && value.IsEmpty())
+		if (!m_Document)
 		{
-			return false;
+			Init();
 		}
-		else
-		{
-			if (!m_Document)
-			{
-				Init();
-			}
 
-			String keyName2 = keyName;
-			keyName2.TrimBoth();
+		String keyName2 = keyName;
+		keyName2.TrimBoth();
 
-			auto status = m_Document->SetValue(sectionName.utf8_str(),
-											   (!keyName2.IsEmpty() ? keyName2.utf8_str() : nullptr),
-											   (!value.IsEmpty() ? value.utf8_str() : nullptr),
-											   (!comment.IsEmpty() ? comment.utf8_str() : nullptr),
-											   true);
-			return status == SimpleINI::SI_UPDATED || status == SimpleINI::SI_INSERTED;
-		}
+		auto status = m_Document->SetValue(sectionName.utf8_str(),
+										   (!keyName2.IsEmpty() ? keyName2.utf8_str() : nullptr),
+										   (!value.IsEmpty() ? value.utf8_str() : nullptr),
+										   (!comment.IsEmpty() ? comment.utf8_str() : nullptr),
+										   true);
+		return status == SimpleINI::SI_UPDATED || status == SimpleINI::SI_INSERTED;
 	}
 
 	bool INIDocument::RemoveQuotes(String& value) const
@@ -933,7 +922,7 @@ namespace kxf
 	}
 	bool INIDocument::SetComment(String comment)
 	{
-		return IniDoSetValue({}, {}, {}, comment, WriteEmpty::Never, AsCDATA::Never);
+		return IniDoSetValue({}, {}, {}, comment, AsCDATA::Never);
 	}
 
 	// INIDocument: Sections

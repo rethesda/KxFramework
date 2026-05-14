@@ -66,7 +66,7 @@ namespace kxf
 		private:
 			// XDocument::RWValue
 			std::optional<String> XDocument_QueryValue() const;
-			bool XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteValue(const String& value, AsCDATA asCDATA);
 
 		public:
 			XMLAttribute() = default;
@@ -136,11 +136,11 @@ namespace kxf
 		private:
 			// XDocument::RWValue
 			std::optional<String> XDocument_QueryValue() const;
-			bool XDocument_WriteValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteValue(const String& value, AsCDATA asCDATA);
 
 			// XDocument::RWAttribute
 			std::optional<String> XDocument_QueryAttribute(const String& name) const;
-			bool XDocument_WriteAttribute(const String& name, const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA);
+			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
 
 			// XMLNode
 			XMLNode ConstructOrQueryElement(const String& xPath, bool allowCreate);

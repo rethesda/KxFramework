@@ -15,11 +15,6 @@ namespace kxf::XDocument
 		Always = 1,
 		Never = 0,
 	};
-	enum class WriteEmpty
-	{
-		Always = 1,
-		Never = 0,
-	};
 }
 
 namespace kxf
@@ -30,8 +25,7 @@ namespace kxf
 
 		public:
 			using AsCDATA = XDocument::AsCDATA;
-			using WriteEmpty = XDocument::WriteEmpty;
-			static constexpr size_t npos = String::npos;
+			static constexpr size_t npos = std::numeric_limits<size_t>::max();
 
 		public:
 			virtual ~IXDocument() = default;
@@ -66,8 +60,7 @@ namespace kxf
 	{
 		public:
 			using AsCDATA = XDocument::AsCDATA;
-			using WriteEmpty = XDocument::WriteEmpty;
-			static constexpr size_t npos = String::npos;
+			static constexpr size_t npos = std::numeric_limits<size_t>::max();
 
 			template<std::derived_from<IXDocumentNode> TNode>
 			static String BacktrackXPath(const IXDocument& document, const TNode& startAt)
@@ -270,7 +263,7 @@ namespace kxf::XDocument
 
 	// Requires
 	// - See ROValue
-	// - bool XDocument_WriteValue(const String&, WriteEmpty, AsCDATA)
+	// - bool XDocument_WriteValue(const String&, AsCDATA)
 	//
 	// Can customize (all of ROValue and):
 	// - See ROValue
@@ -292,43 +285,43 @@ namespace kxf::XDocument
 			}
 
 		public:
-			bool SetValue(const String& value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			bool SetValue(const String& value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return GetDerived().XDocument_WriteValue(value, writeEmpty, asCDATA);
+				return GetDerived().XDocument_WriteValue(value, asCDATA);
 			}
-			bool SetValue(const char* value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			bool SetValue(const char* value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return GetDerived().XDocument_WriteValue(value, writeEmpty, asCDATA);
+				return GetDerived().XDocument_WriteValue(value, asCDATA);
 			}
-			bool SetValue(const wchar_t* value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			bool SetValue(const wchar_t* value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return GetDerived().XDocument_WriteValue(value, writeEmpty, asCDATA);
+				return GetDerived().XDocument_WriteValue(value, asCDATA);
 			}
 			bool SetValue(bool value)
 			{
-				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromBool(value), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromBool(value), AsCDATA::Never);
 			}
 			bool SetValue(void* value)
 			{
-				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromPointer(value), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromPointer(value), AsCDATA::Never);
 			}
 			bool SetValue(std::nullptr_t)
 			{
-				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromPointer(nullptr), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromPointer(nullptr), AsCDATA::Never);
 			}
 
 			template<class T>
 			requires((std::is_integral_v<T> || std::is_enum_v<T>) && !std::is_same_v<T, bool>)
 			bool SetValue(T value, int base = 10)
 			{
-				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromInt<T>(value, base), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromInt<T>(value, base), AsCDATA::Never);
 			}
 
 			template<class T>
 			requires(std::is_floating_point_v<T>)
 			bool SetValue(T value, int precision = -1)
 			{
-				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromFloat<T>(value, precision), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteValue(GetDerived().XDocument_ConvertFromFloat<T>(value, precision), AsCDATA::Never);
 			}
 	};
 
@@ -415,7 +408,7 @@ namespace kxf::XDocument
 
 	// Requires:
 	// - See ROAttribute
-	// - bool XDocument_WriteAttribute(const String&, const String&, WriteEmpty, AsCDATA)
+	// - bool XDocument_WriteAttribute(const String&, const String&, AsCDATA)
 	//
 	// Can customize:
 	// - See ROAttribute
@@ -437,43 +430,43 @@ namespace kxf::XDocument
 			}
 
 		public:
-			bool SetAttribute(const String& name, const String& value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			bool SetAttribute(const String& name, const String& value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, value, writeEmpty, asCDATA);
+				return GetDerived().XDocument_WriteAttribute(name, value, asCDATA);
 			}
-			bool SetAttribute(const String& name, const char* value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			bool SetAttribute(const String& name, const char* value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, value, writeEmpty, asCDATA);
+				return GetDerived().XDocument_WriteAttribute(name, value, asCDATA);
 			}
-			bool SetAttribute(const String& name, const wchar_t* value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			bool SetAttribute(const String& name, const wchar_t* value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, value, writeEmpty, asCDATA);
+				return GetDerived().XDocument_WriteAttribute(name, value, asCDATA);
 			}
 			bool SetAttribute(const String& name, bool value)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromBool(value), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromBool(value), AsCDATA::Never);
 			}
 			bool SetAttribute(const String& name, void* value)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromPointer(value), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromPointer(value), AsCDATA::Never);
 			}
 			bool SetAttribute(const String& name, std::nullptr_t)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromPointer(nullptr), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromPointer(nullptr), AsCDATA::Never);
 			}
 
 			template<class T>
 			requires((std::is_integral_v<T> || std::is_enum_v<T>) && !std::is_same_v<T, bool>)
 			bool SetAttribute(const String& name, T value, int base = 10)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromInt<T>(value, base), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromInt<T>(value, base), AsCDATA::Never);
 			}
 
 			template<class T>
 			requires(std::is_floating_point_v<T>)
 			bool SetAttribute(const String& name, T value, int precision = -1)
 			{
-				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromFloat<T>(value, precision), WriteEmpty::Always, AsCDATA::Never);
+				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromFloat<T>(value, precision), AsCDATA::Never);
 			}
 	};
 }
