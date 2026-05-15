@@ -262,8 +262,8 @@ static std::string serialize(GumboNode* node) {
 
 namespace kxf::HTML::Private
 {
-	std::string gumbo_ex_serialize(GumboNode* node)
+	std::string gumbo_ex_serialize(const GumboNode* node)
 	{
-		return serialize(node);
+		return serialize(const_cast<GumboNode*>(node));
 	}
 }

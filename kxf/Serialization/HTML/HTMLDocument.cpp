@@ -1,5 +1,6 @@
 #include "kxf-pch.h"
 #include "HTMLDocument.h"
+#include "kxf/IO/IStream.h"
 
 #pragma warning(disable: 4005) // macro redefinition
 #include "gumbo.h"
@@ -7,9 +8,28 @@
 
 namespace
 {
-	GumboOutput* CastOutput(void* output) noexcept
+	constexpr GumboOutput* CastOutput(void* output) noexcept
 	{
-		return reinterpret_cast<GumboOutput*>(output);
+		return static_cast<GumboOutput*>(output);
+	}
+
+	bool AnyError(const GumboOutput* output)
+	{
+		return output->errors.length != 0;
+	}
+	bool AnyErrorOfType(const GumboOutput* output, GumboErrorType errorType)
+	{
+		if (auto errors = reinterpret_cast<GumboError**>(output->errors.data))
+		{
+			for (size_t i = 0; i < output->errors.length; i++)
+			{
+				if (errors[i]->type == errorType)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
 
@@ -22,6 +42,7 @@ namespace kxf
 				:GumboOptions(options)
 			{
 				userdata = &ref;
+				tab_stop = 4;
 			}
 	};
 }
@@ -29,14 +50,21 @@ namespace kxf
 namespace kxf
 {
 	// HTMLDocument
-	void HTMLDocument::Init()
+	bool HTMLDocument::DoLoad()
 	{
-		m_ParserOptions = std::make_unique<ImplOptions>(kGumboDefaultOptions, *this);
-	}
-	void HTMLDocument::DoLoad()
-	{
+		// Make sure it's allocated on the heap so it won't cause any issues if the object is moved
+		m_Buffer.reserve(64);
+
 		m_ParserOutput = gumbo_parse_with_options(m_ParserOptions.get(), m_Buffer.data(), m_Buffer.size());
-		m_Node = CastOutput(m_ParserOutput)->document;
+		if (m_ParserOutput)
+		{
+			// HTMLDocumentNode
+			m_Node = CastOutput(m_ParserOutput)->document;
+			m_Document = this;
+
+			return !AnyErrorOfType(CastOutput(m_ParserOutput), GUMBO_ERR_PARSER);
+		}
+		return false;
 	}
 	void HTMLDocument::DoUnload()
 	{
@@ -45,39 +73,21 @@ namespace kxf
 			gumbo_destroy_output(m_ParserOptions.get(), CastOutput(m_ParserOutput));
 			m_ParserOutput = nullptr;
 		}
-		m_Node = nullptr;
 		m_Buffer.clear();
-	}
-	void HTMLDocument::Destroy()
-	{
-		DoUnload();
-	}
 
-	// HTMLDocumentNode
-	const void* HTMLDocument::GetNode() const
-	{
-		return CastOutput(m_ParserOutput)->document;
+		// HTMLDocumentNode
+		m_Node = nullptr;
+		m_Document = nullptr;
 	}
 
 	// HTMLDocument
 	HTMLDocument::HTMLDocument()
-		:HTMLDocumentNode(*this, nullptr)
 	{
-		Init();
-	}
-	HTMLDocument::HTMLDocument(const String& html)
-		:HTMLDocument()
-	{
-		LoadDocument(html);
-	}
-	HTMLDocument::HTMLDocument(HTMLDocument&& other) noexcept
-		:HTMLDocument()
-	{
-		*this = std::move(other);
+		m_ParserOptions = std::make_unique<ImplOptions>(kGumboDefaultOptions, *this);
 	}
 	HTMLDocument::~HTMLDocument()
 	{
-		Destroy();
+		DoUnload();
 	}
 
 	// IXDocument
@@ -85,17 +95,7 @@ namespace kxf
 	{
 		if (!m_Buffer.empty() && m_ParserOutput)
 		{
-			if (auto errors = reinterpret_cast<GumboError**>(CastOutput(m_ParserOutput)->errors.data))
-			{
-				for (size_t i = 0; i < CastOutput(m_ParserOutput)->errors.length; i++)
-				{
-					if (errors[i]->type == GUMBO_ERR_PARSER)
-					{
-						return true;
-					}
-				}
-			}
-			return false;
+			return AnyErrorOfType(CastOutput(m_ParserOutput), GUMBO_ERR_PARSER);
 		}
 		return true;
 	}
@@ -111,14 +111,11 @@ namespace kxf
 		m_Buffer.resize(stream.GetSize().ToBytes());
 		stream.Read(m_Buffer.data(), m_Buffer.size());
 		m_Buffer.resize(stream.LastRead().ToBytes());
-
-		DoLoad();
-		return !IsNull();
+		return DoLoad();
 	}
 	bool HTMLDocument::SaveDocument(IOutputStream& stream) const
 	{
-		auto utf8 = GetHTML().ToUTF8();
-		return stream.WriteAll(utf8.data(), utf8.length());
+		return SerializeSubtree(stream);
 	}
 
 	// HTMLDocument
@@ -126,17 +123,21 @@ namespace kxf
 	{
 		DoUnload();
 
-		if (!html.IsEmpty())
-		{
-			m_Buffer = html.ToUTF8();
-			DoLoad();
-		}
-		return !IsNull();
+		m_Buffer = html.ToUTF8();
+		return DoLoad();
+	}
+	String HTMLDocument::SaveDocument() const
+	{
+		return SerializeSubtree();
 	}
 
 	HTMLDocument& HTMLDocument::operator=(HTMLDocument&& other) noexcept
 	{
-		static_cast<HTMLDocumentNode&>(*this) = std::move(static_cast<HTMLDocumentNode&>(other));
+		// HTMLDocumentNode
+		m_Node = std::exchange(other.m_Node, nullptr);
+		m_Document = std::exchange(other.m_Document, nullptr);
+
+		// HTMLDocument
 		m_Buffer = std::move(other.m_Buffer);
 		m_ParserOptions = std::move(other.m_ParserOptions);
 		m_ParserOutput = std::exchange(other.m_ParserOutput, nullptr);

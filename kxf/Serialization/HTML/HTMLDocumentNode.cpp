@@ -1,5 +1,7 @@
 #include "kxf-pch.h"
 #include "HTMLDocument.h"
+#include "kxf/IO/IStream.h"
+#include "kxf/IO/StreamReaderWriter.h"
 #include "kxf/Utility/Common.h"
 
 #pragma warning(disable: 4005) // macro redefinition
@@ -19,8 +21,8 @@ namespace
 
 namespace kxf::HTML::Private
 {
-	std::string gumbo_ex_cleantext(GumboNode* node);
-	std::string gumbo_ex_serialize(GumboNode* node);
+	std::string gumbo_ex_cleantext(const GumboNode* node, std::string_view separator);
+	std::string gumbo_ex_serialize(const GumboNode* node);
 
 	String GetTagName(GumboTag tagType)
 	{
@@ -64,8 +66,7 @@ namespace kxf::HTML::Private
 	{
 		if (node->type == GUMBO_NODE_ELEMENT)
 		{
-			auto utf8 = name.ToUTF8();
-			return gumbo_get_attribute(&node->v.element.attributes, utf8.data());
+			return gumbo_get_attribute(&node->v.element.attributes, name.utf8_str());
 		}
 		return nullptr;
 	}
@@ -82,7 +83,7 @@ namespace kxf::HTML::Private
 			return nullptr;
 		}
 	}
-	size_t GetAttributesCount(const GumboNode* node)
+	size_t GetAttributeCount(const GumboNode* node)
 	{
 		if (node->type == GUMBO_NODE_ELEMENT)
 		{
@@ -93,21 +94,19 @@ namespace kxf::HTML::Private
 	
 	const GumboVector* GetChildren(const GumboNode* node)
 	{
-		const GumboVector* children = nullptr;
 		if (node->type == GUMBO_NODE_DOCUMENT)
 		{
-			children = &node->v.document.children;
+			return &node->v.document.children;
 		}
 		else if (node->type == GUMBO_NODE_ELEMENT)
 		{
-			children = &node->v.element.children;
+			return &node->v.element.children;
 		}
-		return children;
+		return nullptr;
 	}
 	size_t GetChildrenCount(const GumboNode* node)
 	{
-		const GumboVector* children = GetChildren(node);
-		if (children)
+		if (auto children = GetChildren(node))
 		{
 			return children->length;
 		}
@@ -116,7 +115,7 @@ namespace kxf::HTML::Private
 	
 	const GumboNode* GetElementByAttribute(const GumboNode* node, const String& name, const String& value)
 	{
-		const GumboAttribute* attributes = GetAttribute(node, name);
+		auto attributes = GetAttribute(node, name);
 		if (attributes && attributes->value == value)
 		{
 			return node;
@@ -126,11 +125,9 @@ namespace kxf::HTML::Private
 			size_t count = GetChildrenCount(node);
 			for (size_t i = 0; i < count; i++)
 			{
-				const GumboVector* children = GetChildren(node);
-				if (children)
+				if (auto children = GetChildren(node))
 				{
-					const GumboNode* foundNode = GetElementByAttribute((GumboNode*)children->data[i], name, value);
-					if (foundNode)
+					if (auto foundNode = GetElementByAttribute(static_cast<GumboNode*>(children->data[i]), name, value))
 					{
 						return foundNode;
 					}
@@ -152,11 +149,9 @@ namespace kxf::HTML::Private
 			size_t count = GetChildrenCount(node);
 			for (size_t i = 0; i < count; i++)
 			{
-				const GumboVector* children = GetChildren(node);
-				if (children)
+				if (auto children = GetChildren(node))
 				{
-					const GumboNode* foundNode = GetElementByTag((GumboNode*)children->data[i], desiredTagName);
-					if (foundNode)
+					if (auto foundNode = GetElementByTag(static_cast<GumboNode*>(children->data[i]), desiredTagName))
 					{
 						return foundNode;
 					}
@@ -166,29 +161,129 @@ namespace kxf::HTML::Private
 
 		return nullptr;
 	}
-	const GumboNode* GetParent(const GumboNode* node)
-	{
-		return node->parent;
-	}
 };
+
+namespace kxf
+{
+	// XDocument::ROValue
+	std::optional<String> HTMLDocumentAttribute::XDocument_QueryValue() const
+	{
+		if (auto attribute = CastGumboAttribute(m_Attribute))
+		{
+			return String::FromUTF8(attribute->value);
+		}
+		return {};
+	}
+
+	// IXDocumentNode
+	String HTMLDocumentAttribute::GetXPath() const
+	{
+		if (m_Owner)
+		{
+			auto xPath = m_Owner->GetXPath();
+			auto name = GetName();
+			if (!xPath.IsEmpty() && !name.IsEmpty())
+			{
+				// Backslash for the attribute name
+				return Format(kxfS("{}\\{}"), xPath, name);
+			}
+			return xPath;
+		}
+		return {};
+	}
+	String HTMLDocumentAttribute::GetName() const
+	{
+		if (auto attribute = CastGumboAttribute(m_Attribute))
+		{
+			return String::FromUTF8(attribute->name);
+		}
+		return {};
+	}
+
+	size_t HTMLDocumentAttribute::GetIndexWithinParent() const
+	{
+		if (m_Attribute && m_Owner)
+		{
+			size_t attributeCount = 0;
+			if (auto attributes = HTML::Private::GetAttributes(CastGumboNode(m_Owner->m_Node), &attributeCount))
+			{
+				for (size_t i = 0; i < attributeCount; i++)
+				{
+					if (attributes[i] == m_Attribute)
+					{
+						return i;
+					}
+				}
+			}
+		}
+		return npos;
+	}
+	size_t HTMLDocumentAttribute::GetRelativeIndexWithinParent() const
+	{
+		return GetIndexWithinParent();
+	}
+
+	// HTMLDocumentAttribute
+	HTMLDocumentNode HTMLDocumentAttribute::GetNode() const
+	{
+		if (m_Owner)
+		{
+			return *m_Owner;
+		}
+		return {};
+	}
+	const HTMLDocument& HTMLDocumentAttribute::GetDocument() const
+	{
+		return m_Owner->GetDocument();
+	}
+	HTMLDocument& HTMLDocumentAttribute::GetDocument()
+	{
+		return m_Owner->GetDocument();
+	}
+
+	HTMLDocumentAttribute HTMLDocumentAttribute::Next() const
+	{
+		if (m_Attribute && m_Owner)
+		{
+			size_t attributeCount = 0;
+			if (auto attributes = HTML::Private::GetAttributes(CastGumboNode(m_Owner->m_Node), &attributeCount))
+			{
+				for (size_t i = 0; i < attributeCount; i++)
+				{
+					if (attributes[i] == m_Attribute)
+					{
+						if (i + 1 < attributeCount)
+						{
+							return HTMLDocumentAttribute(*m_Owner, attributes[i + 1]);
+						}
+						break;
+					}
+				}
+			}
+		}
+		return {};
+	}
+}
 
 namespace kxf
 {
 	// XDocument::ROValue
 	std::optional<String> HTMLDocumentNode::XDocument_QueryValue() const
 	{
-		auto node = GetNode();
-		if (node && HTML::Private::IsFullNode(CastGumboNode(node)))
+		if (auto node = CastGumboNode(m_Node))
 		{
-			auto children = HTML::Private::GetChildren(CastGumboNode(node));
-			if (children && children->length == 1)
+			if (HTML::Private::IsFullNode(node))
 			{
-				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, 0)).XDocument_QueryValue();
+				auto children = HTML::Private::GetChildren(node);
+				if (children && children->length == 1)
+				{
+					return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, 0)).XDocument_QueryValue();
+				}
 			}
-		}
-		else if (node)
-		{
-			return CastGumboNode(node)->v.text.text;
+			else
+			{
+				return CastGumboNode(m_Node)->v.text.text;
+			}
 		}
 		return {};
 	}
@@ -196,9 +291,9 @@ namespace kxf
 	// XDocument::ROAttribute
 	std::optional<String> HTMLDocumentNode::XDocument_QueryAttribute(const String& name) const
 	{
-		if (auto node = GetNode())
+		if (auto node = CastGumboNode(m_Node))
 		{
-			auto attribute = HTML::Private::GetAttribute(CastGumboNode(node), name);
+			auto attribute = HTML::Private::GetAttribute(node, name);
 			if (attribute && attribute->value)
 			{
 				return attribute->value;
@@ -219,10 +314,9 @@ namespace kxf
 
 	String HTMLDocumentNode::GetName() const
 	{
-		auto node = GetNode();
-		if (node && HTML::Private::IsFullNode(CastGumboNode(node)))
+		if (m_Node && HTML::Private::IsFullNode(CastGumboNode(m_Node)))
 		{
-			return HTML::Private::GetTagName(CastGumboNode(node));
+			return HTML::Private::GetTagName(CastGumboNode(m_Node));
 		}
 		return {};
 	}
@@ -235,80 +329,259 @@ namespace kxf
 		return CastGumboNode(m_Node)->index_within_parent;
 	}
 
-	// HTMLDocumentNode
-	bool HTMLDocumentNode::IsFullNode() const
+	// HTMLDocumentNode: Navigation
+	HTMLDocumentNode HTMLDocumentNode::QueryElement(const String& xPath) const
 	{
-		return HTML::Private::IsFullNode(CastGumboNode(GetNode()));
-	}
-	HTML::NodeType HTMLDocumentNode::GetType() const
-	{
-		if (auto node = GetNode())
+		if (m_Document && m_Node)
 		{
-			return static_cast<NodeType>(CastGumboNode(node)->type);
-		}
-		return NodeType::None;
-	}
-	HTML::TagType HTMLDocumentNode::GetTagType() const
-	{
-		if (auto node = GetNode())
-		{
-			switch (CastGumboNode(node)->type)
+			HTMLDocumentNode currentNode = *this;
+			HTMLDocumentNode previousNode = currentNode;
+
+			UniChar indexSeparator;
+			UniChar xPathSeparator = m_Document->GetXPathSeparator(&indexSeparator);
+			size_t itemCount = xPath.SplitBySeparator(xPathSeparator.GetAs<XChar>(), [&](StringView name)
 			{
-				case GUMBO_NODE_DOCUMENT:
+				// Save previous element
+				if (!currentNode)
 				{
-					return TagType::HTML;
+					return false;
 				}
-				case GUMBO_NODE_ELEMENT:
+				previousNode = currentNode;
+
+				// Extract index from name and remove it from path, zero-based
+				// point/x -> 0, point/x:1 -> 1, point/y:0 -> 0, point/z:-7 -> 0
+				auto [elementName, index] = XDocument::ExtractIndexFromElementName(name, indexSeparator.GetAs<XChar>());
+
+				// Get level 0
+				currentNode = previousNode.GetFirstChildElement(elementName);
+				if (!currentNode)
 				{
-					return static_cast<TagType>(CastGumboNode(node)->v.element.tag);
+					return false;
 				}
-			};
-		}
-		return TagType::UNKNOWN;
-	}
-	String HTMLDocumentNode::GetValueText() const
-	{
-		auto node = GetNode();
-		if (node)
-		{
-			if (CastGumboNode(node)->type == GUMBO_NODE_TEXT)
+
+				// We need to go down by 'index' more elements
+				for (int level = 1; level <= index; level++)
+				{
+					// Get next level
+					currentNode = currentNode.GetNextSiblingElement(elementName);
+					if (!currentNode)
+					{
+						return false;
+					}
+				}
+				return true;
+			});
+
+			if (currentNode && itemCount != 0)
 			{
-				return String::FromUTF8(CastGumboNode(node)->v.text.text);
-			}
-			else
-			{
-				return String::FromUTF8(HTML::Private::gumbo_ex_cleantext(const_cast<GumboNode*>(CastGumboNode(node))));
+				return currentNode;
 			}
 		}
 		return {};
 	}
-	String HTMLDocumentNode::GetHTML() const
+	HTMLDocumentNode HTMLDocumentNode::QueryElementByAttribute(const String& name, const String& value) const
 	{
-		if (auto node = GetNode())
+		if (m_Document && m_Node)
 		{
-			if (HTML::Private::IsFullNode(CastGumboNode(node)))
+			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByAttribute(CastGumboNode(m_Node), name, value));
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::QueryElementByName(TagType tagType) const
+	{
+		if (m_Document && m_Node)
+		{
+			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(m_Node), HTML::Private::GetTagName(static_cast<GumboTag>(tagType))));
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::QueryElementByName(const String& tagName) const
+	{
+		if (m_Document && m_Node)
+		{
+			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(m_Node), tagName.ToLower()));
+		}
+		return {};
+	}
+
+	HTMLDocumentNode HTMLDocumentNode::GetParent() const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			return HTMLDocumentNode(*m_Document, node->parent);
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetPreviousSibling() const
+	{
+		if (auto node = CastGumboNode(m_Node); node && node->parent && node->index_within_parent != npos && node->index_within_parent > 0)
+		{
+			if (auto children = HTML::Private::GetChildren(node->parent))
 			{
-				return String::FromUTF8(HTML::Private::gumbo_ex_serialize(const_cast<GumboNode*>(CastGumboNode(node))));
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, node->index_within_parent - 1));
 			}
-			else
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetPreviousSiblingElement(const String& name) const
+	{
+		if (auto node = CastGumboNode(m_Node); node && node->parent && node->index_within_parent != npos && node->index_within_parent > 0)
+		{
+			if (auto children = HTML::Private::GetChildren(node->parent))
 			{
-				return XDocument_QueryValue().value_or(String());
+				size_t index = node->index_within_parent - 1;
+				while (true)
+				{
+					auto child = HTML::Private::GetNodeAt(children, index);
+					if (!child)
+					{
+						break;
+					}
+					if (HTML::Private::IsFullNode(child) && (name.IsEmpty() || HTML::Private::GetTagName(child).IsSameAs(name, StringActionFlag::IgnoreCase)))
+					{
+						return HTMLDocumentNode(*m_Document, child);
+					}
+
+					if (index == 0)
+					{
+						break;
+					}
+					index--;
+				}
+			}
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetNextSibling() const
+	{
+		if (auto node = CastGumboNode(m_Node); node && node->parent && node->index_within_parent != npos)
+		{
+			auto childCount = HTML::Private::GetChildrenCount(node->parent);
+			if (node->index_within_parent + 1 < childCount)
+			{
+				if (auto children = HTML::Private::GetChildren(node->parent))
+				{
+					return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, node->index_within_parent + 1));
+				}
+			}
+
+			if (auto children = HTML::Private::GetChildren(node->parent))
+			{
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, node->index_within_parent - 1));
+			}
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetNextSiblingElement(const String& name) const
+	{
+		if (auto node = CastGumboNode(m_Node); node && node->parent && node->index_within_parent != npos)
+		{
+			if (auto children = HTML::Private::GetChildren(node->parent))
+			{
+				for (size_t i = node->index_within_parent + 1; i < children->length; i++)
+				{
+					auto child = HTML::Private::GetNodeAt(children, i);
+					if (!child)
+					{
+						break;
+					}
+					if (HTML::Private::IsFullNode(child) && (name.IsEmpty() || HTML::Private::GetTagName(child).IsSameAs(name, StringActionFlag::IgnoreCase)))
+					{
+						return HTMLDocumentNode(*m_Document, child);
+					}
+				}
+			}
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetFirstChild() const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			if (auto children = HTML::Private::GetChildren(node); children && children->length != 0)
+			{
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, 0));
+			}
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetFirstChildElement(const String& name) const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			if (auto children = HTML::Private::GetChildren(node))
+			{
+				for (size_t i = 0; i < children->length; i++)
+				{
+					auto child = HTML::Private::GetNodeAt(children, i);
+					if (!child)
+					{
+						break;
+					}
+					if (HTML::Private::IsFullNode(child) && (name.IsEmpty() || HTML::Private::GetTagName(child).IsSameAs(name, StringActionFlag::IgnoreCase)))
+					{
+						return HTMLDocumentNode(*m_Document, child);
+					}
+				}
+			}
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetLastChild() const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			if (auto children = HTML::Private::GetChildren(node); children && children->length != 0)
+			{
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, children->length - 1));
+			}
+		}
+		return {};
+	}
+	HTMLDocumentNode HTMLDocumentNode::GetLastChildElement(const String& name) const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			if (auto children = HTML::Private::GetChildren(node); children && children->length != 0)
+			{
+				size_t index = children->length - 1;
+				while (true)
+				{
+					auto child = HTML::Private::GetNodeAt(children, index);
+					if (!child)
+					{
+						break;
+					}
+					if (HTML::Private::IsFullNode(child) && (name.IsEmpty() || HTML::Private::GetTagName(child).IsSameAs(name, StringActionFlag::IgnoreCase)))
+					{
+						return HTMLDocumentNode(*m_Document, child);
+					}
+
+					if (index == 0)
+					{
+						break;
+					}
+					index--;
+				}
 			}
 		}
 		return {};
 	}
 
 	// HTMLDocumentNode: Children
-
 	size_t HTMLDocumentNode::GetChildrenCount() const
 	{
-		return HTML::Private::GetChildrenCount(CastGumboNode(GetNode()));
+		if (m_Node)
+		{
+			return HTML::Private::GetChildrenCount(CastGumboNode(m_Node));
+		}
+		return 0;
 	}
 	CallbackResult<void> HTMLDocumentNode::EnumChildren(CallbackFunction<HTMLDocumentNode> func) const
 	{
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			if (auto children = HTML::Private::GetChildren(CastGumboNode(node)))
+			if (auto children = HTML::Private::GetChildren(CastGumboNode(m_Node)))
 			{
 				for (size_t i = 0; i < children->length; i++)
 				{
@@ -326,22 +599,35 @@ namespace kxf
 	// HTMLDocumentNode: Attributes
 	size_t HTMLDocumentNode::GetAttributeCount() const
 	{
-		return HTML::Private::GetAttributesCount(CastGumboNode(GetNode()));
+		if (m_Node)
+		{
+			return HTML::Private::GetAttributeCount(CastGumboNode(m_Node));
+		}
+		return 0;
 	}
 	bool HTMLDocumentNode::HasAttribute(const String& name) const
 	{
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			return HTML::Private::GetAttribute(CastGumboNode(node), name);
+			return HTML::Private::GetAttribute(CastGumboNode(m_Node), name);
 		}
 		return false;
 	}
+
+	HTMLDocumentAttribute HTMLDocumentNode::GetAttributeObject(const String& name) const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			return HTMLDocumentAttribute(*this, HTML::Private::GetAttribute(node, name));
+		}
+		return {};
+	}
 	CallbackResult<void> HTMLDocumentNode::EnumAttributeNames(CallbackFunction<String> func) const
 	{
-		if (auto node = GetNode())
+		if (auto node = CastGumboNode(m_Node))
 		{
 			size_t attributeCount = 0;
-			if (const GumboAttribute** attributes = HTML::Private::GetAttributes(CastGumboNode(node), &attributeCount))
+			if (auto attributes = HTML::Private::GetAttributes(node, &attributeCount))
 			{
 				for (size_t i = 0; i < attributeCount; i++)
 				{
@@ -355,94 +641,109 @@ namespace kxf
 		}
 		return {};
 	}
-
-	// HTMLDocumentNode: Navigation
-	HTMLDocumentNode HTMLDocumentNode::QueryElement(const String& XPath) const
+	CallbackResult<void> HTMLDocumentNode::EnumAttributes(CallbackFunction<HTMLDocumentAttribute> func) const
 	{
-		return {};
-	}
-	HTMLDocumentNode HTMLDocumentNode::QueryElementByAttribute(const String& name, const String& value) const
-	{
-		if (m_Document)
+		if (auto node = CastGumboNode(m_Node))
 		{
-			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByAttribute(CastGumboNode(GetNode()), name, value));
-		}
-		return {};
-	}
-	HTMLDocumentNode HTMLDocumentNode::QueryElementByName(TagType tagType) const
-	{
-		if (m_Document)
-		{
-			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(GetNode()), HTML::Private::GetTagName(static_cast<GumboTag>(tagType))));
-		}
-		return {};
-	}
-	HTMLDocumentNode HTMLDocumentNode::QueryElementByName(const String& tagName) const
-	{
-		if (m_Document)
-		{
-			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(GetNode()), tagName.ToLower()));
-		}
-		return {};
-	}
-
-	HTMLDocumentNode HTMLDocumentNode::GetParent() const
-	{
-		if (auto node = GetNode())
-		{
-			return HTMLDocumentNode(*m_Document, HTML::Private::GetParent(CastGumboNode(node)));
-		}
-		return {};
-	}
-	HTMLDocumentNode HTMLDocumentNode::GetPreviousSibling() const
-	{
-		auto node = GetNode();
-		if (node && CastGumboNode(node)->parent && CastGumboNode(node)->index_within_parent != -1 && CastGumboNode(node)->index_within_parent > 0)
-		{
-			if (const GumboVector* children = HTML::Private::GetChildren(CastGumboNode(node)->parent))
+			size_t attributeCount = 0;
+			if (auto attributes = HTML::Private::GetAttributes(node, &attributeCount))
 			{
-				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, CastGumboNode(node)->index_within_parent - 1));
-			}
-		}
-		return {};
-	}
-	HTMLDocumentNode HTMLDocumentNode::GetNextSibling() const
-	{
-		auto node = GetNode();
-		if (node && CastGumboNode(node)->parent)
-		{
-			const size_t max = HTML::Private::GetChildrenCount(CastGumboNode(node)->parent);
-			if (CastGumboNode(node)->index_within_parent != -1 && CastGumboNode(node)->index_within_parent < max)
-			{
-				if (const GumboVector* children = HTML::Private::GetChildren(CastGumboNode(node)->parent))
+				for (size_t i = 0; i < attributeCount; i++)
 				{
-					const GumboNode* sibling = HTML::Private::GetNodeAt(children, CastGumboNode(node)->index_within_parent + 1);
-					return HTMLDocumentNode(*m_Document, sibling);
+					if (func.Invoke(HTMLDocumentAttribute(*this, attributes[i])).ShouldTerminate())
+					{
+						break;
+					}
 				}
+				return func.Finalize();
 			}
 		}
 		return {};
 	}
-	HTMLDocumentNode HTMLDocumentNode::GetFirstChild() const
+
+	// HTMLDocumentNode: Properties
+	HTML::NodeType HTMLDocumentNode::GetType() const
 	{
-		if (auto node = GetNode())
+		if (m_Node)
 		{
-			auto children = HTML::Private::GetChildren(CastGumboNode(node));
-			if (children && children->length != 0)
+			return static_cast<NodeType>(CastGumboNode(m_Node)->type);
+		}
+		return NodeType::None;
+	}
+	HTML::TagType HTMLDocumentNode::GetTagType() const
+	{
+		if (m_Node)
+		{
+			switch (CastGumboNode(m_Node)->type)
 			{
-				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, 0));
+				case GUMBO_NODE_DOCUMENT:
+				{
+					return TagType::HTML;
+				}
+				case GUMBO_NODE_ELEMENT:
+				{
+					return static_cast<TagType>(CastGumboNode(m_Node)->v.element.tag);
+				}
+			};
+		}
+		return TagType::UNKNOWN;
+	}
+	bool HTMLDocumentNode::IsElement() const
+	{
+		return GetType() == NodeType::Element;
+	}
+	bool HTMLDocumentNode::IsText() const
+	{
+		return GetType() == NodeType::Text;
+	}
+
+	// HTMLDocumentNode: Serialization
+	bool HTMLDocumentNode::SerializeSubtree(IOutputStream& stream) const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			if (HTML::Private::IsFullNode(CastGumboNode(m_Node)))
+			{
+				auto buffer = HTML::Private::gumbo_ex_serialize(const_cast<GumboNode*>(CastGumboNode(m_Node)));
+				return stream.WriteAll(buffer.data(), buffer.size());
+			}
+			else
+			{
+				auto buffer = XDocument_QueryValue().value_or(String());
+
+				IO::OutputStreamWriter writer(stream);
+				return writer.WriteStringUTF8(buffer);
 			}
 		}
 		return {};
 	}
-	HTMLDocumentNode HTMLDocumentNode::GetLastChild() const
+	String HTMLDocumentNode::SerializeSubtree() const
 	{
-		if (auto node = GetNode())
+		if (auto node = CastGumboNode(m_Node))
 		{
-			auto children = HTML::Private::GetChildren(CastGumboNode(node));
-			if (children && children->length != 0)
+			if (HTML::Private::IsFullNode(node))
 			{
-				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, children->length - 1));
+				return String::FromUTF8(HTML::Private::gumbo_ex_serialize(node));
+			}
+			else
+			{
+				return XDocument_QueryValue().value_or(String());
+			}
+		}
+		return {};
+	}
+	String HTMLDocumentNode::SerializeSubtreeText(const String& separator) const
+	{
+		if (auto node = CastGumboNode(m_Node))
+		{
+			if (node->type == GUMBO_NODE_TEXT)
+			{
+				return String::FromUTF8(node->v.text.text);
+			}
+			else
+			{
+				auto sep = separator.utf8_str();
+				return String::FromUTF8(HTML::Private::gumbo_ex_cleantext(node, sep));
 			}
 		}
 		return {};
