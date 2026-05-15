@@ -272,7 +272,6 @@ namespace kxf
 			// XMLDocument
 			void ReplaceDeclaration();
 			
-			void Init();
 			bool DoLoad(const char* xml, size_t length);
 			void DoUnload();
 

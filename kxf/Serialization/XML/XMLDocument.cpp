@@ -71,11 +71,6 @@ namespace kxf
 		m_Impl->InsertFirstChild(m_Impl->NewDeclaration(declaration.utf8_str()));
 	}
 
-	void XMLDocument::Init()
-	{
-		m_Impl = std::make_unique<tinyxml2::XMLDocument>();
-		m_Impl->SetBOM(false);
-	}
 	bool XMLDocument::DoLoad(const char* xml, size_t length)
 	{
 		DoUnload();
@@ -117,9 +112,13 @@ namespace kxf
 	}
 
 	XMLDocument::XMLDocument()
-		:XMLNode(*this, m_Impl.get())
+		:m_Impl(std::make_unique<tinyxml2::XMLDocument>())
 	{
-		Init();
+		m_Impl->SetBOM(false);
+
+		// XMLNode
+		m_Document = this;
+		m_Node = m_Impl.get();
 	}
 	XMLDocument::XMLDocument(XMLDocument&&) noexcept = default;
 	XMLDocument::~XMLDocument() = default;
