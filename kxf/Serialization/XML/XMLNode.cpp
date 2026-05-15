@@ -157,7 +157,7 @@ namespace kxf
 			{
 				if (auto text = element->GetText())
 				{
-					String::FromUTF8(text);
+					return String::FromUTF8(text);
 				}
 			}
 			else if (auto value = m_Node->Value())
