@@ -5,7 +5,7 @@
 namespace kxf
 {
 	// XDocument::RWValue
-	std::optional<String> XMLAttribute::XDocument_QueryValue() const
+	std::optional<String> XMLDocumentAttribute::XDocument_QueryValue() const
 	{
 		if (m_Attribute)
 		{
@@ -13,7 +13,7 @@ namespace kxf
 		}
 		return {};
 	}
-	bool XMLAttribute::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
+	bool XMLDocumentAttribute::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
 	{
 		if (m_Attribute)
 		{
@@ -24,7 +24,7 @@ namespace kxf
 	}
 
 	// IXDocumentNode
-	String XMLAttribute::GetXPath() const
+	String XMLDocumentAttribute::GetXPath() const
 	{
 		if (m_Owner)
 		{
@@ -39,7 +39,7 @@ namespace kxf
 		}
 		return {};
 	}
-	String XMLAttribute::GetName() const
+	String XMLDocumentAttribute::GetName() const
 	{
 		if (m_Attribute)
 		{
@@ -48,7 +48,7 @@ namespace kxf
 		return {};
 	}
 
-	size_t XMLAttribute::GetIndexWithinParent() const
+	size_t XMLDocumentAttribute::GetIndexWithinParent() const
 	{
 		if (m_Attribute && m_Owner && m_Owner->m_Node)
 		{
@@ -67,13 +67,13 @@ namespace kxf
 		}
 		return npos;
 	}
-	size_t XMLAttribute::GetRelativeIndexWithinParent() const
+	size_t XMLDocumentAttribute::GetRelativeIndexWithinParent() const
 	{
 		return GetIndexWithinParent();
 	}
 
-	// XMLAttribute
-	XMLNode XMLAttribute::GetNode() const
+	// XMLDocumentAttribute
+	XMLDocumentNode XMLDocumentAttribute::GetNode() const
 	{
 		if (m_Owner)
 		{
@@ -81,18 +81,18 @@ namespace kxf
 		}
 		return {};
 	}
-	XMLDocument& XMLAttribute::GetDocument() const
+	XMLDocument& XMLDocumentAttribute::GetDocument() const
 	{
 		return m_Owner->GetDocument();
 	}
 
-	XMLAttribute XMLAttribute::Next() const
+	XMLDocumentAttribute XMLDocumentAttribute::Next() const
 	{
 		if (m_Attribute && m_Owner)
 		{
 			if (auto attribute = m_Attribute->Next())
 			{
-				return XMLAttribute(*m_Owner, attribute);
+				return XMLDocumentAttribute(*m_Owner, attribute);
 			}
 		}
 		return {};

@@ -175,7 +175,7 @@ namespace kxf::HTML::Private
 namespace kxf
 {
 	// XDocument::ROValue
-	std::optional<String> HTMLNode::XDocument_QueryValue() const
+	std::optional<String> HTMLDocumentNode::XDocument_QueryValue() const
 	{
 		auto node = GetNode();
 		if (node && HTML::Private::IsFullNode(CastGumboNode(node)))
@@ -183,7 +183,7 @@ namespace kxf
 			auto children = HTML::Private::GetChildren(CastGumboNode(node));
 			if (children && children->length == 1)
 			{
-				return HTMLNode(*m_Document, HTML::Private::GetNodeAt(children, 0)).XDocument_QueryValue();
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, 0)).XDocument_QueryValue();
 			}
 		}
 		else if (node)
@@ -194,7 +194,7 @@ namespace kxf
 	}
 
 	// XDocument::ROAttribute
-	std::optional<String> HTMLNode::XDocument_QueryAttribute(const String& name) const
+	std::optional<String> HTMLDocumentNode::XDocument_QueryAttribute(const String& name) const
 	{
 		if (auto node = GetNode())
 		{
@@ -208,16 +208,16 @@ namespace kxf
 	}
 
 	// IXDocument
-	bool HTMLNode::IsNull() const
+	bool HTMLDocumentNode::IsNull() const
 	{
 		return !m_Node || !m_Document;
 	}
-	String HTMLNode::GetXPath() const
+	String HTMLDocumentNode::GetXPath() const
 	{
 		return IXDocumentNode::BacktrackXPath(*m_Document, *this);
 	}
 
-	String HTMLNode::GetName() const
+	String HTMLDocumentNode::GetName() const
 	{
 		auto node = GetNode();
 		if (node && HTML::Private::IsFullNode(CastGumboNode(node)))
@@ -226,21 +226,21 @@ namespace kxf
 		}
 		return {};
 	}
-	size_t HTMLNode::GetIndexWithinParent() const
+	size_t HTMLDocumentNode::GetIndexWithinParent() const
 	{
 		return CastGumboNode(m_Node)->index_within_parent;
 	}
-	size_t HTMLNode::GetRelativeIndexWithinParent() const
+	size_t HTMLDocumentNode::GetRelativeIndexWithinParent() const
 	{
 		return CastGumboNode(m_Node)->index_within_parent;
 	}
 
-	// HTMLNode
-	bool HTMLNode::IsFullNode() const
+	// HTMLDocumentNode
+	bool HTMLDocumentNode::IsFullNode() const
 	{
 		return HTML::Private::IsFullNode(CastGumboNode(GetNode()));
 	}
-	HTML::NodeType HTMLNode::GetType() const
+	HTML::NodeType HTMLDocumentNode::GetType() const
 	{
 		if (auto node = GetNode())
 		{
@@ -248,7 +248,7 @@ namespace kxf
 		}
 		return NodeType::None;
 	}
-	HTML::TagType HTMLNode::GetTagType() const
+	HTML::TagType HTMLDocumentNode::GetTagType() const
 	{
 		if (auto node = GetNode())
 		{
@@ -266,7 +266,7 @@ namespace kxf
 		}
 		return TagType::UNKNOWN;
 	}
-	String HTMLNode::GetValueText() const
+	String HTMLDocumentNode::GetValueText() const
 	{
 		auto node = GetNode();
 		if (node)
@@ -282,7 +282,7 @@ namespace kxf
 		}
 		return {};
 	}
-	String HTMLNode::GetHTML() const
+	String HTMLDocumentNode::GetHTML() const
 	{
 		if (auto node = GetNode())
 		{
@@ -298,13 +298,13 @@ namespace kxf
 		return {};
 	}
 
-	// HTMLNode: Children
+	// HTMLDocumentNode: Children
 
-	size_t HTMLNode::GetChildrenCount() const
+	size_t HTMLDocumentNode::GetChildrenCount() const
 	{
 		return HTML::Private::GetChildrenCount(CastGumboNode(GetNode()));
 	}
-	CallbackResult<void> HTMLNode::EnumChildren(CallbackFunction<HTMLNode> func) const
+	CallbackResult<void> HTMLDocumentNode::EnumChildren(CallbackFunction<HTMLDocumentNode> func) const
 	{
 		if (auto node = GetNode())
 		{
@@ -312,7 +312,7 @@ namespace kxf
 			{
 				for (size_t i = 0; i < children->length; i++)
 				{
-					if (func.Invoke(HTMLNode(*m_Document, HTML::Private::GetNodeAt(children, i))).ShouldTerminate())
+					if (func.Invoke(HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, i))).ShouldTerminate())
 					{
 						break;
 					}
@@ -323,12 +323,12 @@ namespace kxf
 		return {};
 	}
 
-	// HTMLNode: Attributes
-	size_t HTMLNode::GetAttributeCount() const
+	// HTMLDocumentNode: Attributes
+	size_t HTMLDocumentNode::GetAttributeCount() const
 	{
 		return HTML::Private::GetAttributesCount(CastGumboNode(GetNode()));
 	}
-	bool HTMLNode::HasAttribute(const String& name) const
+	bool HTMLDocumentNode::HasAttribute(const String& name) const
 	{
 		if (auto node = GetNode())
 		{
@@ -336,7 +336,7 @@ namespace kxf
 		}
 		return false;
 	}
-	CallbackResult<void> HTMLNode::EnumAttributeNames(CallbackFunction<String> func) const
+	CallbackResult<void> HTMLDocumentNode::EnumAttributeNames(CallbackFunction<String> func) const
 	{
 		if (auto node = GetNode())
 		{
@@ -356,57 +356,57 @@ namespace kxf
 		return {};
 	}
 
-	// HTMLNode: Navigation
-	HTMLNode HTMLNode::QueryElement(const String& XPath) const
+	// HTMLDocumentNode: Navigation
+	HTMLDocumentNode HTMLDocumentNode::QueryElement(const String& XPath) const
 	{
 		return {};
 	}
-	HTMLNode HTMLNode::QueryElementByAttribute(const String& name, const String& value) const
+	HTMLDocumentNode HTMLDocumentNode::QueryElementByAttribute(const String& name, const String& value) const
 	{
 		if (m_Document)
 		{
-			return HTMLNode(*m_Document, HTML::Private::GetElementByAttribute(CastGumboNode(GetNode()), name, value));
+			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByAttribute(CastGumboNode(GetNode()), name, value));
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::QueryElementByName(TagType tagType) const
+	HTMLDocumentNode HTMLDocumentNode::QueryElementByName(TagType tagType) const
 	{
 		if (m_Document)
 		{
-			return HTMLNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(GetNode()), HTML::Private::GetTagName(static_cast<GumboTag>(tagType))));
+			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(GetNode()), HTML::Private::GetTagName(static_cast<GumboTag>(tagType))));
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::QueryElementByName(const String& tagName) const
+	HTMLDocumentNode HTMLDocumentNode::QueryElementByName(const String& tagName) const
 	{
 		if (m_Document)
 		{
-			return HTMLNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(GetNode()), tagName.ToLower()));
+			return HTMLDocumentNode(*m_Document, HTML::Private::GetElementByTag(CastGumboNode(GetNode()), tagName.ToLower()));
 		}
 		return {};
 	}
 
-	HTMLNode HTMLNode::GetParent() const
+	HTMLDocumentNode HTMLDocumentNode::GetParent() const
 	{
 		if (auto node = GetNode())
 		{
-			return HTMLNode(*m_Document, HTML::Private::GetParent(CastGumboNode(node)));
+			return HTMLDocumentNode(*m_Document, HTML::Private::GetParent(CastGumboNode(node)));
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::GetPreviousSibling() const
+	HTMLDocumentNode HTMLDocumentNode::GetPreviousSibling() const
 	{
 		auto node = GetNode();
 		if (node && CastGumboNode(node)->parent && CastGumboNode(node)->index_within_parent != -1 && CastGumboNode(node)->index_within_parent > 0)
 		{
 			if (const GumboVector* children = HTML::Private::GetChildren(CastGumboNode(node)->parent))
 			{
-				return HTMLNode(*m_Document, HTML::Private::GetNodeAt(children, CastGumboNode(node)->index_within_parent - 1));
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, CastGumboNode(node)->index_within_parent - 1));
 			}
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::GetNextSibling() const
+	HTMLDocumentNode HTMLDocumentNode::GetNextSibling() const
 	{
 		auto node = GetNode();
 		if (node && CastGumboNode(node)->parent)
@@ -417,32 +417,32 @@ namespace kxf
 				if (const GumboVector* children = HTML::Private::GetChildren(CastGumboNode(node)->parent))
 				{
 					const GumboNode* sibling = HTML::Private::GetNodeAt(children, CastGumboNode(node)->index_within_parent + 1);
-					return HTMLNode(*m_Document, sibling);
+					return HTMLDocumentNode(*m_Document, sibling);
 				}
 			}
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::GetFirstChild() const
+	HTMLDocumentNode HTMLDocumentNode::GetFirstChild() const
 	{
 		if (auto node = GetNode())
 		{
 			auto children = HTML::Private::GetChildren(CastGumboNode(node));
 			if (children && children->length != 0)
 			{
-				return HTMLNode(*m_Document, HTML::Private::GetNodeAt(children, 0));
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, 0));
 			}
 		}
 		return {};
 	}
-	HTMLNode HTMLNode::GetLastChild() const
+	HTMLDocumentNode HTMLDocumentNode::GetLastChild() const
 	{
 		if (auto node = GetNode())
 		{
 			auto children = HTML::Private::GetChildren(CastGumboNode(node));
 			if (children && children->length != 0)
 			{
-				return HTMLNode(*m_Document, HTML::Private::GetNodeAt(children, children->length - 1));
+				return HTMLDocumentNode(*m_Document, HTML::Private::GetNodeAt(children, children->length - 1));
 			}
 		}
 		return {};

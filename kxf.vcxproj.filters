@@ -1415,16 +1415,16 @@
     <ClCompile Include="kxf\Serialization\TextDocument.cpp">
       <Filter>kxf\Serialization</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Serialization\HTML\HTMLNode.cpp">
+    <ClCompile Include="kxf\Serialization\HTML\HTMLDocumentNode.cpp">
       <Filter>kxf\Serialization\HTML</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Serialization\HTML\HTMLDocument.cpp">
       <Filter>kxf\Serialization\HTML</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Serialization\XML\XMLNode.cpp">
+    <ClCompile Include="kxf\Serialization\XML\XMLDocumentNode.cpp">
       <Filter>kxf\Serialization\XML</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Serialization\XML\XMLAttribute.cpp">
+    <ClCompile Include="kxf\Serialization\XML\XMLDocumentAttribute.cpp">
       <Filter>kxf\Serialization\XML</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Serialization\XML\XMLDocument.cpp">

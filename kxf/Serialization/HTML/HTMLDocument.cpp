@@ -53,7 +53,7 @@ namespace kxf
 		DoUnload();
 	}
 
-	// HTMLNode
+	// HTMLDocumentNode
 	const void* HTMLDocument::GetNode() const
 	{
 		return CastOutput(m_ParserOutput)->document;
@@ -61,7 +61,7 @@ namespace kxf
 
 	// HTMLDocument
 	HTMLDocument::HTMLDocument()
-		:HTMLNode(*this, nullptr)
+		:HTMLDocumentNode(*this, nullptr)
 	{
 		Init();
 	}
@@ -136,7 +136,7 @@ namespace kxf
 
 	HTMLDocument& HTMLDocument::operator=(HTMLDocument&& other) noexcept
 	{
-		static_cast<HTMLNode&>(*this) = std::move(static_cast<HTMLNode&>(other));
+		static_cast<HTMLDocumentNode&>(*this) = std::move(static_cast<HTMLDocumentNode&>(other));
 		m_Buffer = std::move(other.m_Buffer);
 		m_ParserOptions = std::move(other.m_ParserOptions);
 		m_ParserOutput = std::exchange(other.m_ParserOutput, nullptr);

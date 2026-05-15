@@ -83,32 +83,32 @@ namespace kxf
 		m_Impl->Clear();
 	}
 
-	XMLNode XMLDocument::CreateElement(const String& name)
+	XMLDocumentNode XMLDocument::CreateNewElement(const String& name)
 	{
-		return XMLNode(*this, m_Impl->NewElement(name.utf8_str()));
+		return XMLDocumentNode(*this, m_Impl->NewElement(name.utf8_str()));
 	}
-	XMLNode XMLDocument::CreateComment(const String& value)
+	XMLDocumentNode XMLDocument::CreateNewComment(const String& value)
 	{
-		return XMLNode(*this, m_Impl->NewComment(value.utf8_str()));
+		return XMLDocumentNode(*this, m_Impl->NewComment(value.utf8_str()));
 	}
-	XMLNode XMLDocument::CreateText(const String& value)
+	XMLDocumentNode XMLDocument::CreateNewText(const String& value)
 	{
-		return XMLNode(*this, m_Impl->NewText(value.utf8_str()));
+		return XMLDocumentNode(*this, m_Impl->NewText(value.utf8_str()));
 	}
-	XMLNode XMLDocument::CreateDeclaration(const String& value)
+	XMLDocumentNode XMLDocument::CreateNewDeclaration(const String& value)
 	{
 		if (!value.IsEmpty())
 		{
-			return XMLNode(*this, m_Impl->NewDeclaration(value.utf8_str()));
+			return XMLDocumentNode(*this, m_Impl->NewDeclaration(value.utf8_str()));
 		}
 		else
 		{
-			return XMLNode(*this, m_Impl->NewDeclaration());
+			return XMLDocumentNode(*this, m_Impl->NewDeclaration());
 		}
 	}
-	XMLNode XMLDocument::CreateUnknown(const String& value)
+	XMLDocumentNode XMLDocument::CreateNewUnknown(const String& value)
 	{
-		return XMLNode(*this, m_Impl->NewUnknown(value.utf8_str()));
+		return XMLDocumentNode(*this, m_Impl->NewUnknown(value.utf8_str()));
 	}
 
 	XMLDocument::XMLDocument()
@@ -116,7 +116,7 @@ namespace kxf
 	{
 		m_Impl->SetBOM(false);
 
-		// XMLNode
+		// XMLDocumentNode
 		m_Document = this;
 		m_Node = m_Impl.get();
 	}
@@ -169,7 +169,7 @@ namespace kxf
 	{
 		DoUnload();
 	}
-	void XMLDocument::RemoveNode(XMLNode& node)
+	void XMLDocument::RemoveNode(XMLDocumentNode& node)
 	{
 		if (node)
 		{

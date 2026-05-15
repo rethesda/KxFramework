@@ -145,7 +145,7 @@ namespace
 namespace kxf
 {
 	// XDocument::RWValue
-	std::optional<String> XMLNode::XDocument_QueryValue() const
+	std::optional<String> XMLDocumentNode::XDocument_QueryValue() const
 	{
 		if (m_Node)
 		{
@@ -167,7 +167,7 @@ namespace kxf
 		}
 		return {};
 	}
-	bool XMLNode::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
+	bool XMLDocumentNode::XDocument_WriteValue(const String& value, AsCDATA asCDATA)
 	{
 		if (m_Node)
 		{
@@ -219,7 +219,7 @@ namespace kxf
 	}
 
 	// XDocument::RWAttribute
-	std::optional<String> XMLNode::XDocument_QueryAttribute(const String& name) const
+	std::optional<String> XMLDocumentNode::XDocument_QueryAttribute(const String& name) const
 	{
 		if (m_Node)
 		{
@@ -233,7 +233,7 @@ namespace kxf
 		}
 		return {};
 	}
-	bool XMLNode::XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA)
+	bool XMLDocumentNode::XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA)
 	{
 		if (m_Node)
 		{
@@ -246,7 +246,7 @@ namespace kxf
 		return false;
 	}
 
-	XMLNode XMLNode::ConstructOrQueryElement(const String& xPath, bool allowCreate)
+	XMLDocumentNode XMLDocumentNode::QueryOrCreateElement(const String& xPath, bool allowCreate)
 	{
 		if (m_Document && m_Node)
 		{
@@ -308,19 +308,19 @@ namespace kxf
 
 			if (currentNode && itemCount != 0)
 			{
-				return XMLNode(*m_Document, currentNode);
+				return XMLDocumentNode(*m_Document, currentNode);
 			}
 		}
 		return {};
 	}
 
 	// IXDocumentNode
-	String XMLNode::GetXPath() const
+	String XMLDocumentNode::GetXPath() const
 	{
 		return IXDocumentNode::BacktrackXPath(*m_Document, *this);
 	}
 
-	String XMLNode::GetName() const
+	String XMLDocumentNode::GetName() const
 	{
 		if (m_Node)
 		{
@@ -331,7 +331,7 @@ namespace kxf
 		}
 		return {};
 	}
-	size_t XMLNode::GetIndexWithinParent() const
+	size_t XMLDocumentNode::GetIndexWithinParent() const
 	{
 		if (m_Node)
 		{
@@ -355,7 +355,7 @@ namespace kxf
 		}
 		return npos;
 	}
-	size_t XMLNode::GetRelativeIndexWithinParent() const
+	size_t XMLDocumentNode::GetRelativeIndexWithinParent() const
 	{
 		if (m_Node)
 		{
@@ -389,8 +389,8 @@ namespace kxf
 		return npos;
 	}
 
-	// XMLNode: Common
-	bool XMLNode::SetName(const String& name)
+	// XMLDocumentNode: Common
+	bool XMLDocumentNode::SetName(const String& name)
 	{
 		if (m_Node)
 		{
@@ -403,22 +403,22 @@ namespace kxf
 		return false;
 	}
 
-	// XMLNode: Navigation
-	XMLNode XMLNode::QueryElement(const String& xPath) const
+	// XMLDocumentNode: Navigation
+	XMLDocumentNode XMLDocumentNode::QueryElement(const String& xPath) const
 	{
-		return const_cast<XMLNode&>(*this).ConstructOrQueryElement(xPath, false);
+		return const_cast<XMLDocumentNode&>(*this).QueryOrCreateElement(xPath, false);
 	}
-	XMLNode XMLNode::ConstructElement(const String& xPath)
+	XMLDocumentNode XMLDocumentNode::CreateElement(const String& xPath)
 	{
-		return const_cast<XMLNode&>(*this).ConstructOrQueryElement(xPath, true);
+		return const_cast<XMLDocumentNode&>(*this).QueryOrCreateElement(xPath, true);
 	}
-	XMLNode XMLNode::QueryElementByAttribute(const String& name, const String& value) const
+	XMLDocumentNode XMLDocumentNode::QueryElementByAttribute(const String& name, const String& value) const
 	{
 		if (m_Node)
 		{
 			if (GetAttribute(name) == value)
 			{
-				return XMLNode(*m_Document, m_Node);
+				return XMLDocumentNode(*m_Document, m_Node);
 			}
 			else
 			{
@@ -433,13 +433,13 @@ namespace kxf
 		}
 		return {};
 	}
-	XMLNode XMLNode::QueryElementByName(const String& name) const
+	XMLDocumentNode XMLDocumentNode::QueryElementByName(const String& name) const
 	{
 		if (m_Node)
 		{
 			if (GetName() == name)
 			{
-				return XMLNode(*m_Document, m_Node);
+				return XMLDocumentNode(*m_Document, m_Node);
 			}
 			else
 			{
@@ -455,109 +455,109 @@ namespace kxf
 		return {};
 	}
 
-	XMLNode XMLNode::GetParent() const
+	XMLDocumentNode XMLDocumentNode::GetParent() const
 	{
 		if (m_Node)
 		{
-			return XMLNode(*m_Document, m_Node->Parent());
+			return XMLDocumentNode(*m_Document, m_Node->Parent());
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetPreviousSibling() const
+	XMLDocumentNode XMLDocumentNode::GetPreviousSibling() const
 	{
 		if (m_Node)
 		{
-			return XMLNode(*m_Document, m_Node->PreviousSibling());
+			return XMLDocumentNode(*m_Document, m_Node->PreviousSibling());
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetPreviousSiblingElement(const String& name) const
+	XMLDocumentNode XMLDocumentNode::GetPreviousSiblingElement(const String& name) const
 	{
 		if (m_Node)
 		{
 			if (name.IsEmpty())
 			{
-				return XMLNode(*m_Document, m_Node->PreviousSiblingElement());
+				return XMLDocumentNode(*m_Document, m_Node->PreviousSiblingElement());
 			}
 			else
 			{
-				return XMLNode(*m_Document, m_Node->PreviousSiblingElement(name.utf8_str()));
+				return XMLDocumentNode(*m_Document, m_Node->PreviousSiblingElement(name.utf8_str()));
 			}
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetNextSibling() const
+	XMLDocumentNode XMLDocumentNode::GetNextSibling() const
 	{
 		if (m_Node)
 		{
-			return XMLNode(*m_Document, m_Node->NextSibling());
+			return XMLDocumentNode(*m_Document, m_Node->NextSibling());
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetNextSiblingElement(const String& name) const
+	XMLDocumentNode XMLDocumentNode::GetNextSiblingElement(const String& name) const
 	{
 		if (m_Node)
 		{
 			if (name.IsEmpty())
 			{
-				return XMLNode(*m_Document, m_Node->NextSiblingElement());
+				return XMLDocumentNode(*m_Document, m_Node->NextSiblingElement());
 			}
 			else
 			{
-				return XMLNode(*m_Document, m_Node->NextSiblingElement(name.utf8_str()));
+				return XMLDocumentNode(*m_Document, m_Node->NextSiblingElement(name.utf8_str()));
 			}
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetFirstChild() const
+	XMLDocumentNode XMLDocumentNode::GetFirstChild() const
 	{
 		if (m_Node)
 		{
-			return XMLNode(*m_Document, m_Node->FirstChild());
+			return XMLDocumentNode(*m_Document, m_Node->FirstChild());
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetFirstChildElement(const String& name) const
+	XMLDocumentNode XMLDocumentNode::GetFirstChildElement(const String& name) const
 	{
 		if (m_Node)
 		{
 			if (name.IsEmpty())
 			{
-				return XMLNode(*m_Document, m_Node->FirstChildElement());
+				return XMLDocumentNode(*m_Document, m_Node->FirstChildElement());
 			}
 			else
 			{
-				return XMLNode(*m_Document, m_Node->FirstChildElement(name.utf8_str()));
+				return XMLDocumentNode(*m_Document, m_Node->FirstChildElement(name.utf8_str()));
 			}
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetLastChild() const
+	XMLDocumentNode XMLDocumentNode::GetLastChild() const
 	{
 		if (m_Node)
 		{
-			return XMLNode(*m_Document, m_Node->LastChild());
+			return XMLDocumentNode(*m_Document, m_Node->LastChild());
 		}
 		return {};
 	}
-	XMLNode XMLNode::GetLastChildElement(const String& name) const
+	XMLDocumentNode XMLDocumentNode::GetLastChildElement(const String& name) const
 	{
 		if (m_Node)
 		{
 			if (name.IsEmpty())
 			{
-				return XMLNode(*m_Document, m_Node->LastChildElement());
+				return XMLDocumentNode(*m_Document, m_Node->LastChildElement());
 			}
 			else
 			{
-				return XMLNode(*m_Document, m_Node->LastChildElement(name.utf8_str()));
+				return XMLDocumentNode(*m_Document, m_Node->LastChildElement(name.utf8_str()));
 			}
 		}
 		return {};
 	}
 
-	// XMLNode: Children
-	size_t XMLNode::GetChildrenCount() const
+	// XMLDocumentNode: Children
+	size_t XMLDocumentNode::GetChildrenCount() const
 	{
 		if (m_Node)
 		{
@@ -570,7 +570,7 @@ namespace kxf
 		}
 		return 0;
 	}
-	bool XMLNode::HasChildren() const
+	bool XMLDocumentNode::HasChildren() const
 	{
 		if (m_Node)
 		{
@@ -578,26 +578,26 @@ namespace kxf
 		}
 		return false;
 	}
-	void XMLNode::ClearChildren()
+	void XMLDocumentNode::ClearChildren()
 	{
 		if (m_Node)
 		{
 			m_Node->DeleteChildren();
 		}
 	}
-	void XMLNode::ResetNode()
+	void XMLDocumentNode::ResetNode()
 	{
 		ClearChildren();
 		ClearAttributes();
 	}
 
-	CallbackResult<void> XMLNode::EnumChildren(CallbackFunction<XMLNode> func) const
+	CallbackResult<void> XMLDocumentNode::EnumChildren(CallbackFunction<XMLDocumentNode> func) const
 	{
 		if (m_Node)
 		{
 			for (auto child = m_Node->FirstChild(); child; child = child->NextSibling())
 			{
-				if (func.Invoke(XMLNode(*m_Document, child)).ShouldTerminate())
+				if (func.Invoke(XMLDocumentNode(*m_Document, child)).ShouldTerminate())
 				{
 					break;
 				}
@@ -607,14 +607,14 @@ namespace kxf
 		}
 		return {};
 	}
-	CallbackResult<void> XMLNode::EnumChildElements(CallbackFunction<XMLNode> func, const String& name) const
+	CallbackResult<void> XMLDocumentNode::EnumChildElements(CallbackFunction<XMLDocumentNode> func, const String& name) const
 	{
 		if (m_Node)
 		{
 			auto nameUTF8 = name.utf8_str();
 			for (auto child = m_Node->FirstChildElement(nameUTF8.data_if_not_empty()); child; child = child->NextSiblingElement(nameUTF8.data_if_not_empty()))
 			{
-				if (func.Invoke(XMLNode(*m_Document, child)).ShouldTerminate())
+				if (func.Invoke(XMLDocumentNode(*m_Document, child)).ShouldTerminate())
 				{
 					break;
 				}
@@ -625,8 +625,8 @@ namespace kxf
 		return {};
 	}
 
-	// XMLNode: Attributes
-	size_t XMLNode::GetAttributeCount() const
+	// XMLDocumentNode: Attributes
+	size_t XMLDocumentNode::GetAttributeCount() const
 	{
 		if (m_Node)
 		{
@@ -642,7 +642,7 @@ namespace kxf
 		}
 		return 0;
 	}
-	bool XMLNode::HasAttributes() const
+	bool XMLDocumentNode::HasAttributes() const
 	{
 		if (m_Node)
 		{
@@ -654,25 +654,25 @@ namespace kxf
 		return false;
 	}
 
-	XMLAttribute XMLNode::GetAttributeObject(const String& name) const
+	XMLDocumentAttribute XMLDocumentNode::GetAttributeObject(const String& name) const
 	{
 		if (m_Node)
 		{
 			if (auto element = m_Node->ToElement())
 			{
-				return XMLAttribute(*m_Document, element->FindAttribute(name.utf8_str()));
+				return XMLDocumentAttribute(*m_Document, element->FindAttribute(name.utf8_str()));
 			}
 		}
 		return {};
 	}
-	CallbackResult<void> XMLNode::EnumAttributeNames(CallbackFunction<String> func) const
+	CallbackResult<void> XMLDocumentNode::EnumAttributeNames(CallbackFunction<String> func) const
 	{
-		return EnumAttributes([&](XMLAttribute attribute)
+		return EnumAttributes([&](XMLDocumentAttribute attribute)
 		{
 			return func.Invoke(attribute.GetName()).GetLastCommand();
 		});
 	}
-	CallbackResult<void> XMLNode::EnumAttributes(CallbackFunction<XMLAttribute> func) const
+	CallbackResult<void> XMLDocumentNode::EnumAttributes(CallbackFunction<XMLDocumentAttribute> func) const
 	{
 		if (m_Node)
 		{
@@ -680,7 +680,7 @@ namespace kxf
 			{
 				for (auto attribute = element->FirstAttribute(); attribute; attribute = attribute->Next())
 				{
-					if (func.Invoke(XMLAttribute(*this, attribute)).ShouldTerminate())
+					if (func.Invoke(XMLDocumentAttribute(*this, attribute)).ShouldTerminate())
 					{
 						break;
 					}
@@ -691,7 +691,7 @@ namespace kxf
 		return {};
 	}
 
-	bool XMLNode::HasAttribute(const String& name) const
+	bool XMLDocumentNode::HasAttribute(const String& name) const
 	{
 		if (m_Node)
 		{
@@ -702,7 +702,7 @@ namespace kxf
 		}
 		return false;
 	}
-	bool XMLNode::RemoveAttribute(const String& name)
+	bool XMLDocumentNode::RemoveAttribute(const String& name)
 	{
 		if (m_Node)
 		{
@@ -714,7 +714,7 @@ namespace kxf
 		}
 		return false;
 	}
-	bool XMLNode::RemoveAttribute(XMLAttribute& attribute)
+	bool XMLDocumentNode::RemoveAttribute(XMLDocumentAttribute& attribute)
 	{
 		if (m_Node)
 		{
@@ -726,7 +726,7 @@ namespace kxf
 		}
 		return false;
 	}
-	bool XMLNode::ClearAttributes()
+	bool XMLDocumentNode::ClearAttributes()
 	{
 		if (m_Node)
 		{
@@ -743,7 +743,7 @@ namespace kxf
 	}
 
 	// Insertion
-	bool XMLNode::Insert(XMLNode& node, InsertMode insertMode)
+	bool XMLDocumentNode::Insert(XMLDocumentNode& node, InsertMode insertMode)
 	{
 		switch (insertMode)
 		{
@@ -762,7 +762,7 @@ namespace kxf
 		};
 		return false;
 	}
-	bool XMLNode::InsertAfterChild(XMLNode& newNode, const XMLNode& afterThis)
+	bool XMLDocumentNode::InsertAfterChild(XMLDocumentNode& newNode, const XMLDocumentNode& afterThis)
 	{
 		if (m_Node && newNode)
 		{
@@ -777,7 +777,7 @@ namespace kxf
 		}
 		return false;
 	}
-	bool XMLNode::InsertFirstChild(XMLNode& newNode)
+	bool XMLDocumentNode::InsertFirstChild(XMLDocumentNode& newNode)
 	{
 		if (m_Node && newNode)
 		{
@@ -785,7 +785,7 @@ namespace kxf
 		}
 		return false;
 	}
-	bool XMLNode::InsertLastChild(XMLNode& newNode)
+	bool XMLDocumentNode::InsertLastChild(XMLDocumentNode& newNode)
 	{
 		if (m_Node && newNode)
 		{
@@ -794,11 +794,11 @@ namespace kxf
 		return false;
 	}
 
-	XMLNode XMLNode::NewElement(const String& name, InsertMode insertMode)
+	XMLDocumentNode XMLDocumentNode::NewElement(const String& name, InsertMode insertMode)
 	{
 		if (m_Document)
 		{
-			XMLNode node = m_Document->CreateElement(name);
+			XMLDocumentNode node = m_Document->CreateNewElement(name);
 			if (node && Insert(node, insertMode))
 			{
 				return node;
@@ -806,11 +806,11 @@ namespace kxf
 		}
 		return {};
 	}
-	XMLNode XMLNode::NewComment(const String& value, InsertMode insertMode)
+	XMLDocumentNode XMLDocumentNode::NewComment(const String& value, InsertMode insertMode)
 	{
 		if (m_Document)
 		{
-			XMLNode node = m_Document->CreateComment(value);
+			XMLDocumentNode node = m_Document->CreateNewComment(value);
 			if (node && Insert(node, insertMode))
 			{
 				return node;
@@ -818,11 +818,11 @@ namespace kxf
 		}
 		return {};
 	}
-	XMLNode XMLNode::NewText(const String& value, InsertMode insertMode)
+	XMLDocumentNode XMLDocumentNode::NewText(const String& value, InsertMode insertMode)
 	{
 		if (m_Document)
 		{
-			XMLNode node = m_Document->CreateText(value);
+			XMLDocumentNode node = m_Document->CreateNewText(value);
 			if (node && Insert(node, insertMode))
 			{
 				return node;
@@ -830,11 +830,11 @@ namespace kxf
 		}
 		return {};
 	}
-	XMLNode XMLNode::NewDeclaration(const String& value, InsertMode insertMode)
+	XMLDocumentNode XMLDocumentNode::NewDeclaration(const String& value, InsertMode insertMode)
 	{
 		if (m_Document)
 		{
-			XMLNode node = m_Document->CreateDeclaration(value);
+			XMLDocumentNode node = m_Document->CreateNewDeclaration(value);
 			if (node && Insert(node, insertMode))
 			{
 				return node;
@@ -842,11 +842,11 @@ namespace kxf
 		}
 		return {};
 	}
-	XMLNode XMLNode::NewUnknown(const String& value, InsertMode insertMode)
+	XMLDocumentNode XMLDocumentNode::NewUnknown(const String& value, InsertMode insertMode)
 	{
 		if (m_Document)
 		{
-			XMLNode node = m_Document->CreateUnknown(value);
+			XMLDocumentNode node = m_Document->CreateNewUnknown(value);
 			if (node && Insert(node, insertMode))
 			{
 				return node;
@@ -855,8 +855,8 @@ namespace kxf
 		return {};
 	}
 
-	// XMLNode: Properties
-	bool XMLNode::IsCDATA() const
+	// XMLDocumentNode: Properties
+	bool XMLDocumentNode::IsCDATA() const
 	{
 		if (m_Node)
 		{
@@ -867,7 +867,7 @@ namespace kxf
 		}
 		return false;
 	}
-	bool XMLNode::SetCDATA(bool value)
+	bool XMLDocumentNode::SetCDATA(bool value)
 	{
 		if (m_Node)
 		{
@@ -880,7 +880,7 @@ namespace kxf
 		return false;
 	}
 
-	XML::NodeType XMLNode::GetType() const
+	XML::NodeType XMLDocumentNode::GetType() const
 	{
 		if (m_Node)
 		{
@@ -911,7 +911,7 @@ namespace kxf
 		}
 		return NodeType::None;
 	}
-	bool XMLNode::IsElement() const
+	bool XMLDocumentNode::IsElement() const
 	{
 		if (m_Node)
 		{
@@ -919,7 +919,7 @@ namespace kxf
 		}
 		return false;
 	}
-	bool XMLNode::IsText() const
+	bool XMLDocumentNode::IsText() const
 	{
 		if (m_Node)
 		{
@@ -928,8 +928,8 @@ namespace kxf
 		return false;
 	}
 
-	// XMLNode: Serialization
-	bool XMLNode::SerializeSubtree(IOutputStream& stream, SerializationFormat format) const
+	// XMLDocumentNode: Serialization
+	bool XMLDocumentNode::SerializeSubtree(IOutputStream& stream, SerializationFormat format) const
 	{
 		if (m_Node)
 		{
@@ -965,7 +965,7 @@ namespace kxf
 		}
 		return false;
 	}
-	String XMLNode::SerializeSubtree(SerializationFormat format) const
+	String XMLDocumentNode::SerializeSubtree(SerializationFormat format) const
 	{
 		if (m_Node)
 		{
@@ -995,7 +995,7 @@ namespace kxf
 		}
 		return {};
 	}
-	String XMLNode::SerializeSubtreeText(const String& separator) const
+	String XMLDocumentNode::SerializeSubtreeText(const String& separator) const
 	{
 		if (m_Node)
 		{

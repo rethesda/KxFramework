@@ -17,10 +17,10 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API HTMLNode: public IXDocumentNode,
-		public XDocument::ROValue<HTMLNode>,
-		public XDocument::ROAttribute<HTMLNode>,
-		private XDocument::DefaultConverter<HTMLNode>
+	class KXF_API HTMLDocumentNode: public IXDocumentNode,
+									public XDocument::ROValue<HTMLDocumentNode>,
+									public XDocument::ROAttribute<HTMLDocumentNode>,
+									private XDocument::DefaultConverter<HTMLDocumentNode>
 	{
 		friend class ROValue;
 		friend class ROAttribute;
@@ -41,21 +41,21 @@ namespace kxf
 			// XDocument::ROAttribute
 			std::optional<String> XDocument_QueryAttribute(const String& name) const;
 
-			// HTMLNode
+			// HTMLDocumentNode
 			virtual const void* GetNode() const
 			{
 				return m_Node;
 			}
 
 		public:
-			HTMLNode() = default;
-			HTMLNode(const HTMLNode&) = default;
-			HTMLNode(HTMLNode&& other) noexcept
+			HTMLDocumentNode() = default;
+			HTMLDocumentNode(const HTMLDocumentNode&) = default;
+			HTMLDocumentNode(HTMLDocumentNode&& other) noexcept
 			{
 				*this = std::move(other);
 			}
 		protected:
-			HTMLNode(const HTMLDocument& document, const void* node)
+			HTMLDocumentNode(const HTMLDocument& document, const void* node)
 				:m_Document(&document), m_Node(node)
 			{
 			}
@@ -69,7 +69,7 @@ namespace kxf
 			size_t GetIndexWithinParent() const override;
 			size_t GetRelativeIndexWithinParent() const override;
 
-			// HTMLNode
+			// HTMLDocumentNode
 			const HTMLDocument& GetDocument() const
 			{
 				return *m_Document;
@@ -81,38 +81,38 @@ namespace kxf
 			String GetValueText() const;
 			virtual String GetHTML() const;
 
-			// HTMLNode: Children
+			// HTMLDocumentNode: Children
 			size_t GetChildrenCount() const;
-			CallbackResult<void> EnumChildren(CallbackFunction<HTMLNode> func) const;
+			CallbackResult<void> EnumChildren(CallbackFunction<HTMLDocumentNode> func) const;
 
-			// HTMLNode: Attributes
+			// HTMLDocumentNode: Attributes
 			size_t GetAttributeCount() const;
 			bool HasAttribute(const String& name) const;
 			CallbackResult<void> EnumAttributeNames(CallbackFunction<String> func) const;
 			
-			// HTMLNode: Navigation
-			HTMLNode QueryElement(const String& XPath) const;
-			HTMLNode QueryElementByAttribute(const String& name, const String& value) const;
-			HTMLNode QueryElementByID(const String& id) const
+			// HTMLDocumentNode: Navigation
+			HTMLDocumentNode QueryElement(const String& XPath) const;
+			HTMLDocumentNode QueryElementByAttribute(const String& name, const String& value) const;
+			HTMLDocumentNode QueryElementByID(const String& id) const
 			{
 				return QueryElementByAttribute("id", id);
 			}
-			HTMLNode QueryElementByClass(const String & className) const
+			HTMLDocumentNode QueryElementByClass(const String & className) const
 			{
 				return QueryElementByAttribute("class", className);
 			}
-			HTMLNode QueryElementByName(TagType tagType) const;
-			HTMLNode QueryElementByName(const String& tagName) const;
+			HTMLDocumentNode QueryElementByName(TagType tagType) const;
+			HTMLDocumentNode QueryElementByName(const String& tagName) const;
 		
-			HTMLNode GetParent() const;
-			HTMLNode GetPreviousSibling() const;
-			HTMLNode GetNextSibling() const;
-			HTMLNode GetFirstChild() const;
-			HTMLNode GetLastChild() const;
+			HTMLDocumentNode GetParent() const;
+			HTMLDocumentNode GetPreviousSibling() const;
+			HTMLDocumentNode GetNextSibling() const;
+			HTMLDocumentNode GetFirstChild() const;
+			HTMLDocumentNode GetLastChild() const;
 
 		public:
-			HTMLNode& operator=(const HTMLNode&) = delete;
-			HTMLNode& operator=(HTMLNode&& other) noexcept
+			HTMLDocumentNode& operator=(const HTMLDocumentNode&) = delete;
+			HTMLDocumentNode& operator=(HTMLDocumentNode&& other) noexcept
 			{
 				m_Document = std::exchange(other.m_Document, nullptr);
 				m_Node = std::exchange(other.m_Node, nullptr);
@@ -124,8 +124,10 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API HTMLDocument final: public IXDocument, public HTMLNode
+	class KXF_API HTMLDocument final: public RTTI::DynamicImplementation<HTMLDocument, IXDocument>, public HTMLDocumentNode
 	{
+		kxf_RTTI_DeclareIID(HTMLDocument, {0xda03b100, 0x8c33, 0x4dc2, {0x83, 0xfd, 0xea, 0xc2, 0xe5, 0x9a, 0x94, 0x57}});
+
 		class ImplOptions;
 
 		private:
@@ -139,7 +141,7 @@ namespace kxf
 			void DoUnload();
 			void Destroy();
 
-			// HTMLNode
+			// HTMLDocumentNode
 			const void* GetNode() const override;
 
 		public:

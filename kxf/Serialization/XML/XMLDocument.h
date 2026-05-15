@@ -13,9 +13,9 @@ namespace tinyxml2
 
 namespace kxf
 {
-	class XMLNode;
+	class XMLDocumentNode;
 	class XMLDocument;
-	class XMLAttribute;
+	class XMLDocumentAttribute;
 
 	class IInputStream;
 	class IOutputStream;
@@ -49,18 +49,18 @@ namespace kxf::XML
 
 namespace kxf
 {
-	class KXF_API XMLAttribute final: public IXDocumentNode,
-		public XDocument::RWValue<XMLAttribute>,
-		private XDocument::DefaultConverter<XMLAttribute>
+	class KXF_API XMLDocumentAttribute final: public IXDocumentNode,
+											  public XDocument::RWValue<XMLDocumentAttribute>,
+											  private XDocument::DefaultConverter<XMLDocumentAttribute>
 	{
-		friend class XMLNode;
+		friend class XMLDocumentNode;
 
 		friend class ROValue;
 		friend class RWValue;
 		friend class DefaultConverter;
 
 		private:
-			XMLNode* m_Owner = nullptr;
+			XMLDocumentNode* m_Owner = nullptr;
 			tinyxml2::XMLAttribute* m_Attribute = nullptr;
 
 		private:
@@ -69,9 +69,9 @@ namespace kxf
 			bool XDocument_WriteValue(const String& value, AsCDATA asCDATA);
 
 		public:
-			XMLAttribute() = default;
+			XMLDocumentAttribute() = default;
 		private:
-			XMLAttribute(XMLNode& owner, tinyxml2::XMLAttribute* attribute)
+			XMLDocumentAttribute(XMLDocumentNode& owner, tinyxml2::XMLAttribute* attribute)
 				:m_Owner(&owner), m_Attribute(attribute)
 			{
 				if (!attribute)
@@ -79,8 +79,8 @@ namespace kxf
 					m_Owner = nullptr;
 				}
 			}
-			XMLAttribute(const XMLNode& owner, const tinyxml2::XMLAttribute* attribute)
-				:m_Owner(const_cast<XMLNode*>(&owner)), m_Attribute(const_cast<tinyxml2::XMLAttribute*>(attribute))
+			XMLDocumentAttribute(const XMLDocumentNode& owner, const tinyxml2::XMLAttribute* attribute)
+				:m_Owner(const_cast<XMLDocumentNode*>(&owner)), m_Attribute(const_cast<tinyxml2::XMLAttribute*>(attribute))
 			{
 				if (!attribute)
 				{
@@ -100,23 +100,23 @@ namespace kxf
 			size_t GetIndexWithinParent() const override;
 			size_t GetRelativeIndexWithinParent() const override;
 
-			// XMLAttribute
-			XMLNode GetNode() const;
+			// XMLDocumentAttribute
+			XMLDocumentNode GetNode() const;
 			XMLDocument& GetDocument() const;
 
-			XMLAttribute Next() const;
+			XMLDocumentAttribute Next() const;
 	};
 }
 
 namespace kxf
 {
-	class KXF_API XMLNode: public IXDocumentNode,
-		public XDocument::RWValue<XMLNode>,
-		public XDocument::RWAttribute<XMLNode>,
-		private XDocument::DefaultConverter<XMLNode>
+	class KXF_API XMLDocumentNode: public IXDocumentNode,
+								   public XDocument::RWValue<XMLDocumentNode>,
+								   public XDocument::RWAttribute<XMLDocumentNode>,
+								   private XDocument::DefaultConverter<XMLDocumentNode>
 	{
 		friend class XMLDocument;
-		friend class XMLAttribute;
+		friend class XMLDocumentAttribute;
 
 		friend class ROValue;
 		friend class RWValue;
@@ -142,13 +142,13 @@ namespace kxf
 			std::optional<String> XDocument_QueryAttribute(const String& name) const;
 			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
 
-			// XMLNode
-			XMLNode ConstructOrQueryElement(const String& xPath, bool allowCreate);
+			// XMLDocumentNode
+			XMLDocumentNode QueryOrCreateElement(const String& xPath, bool allowCreate);
 
 		public:
-			XMLNode() = default;
+			XMLDocumentNode() = default;
 		private:
-			XMLNode(XMLDocument& document, tinyxml2::XMLNode* node)
+			XMLDocumentNode(XMLDocument& document, tinyxml2::XMLNode* node)
 				:m_Document(&document), m_Node(node)
 			{
 				if (!node)
@@ -156,7 +156,7 @@ namespace kxf
 					m_Document = nullptr;
 				}
 			}
-			XMLNode(XMLDocument& document, const tinyxml2::XMLNode* node)
+			XMLDocumentNode(XMLDocument& document, const tinyxml2::XMLNode* node)
 				:m_Document(&document), m_Node(const_cast<tinyxml2::XMLNode*>(node))
 			{
 				if (!node)
@@ -177,7 +177,7 @@ namespace kxf
 			size_t GetIndexWithinParent() const override;
 			size_t GetRelativeIndexWithinParent() const override;
 
-			// XMLNode: Common
+			// XMLDocumentNode: Common
 			XMLDocument& GetDocument()
 			{
 				return *m_Document;
@@ -189,21 +189,21 @@ namespace kxf
 
 			bool SetName(const String& name);
 
-			// XMLNode: Navigation
-			XMLNode QueryElement(const String& xPath) const;
-			XMLNode ConstructElement(const String& xPath);
-			XMLNode QueryElementByAttribute(const String& name, const String& value) const;
-			XMLNode QueryElementByName(const String& name) const;
+			// XMLDocumentNode: Navigation
+			XMLDocumentNode QueryElement(const String& xPath) const;
+			XMLDocumentNode CreateElement(const String& xPath);
+			XMLDocumentNode QueryElementByAttribute(const String& name, const String& value) const;
+			XMLDocumentNode QueryElementByName(const String& name) const;
 
-			XMLNode GetParent() const;
-			XMLNode GetPreviousSibling() const;
-			XMLNode GetPreviousSiblingElement(const String& name = {}) const;
-			XMLNode GetNextSibling() const;
-			XMLNode GetNextSiblingElement(const String& name = {}) const;
-			XMLNode GetFirstChild() const;
-			XMLNode GetFirstChildElement(const String& name = {}) const;
-			XMLNode GetLastChild() const;
-			XMLNode GetLastChildElement(const String& name = {}) const;
+			XMLDocumentNode GetParent() const;
+			XMLDocumentNode GetPreviousSibling() const;
+			XMLDocumentNode GetPreviousSiblingElement(const String& name = {}) const;
+			XMLDocumentNode GetNextSibling() const;
+			XMLDocumentNode GetNextSiblingElement(const String& name = {}) const;
+			XMLDocumentNode GetFirstChild() const;
+			XMLDocumentNode GetFirstChildElement(const String& name = {}) const;
+			XMLDocumentNode GetLastChild() const;
+			XMLDocumentNode GetLastChildElement(const String& name = {}) const;
 
 			// XMLNode: Children
 			size_t GetChildrenCount() const;
@@ -211,35 +211,35 @@ namespace kxf
 			void ClearChildren();
 			void ResetNode();
 
-			CallbackResult<void> EnumChildren(CallbackFunction<XMLNode> func) const;
-			CallbackResult<void> EnumChildElements(CallbackFunction<XMLNode> func, const String& name = {}) const;
+			CallbackResult<void> EnumChildren(CallbackFunction<XMLDocumentNode> func) const;
+			CallbackResult<void> EnumChildElements(CallbackFunction<XMLDocumentNode> func, const String& name = {}) const;
 
-			// XMLNode: Attributes
+			// XMLDocumentNode: Attributes
 			size_t GetAttributeCount() const;
 			bool HasAttributes() const;
 
-			XMLAttribute GetAttributeObject(const String& name) const;
+			XMLDocumentAttribute GetAttributeObject(const String& name) const;
 			CallbackResult<void> EnumAttributeNames(CallbackFunction<String> func) const;
-			CallbackResult<void> EnumAttributes(CallbackFunction<XMLAttribute> func) const;
+			CallbackResult<void> EnumAttributes(CallbackFunction<XMLDocumentAttribute> func) const;
 
 			bool HasAttribute(const String& name) const;
 			bool RemoveAttribute(const String& name);
-			bool RemoveAttribute(XMLAttribute& attribute);
+			bool RemoveAttribute(XMLDocumentAttribute& attribute);
 			bool ClearAttributes();
 
-			// XMLNode: Insertion
-			bool Insert(XMLNode& node, InsertMode insertMode);
-			bool InsertAfterChild(XMLNode& newNode, const XMLNode& afterThis = {});
-			bool InsertFirstChild(XMLNode& newNode);
-			bool InsertLastChild(XMLNode& newNode);
+			// XMLDocumentNode: Insertion
+			bool Insert(XMLDocumentNode& node, InsertMode insertMode);
+			bool InsertAfterChild(XMLDocumentNode& newNode, const XMLDocumentNode& afterThis = {});
+			bool InsertFirstChild(XMLDocumentNode& newNode);
+			bool InsertLastChild(XMLDocumentNode& newNode);
 
-			XMLNode NewElement(const String& name, InsertMode insertMode = InsertMode::AsLastChild);
-			XMLNode NewComment(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
-			XMLNode NewText(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
-			XMLNode NewDeclaration(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
-			XMLNode NewUnknown(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
+			XMLDocumentNode NewElement(const String& name, InsertMode insertMode = InsertMode::AsLastChild);
+			XMLDocumentNode NewComment(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
+			XMLDocumentNode NewText(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
+			XMLDocumentNode NewDeclaration(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
+			XMLDocumentNode NewUnknown(const String& value, InsertMode insertMode = InsertMode::AsLastChild);
 
-			// XMLNode: Properties
+			// XMLDocumentNode: Properties
 			bool IsCDATA() const;
 			bool SetCDATA(bool value = true);
 
@@ -247,7 +247,7 @@ namespace kxf
 			bool IsElement() const;
 			bool IsText() const;
 
-			// XMLNode: Serialization
+			// XMLDocumentNode: Serialization
 			bool SerializeSubtree(IOutputStream& stream, SerializationFormat format = SerializationFormat::Default) const;
 			String SerializeSubtree(SerializationFormat format = SerializationFormat::Default) const;
 			String SerializeSubtreeText(const String& separator = {}) const;
@@ -256,11 +256,11 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API XMLDocument final: public RTTI::DynamicImplementation<XMLDocument, IXDocument>, public XMLNode
+	class KXF_API XMLDocument final: public RTTI::DynamicImplementation<XMLDocument, IXDocument>, public XMLDocumentNode
 	{
 		kxf_RTTI_DeclareIID(XMLDocument, {0xdafcb16, 0xb15c, 0x4c8e, {0x90, 0xfa, 0x9f, 0x24, 0x3f, 0x13, 0x69, 0x12}});
 
-		friend class XMLNode;
+		friend class XMLDocumentNode;
 
 		private:
 			std::unique_ptr<tinyxml2::XMLDocument> m_Impl;
@@ -276,11 +276,11 @@ namespace kxf
 			void DoUnload();
 
 		private:
-			XMLNode CreateElement(const String& name);
-			XMLNode CreateComment(const String& value);
-			XMLNode CreateText(const String& value);
-			XMLNode CreateDeclaration(const String& value);
-			XMLNode CreateUnknown(const String& value);
+			XMLDocumentNode CreateNewElement(const String& name);
+			XMLDocumentNode CreateNewComment(const String& value);
+			XMLDocumentNode CreateNewText(const String& value);
+			XMLDocumentNode CreateNewDeclaration(const String& value);
+			XMLDocumentNode CreateNewUnknown(const String& value);
 
 		public:
 			XMLDocument();
@@ -306,7 +306,7 @@ namespace kxf
 			String SaveDocument() const;
 
 			void ClearDocument();
-			void RemoveNode(XMLNode& node);
+			void RemoveNode(XMLDocumentNode& node);
 
 		public:
 			XMLDocument& operator=(const XMLDocument&) = delete;
