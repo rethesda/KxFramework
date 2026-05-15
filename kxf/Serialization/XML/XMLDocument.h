@@ -102,7 +102,8 @@ namespace kxf
 
 			// XMLDocumentAttribute
 			XMLDocumentNode GetNode() const;
-			XMLDocument& GetDocument() const;
+			const XMLDocument& GetDocument() const;
+			XMLDocument& GetDocument();
 
 			XMLDocumentAttribute Next() const;
 	};
@@ -178,11 +179,11 @@ namespace kxf
 			size_t GetRelativeIndexWithinParent() const override;
 
 			// XMLDocumentNode: Common
-			XMLDocument& GetDocument()
+			const XMLDocument& GetDocument() const
 			{
 				return *m_Document;
 			}
-			const XMLDocument& GetDocument() const
+			XMLDocument& GetDocument()
 			{
 				return *m_Document;
 			}

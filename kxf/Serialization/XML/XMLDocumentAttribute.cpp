@@ -81,7 +81,11 @@ namespace kxf
 		}
 		return {};
 	}
-	XMLDocument& XMLDocumentAttribute::GetDocument() const
+	const XMLDocument& XMLDocumentAttribute::GetDocument() const
+	{
+		return m_Owner->GetDocument();
+	}
+	XMLDocument& XMLDocumentAttribute::GetDocument()
 	{
 		return m_Owner->GetDocument();
 	}
