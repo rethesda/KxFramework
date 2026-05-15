@@ -307,7 +307,11 @@ namespace kxf
 	// IXDocumentNode
 	String XMLDocumentNode::GetXPath() const
 	{
-		return IXDocumentNode::BacktrackXPath(*m_Document, *this);
+		if (m_Document && m_Node)
+		{
+			return XDocument::BacktrackXPath(*m_Document, *this);
+		}
+		return {};
 	}
 
 	String XMLDocumentNode::GetName() const

@@ -68,35 +68,6 @@ namespace kxf
 			using AsCDATA = XDocument::AsCDATA;
 			static constexpr size_t npos = std::numeric_limits<size_t>::max();
 
-			template<std::derived_from<IXDocumentNode> TNode>
-			static String BacktrackXPath(const IXDocument& document, const TNode& startAt)
-			{
-				UniChar indexSeparator;
-				UniChar separator = document.GetXPathSeparator(&indexSeparator);
-				bool isFirst = true;
-
-				String result;
-				for (TNode node = startAt; node; node = node.GetParent())
-				{
-					size_t index = node.GetIndexWithinParent();
-					if (index != 0)
-					{
-						result.FormatAt(0, "{}{}{}", node.GetName(), indexSeparator.GetAs<XChar>(), index);
-					}
-					else
-					{
-						result.Prepend(node.GetName());
-					}
-
-					if (!isFirst)
-					{
-						result.Prepend(separator);
-					}
-					isFirst = false;
-				}
-				return result;
-			}
-
 		public:
 			virtual ~IXDocumentNode() = default;
 
@@ -475,4 +446,39 @@ namespace kxf::XDocument
 				return GetDerived().XDocument_WriteAttribute(name, GetDerived().XDocument_ConvertFromFloat<T>(value, precision), AsCDATA::Never);
 			}
 	};
+}
+
+namespace kxf::XDocument
+{
+	template<std::derived_from<IXDocumentNode> TNode>
+	String BacktrackXPath(const IXDocument& document, const TNode& startAt)
+	{
+		UniChar indexSeparator;
+		UniChar separator = document.GetXPathSeparator(&indexSeparator);
+
+		String result;
+		for (TNode node = startAt; node; node = node.GetParent())
+		{
+			auto name = node.GetName();
+			if (name.IsEmpty())
+			{
+				continue;
+			}
+
+			size_t index = node.GetRelativeIndexWithinParent();
+			if (index != 0)
+			{
+				result.FormatAt(0, "{}{}{}", name, indexSeparator.GetAs<XChar>(), index);
+			}
+			else
+			{
+				result.Prepend(name);
+			}
+
+			result.Prepend(separator);
+		}
+		result.TrimLeft(separator);
+
+		return result;
+	}
 }
