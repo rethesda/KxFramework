@@ -140,6 +140,11 @@ namespace
 
 		return kxf::String::FromUTF8({buffer.CStr(), buffer.CStrSize() - 1});
 	}
+
+	void CloneSubTree(tinyxml2::XMLDocument& subTree, const tinyxml2::XMLNode& node)
+	{
+		subTree.InsertFirstChild(node.DeepClone(&subTree));
+	}
 }
 
 namespace kxf
@@ -958,7 +963,7 @@ namespace kxf
 			else
 			{
 				tinyxml2::XMLDocument subTree;
-				m_Node->ShallowClone(&subTree);
+				CloneSubTree(subTree, *m_Node);
 
 				return Serialize(subTree);
 			}
@@ -988,7 +993,7 @@ namespace kxf
 			else
 			{
 				tinyxml2::XMLDocument subTree;
-				m_Node->ShallowClone(&subTree);
+				CloneSubTree(subTree, *m_Node);
 
 				return Serialize(subTree);
 			}
