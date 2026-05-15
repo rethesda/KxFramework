@@ -75,6 +75,7 @@ namespace kxf
 	{
 		DoUnload();
 		m_Impl->Parse(xml, length);
+		m_Impl->SetBOM(false);
 
 		return !m_Impl->Error();
 	}
