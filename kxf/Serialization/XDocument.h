@@ -4,9 +4,12 @@
 #include "kxf/Core/CallbackFunction.h"
 #include "kxf/Utility/ScopeGuard.h"
 #include "Private/XDocument.h"
-class IInputStream;
-class IOutputStream;
 
+namespace kxf
+{
+	class IInputStream;
+	class IOutputStream;
+}
 namespace kxf::XDocument
 {
 	enum class AsCDATA
@@ -15,6 +18,9 @@ namespace kxf::XDocument
 		Always = 1,
 		Never = 0,
 	};
+
+	std::pair<kxf::StringView, int> ExtractIndexFromElementName(kxf::StringView elementName, kxf::XChar indexSeparator);
+	std::pair<kxf::StringView, int> ExtractIndexFromElementName(kxf::StringView elementName, kxf::StringView indexSeparator);
 }
 
 namespace kxf

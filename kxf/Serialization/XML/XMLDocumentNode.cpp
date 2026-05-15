@@ -92,21 +92,6 @@ namespace
 		}
 		return false;
 	}
-	std::pair<kxf::StringView, int> ExtractIndexFromElementName(kxf::StringView elementName, kxf::XChar xPathSeparator)
-	{
-		int index = 0;
-
-		size_t indexStart = elementName.find(xPathSeparator);
-		if (indexStart != kxf::String::npos)
-		{
-			if (auto value = kxf::String(elementName.substr(indexStart + 1)).ParseInteger<int>(10))
-			{
-				index = std::clamp(*value, 0, std::numeric_limits<int>::max());
-				elementName = elementName.substr(0, indexStart);
-			}
-		}
-		return {elementName, index};
-	}
 
 	kxf::String CleanText(const tinyxml2::XMLNode& node, kxf::StringView separator = {})
 	{
@@ -272,7 +257,7 @@ namespace kxf
 
 				// Extract index from name and remove it from path, zero-based
 				// point/x -> 0, point/x:1 -> 1, point/y:0 -> 0, point/z:-7 -> 0
-				auto [elementName, index] = ExtractIndexFromElementName(name, indexSeparator.GetAs<XChar>());
+				auto [elementName, index] = XDocument::ExtractIndexFromElementName(name, indexSeparator.GetAs<XChar>());
 				auto elementNameUTF8 = EncodingConverter_UTF8.ToMultiByte(elementName);
 
 				// Get level 0

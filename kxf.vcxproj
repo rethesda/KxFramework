@@ -669,6 +669,7 @@
     <ClCompile Include="kxf\Serialization\JSON\JSONDocument.cpp" />
     <ClCompile Include="kxf\Serialization\StringTokenizer.cpp" />
     <ClCompile Include="kxf\Serialization\TextDocument.cpp" />
+    <ClCompile Include="kxf\Serialization\XDocument.cpp" />
     <ClCompile Include="kxf\Serialization\XML\XMLDocumentAttribute.cpp" />
     <ClCompile Include="kxf\Serialization\XML\XMLDocument.cpp" />
     <ClCompile Include="kxf\Serialization\XML\XMLDocumentNode.cpp" />
