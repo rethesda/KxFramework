@@ -39,7 +39,8 @@ namespace kxf::Localization::Private
 {
 	bool XMLPackageHelper::Load(IInputStream& stream, const Locale& locale, FlagSet<LoadingScheme> loadingScheme)
 	{
-		if (stream && DoLoadXML(XMLDocument(stream), loadingScheme))
+		XMLDocument document;
+		if (document.LoadDocument(stream) && DoLoadXML(document, loadingScheme))
 		{
 			DoSetLocale(locale);
 			return true;

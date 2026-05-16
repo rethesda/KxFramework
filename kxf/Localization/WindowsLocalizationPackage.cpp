@@ -11,12 +11,12 @@ namespace kxf
 			m_Items.clear();
 		}
 
-		if (XMLNode rootNode = xml.QueryElement("root"))
+		if (XMLDocumentNode rootNode = xml.QueryElement("root"))
 		{
 			m_Items.reserve(rootNode.GetChildrenCount());
 
 			size_t count = 0;
-			auto AddItem = [&](const XMLNode& itemNode, ResourceID id, LocalizationItem item)
+			auto AddItem = [&](const XMLDocumentNode& itemNode, ResourceID id, LocalizationItem item)
 			{
 				if (item)
 				{
@@ -42,7 +42,7 @@ namespace kxf
 				return false;
 			};
 
-			rootNode.EnumChildElements([&](XMLNode itemNode)
+			rootNode.EnumChildElements([&](XMLDocumentNode itemNode)
 			{
 				auto name = itemNode.GetAttribute("name");
 				auto value = itemNode.GetFirstChildElement("value").GetValue();

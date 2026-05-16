@@ -11,18 +11,18 @@ namespace kxf
 			m_Items.clear();
 		}
 
-		if (XMLNode resourcesNode = xml.QueryElement("resources"))
+		if (XMLDocumentNode resourcesNode = xml.QueryElement("resources"))
 		{
 			m_Items.reserve(resourcesNode.GetChildrenCount());
 
 			size_t count = 0;
-			auto AddItem = [&](const XMLNode& itemNode, LocalizationItem item)
+			auto AddItem = [&](const XMLDocumentNode& itemNode, LocalizationItem item)
 			{
 				if (item)
 				{
 					ResourceID id = itemNode.GetAttribute("name");
 
-					if (auto maxLength = itemNode.QueryAttributeInt("maxLength"))
+					if (auto maxLength = itemNode.QueryAttribute<int>("maxLength"))
 					{
 						item.SetMaxLength(*maxLength);
 					}
@@ -48,10 +48,10 @@ namespace kxf
 				return false;
 			};
 
-			resourcesNode.EnumChildElements([&](const XMLNode& itemNode)
+			resourcesNode.EnumChildElements([&](const XMLDocumentNode& itemNode)
 			{
 				FlagSet<LocalizationItemFlag> flags;
-				flags.Mod(LocalizationItemFlag::Translatable, itemNode.GetAttributeBool("translatable", true));
+				flags.Mod(LocalizationItemFlag::Translatable, itemNode.QueryAttribute<bool>("translatable").value_or(true));
 
 				auto itemName = itemNode.GetName();
 				if (itemName == "string")
@@ -63,7 +63,7 @@ namespace kxf
 					LocalizationItem::TMultipleItems items;
 					items.reserve(itemNode.GetChildrenCount());
 
-					itemNode.EnumChildElements([&](XMLNode node)
+					itemNode.EnumChildElements([&](XMLDocumentNode node)
 					{
 						if (auto value = node.GetValue(); !value.IsEmpty())
 						{
@@ -75,7 +75,7 @@ namespace kxf
 				else if (itemName == "plurals")
 				{
 					LocalizationItem::TPlurals plurals;
-					itemNode.EnumChildElements([&](XMLNode node)
+					itemNode.EnumChildElements([&](XMLDocumentNode node)
 					{
 						const String name = node.GetAttribute("quantity");
 						if (name == "one")

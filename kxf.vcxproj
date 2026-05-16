@@ -375,7 +375,6 @@
     <ClInclude Include="kxf\Serialization\TextDocument.h" />
     <ClInclude Include="kxf\Serialization\XDocument.h" />
     <ClInclude Include="kxf\Serialization\XML.h" />
-    <ClInclude Include="kxf\Serialization\XML\Private\Utility.h" />
     <ClInclude Include="kxf\Serialization\XML\XMLDocument.h" />
     <ClInclude Include="kxf\System\CFunctionHook.h" />
     <ClInclude Include="kxf\System\DynamicLibrary.h" />
@@ -663,7 +662,7 @@
     <ClCompile Include="kxf\RTTI\IObject.cpp" />
     <ClCompile Include="kxf\Serialization\BinarySerializer.cpp" />
     <ClCompile Include="kxf\Serialization\HTML\HTMLDocument.cpp" />
-    <ClCompile Include="kxf\Serialization\HTML\HTMLNode.cpp" />
+    <ClCompile Include="kxf\Serialization\HTML\HTMLDocumentNode.cpp" />
     <ClCompile Include="kxf\Serialization\HTML\Private\clean_text.cpp" />
     <ClCompile Include="kxf\Serialization\HTML\Private\serialize.cpp" />
     <ClCompile Include="kxf\Serialization\INI\INIDocument.cpp" />
@@ -671,9 +670,9 @@
     <ClCompile Include="kxf\Serialization\StringTokenizer.cpp" />
     <ClCompile Include="kxf\Serialization\TextDocument.cpp" />
     <ClCompile Include="kxf\Serialization\XDocument.cpp" />
-    <ClCompile Include="kxf\Serialization\XML\XMLAttribute.cpp" />
+    <ClCompile Include="kxf\Serialization\XML\XMLDocumentAttribute.cpp" />
     <ClCompile Include="kxf\Serialization\XML\XMLDocument.cpp" />
-    <ClCompile Include="kxf\Serialization\XML\XMLNode.cpp" />
+    <ClCompile Include="kxf\Serialization\XML\XMLDocumentNode.cpp" />
     <ClCompile Include="kxf\System\CFunctionHook.cpp" />
     <ClCompile Include="kxf\System\DynamicLibrary.cpp" />
     <ClCompile Include="kxf\System\DynamicLibraryEvent.cpp" />

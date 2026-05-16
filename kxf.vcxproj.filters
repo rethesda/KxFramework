@@ -64,9 +64,6 @@
     <Filter Include="kxf\Serialization\HTML\Private">
       <UniqueIdentifier>{a45b3a1c-bccb-4efd-92c2-acbf00400b7b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="kxf\Serialization\XML\Private">
-      <UniqueIdentifier>{47ee576b-53f3-4dcb-9ad0-30fad244c27d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="kxf\EventSystem\Private">
       <UniqueIdentifier>{e7c63a0b-034c-4708-8a62-fc4a638ddd39}</UniqueIdentifier>
     </Filter>
@@ -536,9 +533,6 @@
     </ClInclude>
     <ClInclude Include="kxf\Serialization\HTML\Private\token_type.h">
       <Filter>kxf\Serialization\HTML\Private</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Serialization\XML\Private\Utility.h">
-      <Filter>kxf\Serialization\XML\Private</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Serialization.hpp">
       <Filter>kxf/&lt;Modules&gt;</Filter>
@@ -1421,19 +1415,16 @@
     <ClCompile Include="kxf\Serialization\TextDocument.cpp">
       <Filter>kxf\Serialization</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Serialization\XDocument.cpp">
-      <Filter>kxf\Serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="kxf\Serialization\HTML\HTMLNode.cpp">
+    <ClCompile Include="kxf\Serialization\HTML\HTMLDocumentNode.cpp">
       <Filter>kxf\Serialization\HTML</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Serialization\HTML\HTMLDocument.cpp">
       <Filter>kxf\Serialization\HTML</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Serialization\XML\XMLNode.cpp">
+    <ClCompile Include="kxf\Serialization\XML\XMLDocumentNode.cpp">
       <Filter>kxf\Serialization\XML</Filter>
     </ClCompile>
-    <ClCompile Include="kxf\Serialization\XML\XMLAttribute.cpp">
+    <ClCompile Include="kxf\Serialization\XML\XMLDocumentAttribute.cpp">
       <Filter>kxf\Serialization\XML</Filter>
     </ClCompile>
     <ClCompile Include="kxf\Serialization\XML\XMLDocument.cpp">
@@ -1832,6 +1823,7 @@
     <ClCompile Include="kxf\Serialization\StringTokenizer.cpp">
       <Filter>kxf\Serialization</Filter>
     </ClCompile>
+    <ClCompile Include="kxf\Serialization\XDocument.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="kxf\System\Private\ErrorCodeNtStatus.i">

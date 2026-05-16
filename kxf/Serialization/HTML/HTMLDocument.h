@@ -1,8 +1,6 @@
 #pragma once
 #include "../Common.h"
 #include "../XDocument.h"
-#include "kxf/Core/Version.h"
-#include "kxf/IO/IStream.h"
 
 namespace kxf::HTML
 {
@@ -13,143 +11,215 @@ namespace kxf::HTML
 namespace kxf
 {
 	class HTMLDocument;
+
+	class IInputStream;
+	class IOutputStream;
 }
 
 namespace kxf
 {
-	class KXF_API HTMLNode: public XDocument::XNode<HTMLNode>
+	class KXF_API HTMLDocumentAttribute final: public IXDocumentNode,
+											   public XDocument::ROValue<HTMLDocumentAttribute>,
+											   private XDocument::DefaultConverter<HTMLDocumentAttribute>
 	{
 		friend class HTMLDocument;
+		friend class HTMLDocumentNode;
+
+		friend class ROValue;
+		friend class DefaultConverter;
+
+		private:
+			HTMLDocumentNode* m_Owner = nullptr;
+			const void* m_Attribute = nullptr;
+
+		private:
+			// XDocument::ROValue
+			std::optional<String> XDocument_QueryValue() const;
+
+		public:
+			HTMLDocumentAttribute() = default;
+		private:
+			HTMLDocumentAttribute(HTMLDocumentNode& owner, void* attribute)
+				:m_Owner(&owner), m_Attribute(attribute)
+			{
+				if (!attribute)
+				{
+					m_Owner = nullptr;
+				}
+			}
+			HTMLDocumentAttribute(const HTMLDocumentNode& owner, const void* attribute)
+				:m_Owner(const_cast<HTMLDocumentNode*>(&owner)), m_Attribute(const_cast<void*>(attribute))
+			{
+				if (!attribute)
+				{
+					m_Owner = nullptr;
+				}
+			}
+
+		public:
+			// IXDocumentNode
+			bool IsNull() const override
+			{
+				return !m_Owner || !m_Attribute;
+			}
+			String GetXPath() const override;
+
+			String GetName() const override;
+			size_t GetIndexWithinParent() const override;
+			size_t GetRelativeIndexWithinParent() const override;
+
+			// HTMLDocumentAttribute
+			HTMLDocumentNode GetNode() const;
+			const HTMLDocument& GetDocument() const;
+			HTMLDocument& GetDocument();
+
+			HTMLDocumentAttribute Next() const;
+	};
+}
+
+namespace kxf
+{
+	class KXF_API HTMLDocumentNode: public IXDocumentNode,
+									public XDocument::ROValue<HTMLDocumentNode>,
+									public XDocument::ROAttribute<HTMLDocumentNode>,
+									private XDocument::DefaultConverter<HTMLDocumentNode>
+	{
+		friend class HTMLDocument;
+		friend class HTMLDocumentAttribute;
+
+		friend class ROValue;
+		friend class ROAttribute;
+		friend class DefaultConverter;
 
 		public:
 			using NodeType = HTML::NodeType;
 			using TagType = HTML::TagType;
 
 		private:
-			virtual const void* GetNode() const
-			{
-				return m_Node;
-			}
-			virtual void SetNode(void* node)
-			{
-				m_Node = node;
-			}
+			HTMLDocument* m_Document = nullptr;
+			void* m_Node = nullptr;
 
 		private:
-			const void* m_Node = nullptr;
-			const HTMLDocument* m_Document = nullptr;
+			// XDocument::ROValue
+			std::optional<String> XDocument_QueryValue() const;
 
-		protected:
-			std::optional<String> DoGetValue() const override;
-			bool DoSetValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA) override;
-		
-			std::optional<String> DoGetAttribute(const String& name) const override;
-			bool DoSetAttribute(const String& name, const String& value, WriteEmpty writeEmpty) override;
+			// XDocument::ROAttribute
+			std::optional<String> XDocument_QueryAttribute(const String& name) const;
 
 		public:
-			HTMLNode()
-				:m_Document(nullptr), m_Node(nullptr)
-			{
-			}
-			HTMLNode(const HTMLNode&) = default;
-
+			HTMLDocumentNode() = default;
 		protected:
-			HTMLNode(const void* node, const HTMLDocument* document)
-				:m_Node(node), m_Document(document)
+			HTMLDocumentNode(HTMLDocument& document, void* node)
+				:m_Document(&document), m_Node(node)
 			{
+				if (!node)
+				{
+					m_Document = nullptr;
+				}
+			}
+			HTMLDocumentNode(const HTMLDocument& document, const void* node)
+				:m_Document(const_cast<HTMLDocument*>(&document)), m_Node(const_cast<void*>(node))
+			{
+				if (!node)
+				{
+					m_Document = nullptr;
+				}
 			}
 
 		public:
-			// General
-			bool IsNull() const override
-			{
-				return !m_Node || !m_Document;
-			}
-			HTMLNode QueryElement(const String& XPath) const override;
-			HTMLNode ConstructElement(const String& XPath) override;
+			// IXDocumentNode
+			bool IsNull() const override;
+			String GetXPath() const override;
 
-			// Node
-			size_t GetIndexWithinParent() const override;
 			String GetName() const override;
+			size_t GetIndexWithinParent() const override;
+			size_t GetRelativeIndexWithinParent() const override;
 
-			size_t GetChildrenCount() const override;
-			CallbackResult<void> EnumChildren(CallbackFunction<HTMLNode> func) const override;
-
-			virtual String GetHTML() const;
-			NodeType GetType() const;
-			TagType GetTagType() const;
-
-			const HTMLDocument& GetDocumentNode() const
+			// HTMLDocumentNode: Common
+			const HTMLDocument& GetDocument() const
 			{
 				return *m_Document;
 			}
-			bool IsFullNode() const;
-
-			// Value
-			String GetValueText() const;
-
-			// Attributes
-			size_t GetAttributeCount() const override;
-			CallbackResult<void> EnumAttributeNames(CallbackFunction<String> func) const override;
-			bool HasAttribute(const String& name) const override;
-		
-			// Navigation
-			HTMLNode GetElementByAttribute(const String& name, const String& value) const override;
-			HTMLNode GetElementByID(const String& id) const
+			HTMLDocument& GetDocument()
 			{
-				return GetElementByAttribute("id", id);
+				return *m_Document;
 			}
-			HTMLNode GetElementByClass(const String & className) const
+			
+			// HTMLDocumentNode: Navigation
+			HTMLDocumentNode QueryElement(const String& xPath) const;
+			HTMLDocumentNode QueryElementByAttribute(const String& name, const String& value) const;
+			HTMLDocumentNode QueryElementByID(const String& id) const
 			{
-				return GetElementByAttribute("class", className);
+				return QueryElementByAttribute("id", id);
 			}
-			HTMLNode GetElementByTag(TagType tagType) const;
-			HTMLNode GetElementByTag(const String& tagName) const override;
+			HTMLDocumentNode QueryElementByClass(const String & className) const
+			{
+				return QueryElementByAttribute("class", className);
+			}
+			HTMLDocumentNode QueryElementByName(TagType tagType) const;
+			HTMLDocumentNode QueryElementByName(const String& tagName) const;
 		
-			HTMLNode GetParent() const override;
-			HTMLNode GetPreviousSibling() const override;
-			HTMLNode GetNextSibling() const override;
-			HTMLNode GetFirstChild() const override;
-			HTMLNode GetLastChild() const override;
+			HTMLDocumentNode GetParent() const;
+			HTMLDocumentNode GetPreviousSibling() const;
+			HTMLDocumentNode GetPreviousSiblingElement(const String& name) const;
+			HTMLDocumentNode GetNextSibling() const;
+			HTMLDocumentNode GetNextSiblingElement(const String& name) const;
+			HTMLDocumentNode GetFirstChild() const;
+			HTMLDocumentNode GetFirstChildElement(const String& name) const;
+			HTMLDocumentNode GetLastChild() const;
+			HTMLDocumentNode GetLastChildElement(const String& name) const;
+
+			// HTMLDocumentNode: Children
+			size_t GetChildrenCount() const;
+			CallbackResult<void> EnumChildren(CallbackFunction<HTMLDocumentNode> func) const;
+
+			// HTMLDocumentNode: Attributes
+			size_t GetAttributeCount() const;
+			bool HasAttribute(const String& name) const;
+
+			HTMLDocumentAttribute GetAttributeObject(const String& name) const;
+			CallbackResult<void> EnumAttributeNames(CallbackFunction<String> func) const;
+			CallbackResult<void> EnumAttributes(CallbackFunction<HTMLDocumentAttribute> func) const;
+
+			// HTMLDocumentNode: Properties
+			NodeType GetType() const;
+			TagType GetTagType() const;
+			bool IsElement() const;
+			bool IsText() const;
+
+			// HTMLDocumentNode: Serialization
+			bool SerializeSubtree(IOutputStream& stream) const;
+			String SerializeSubtree() const;
+			String SerializeSubtreeText(const String& separator = {}) const;
 	};
 }
 
 namespace kxf
 {
-	class KXF_API HTMLDocument: public HTMLNode
+	class KXF_API HTMLDocument final: public RTTI::DynamicImplementation<HTMLDocument, IXDocument>, public HTMLDocumentNode
 	{
+		kxf_RTTI_DeclareIID(HTMLDocument, {0xda03b100, 0x8c33, 0x4dc2, {0x83, 0xfd, 0xea, 0xc2, 0xe5, 0x9a, 0x94, 0x57}});
+
+		class ImplOptions;
+
+		friend class HTMLDocumentNode;
+		friend class HTMLDocumentAttribute;
+
 		private:
-			std::vector<uint8_t> m_Buffer;
+			std::string m_Buffer;
+			std::unique_ptr<ImplOptions> m_ParserOptions;
 			void* m_ParserOutput = nullptr;
-			void* m_ParserOptions = nullptr;
 
 		private:
-			void Init();
-			void DoLoad();
+			bool DoLoad();
 			void DoUnload();
-			void Destroy();
-
-			const void* GetNode() const override;
-			void SetNode(void* node) override;
 
 		public:
-			HTMLDocument()
-				:HTMLNode(nullptr, this)
-			{
-				Init();
-			}
+			HTMLDocument();
 			HTMLDocument(const String& html)
 				:HTMLDocument()
 			{
-				if (!html.IsEmpty())
-				{
-					Load(html);
-				}
-			}
-			HTMLDocument(IInputStream& stream)
-				:HTMLDocument()
-			{
-				Load(stream);
+				LoadDocument(html);
 			}
 			HTMLDocument(const HTMLDocument&) = delete;
 			HTMLDocument(HTMLDocument&& other) noexcept
@@ -157,40 +227,23 @@ namespace kxf
 			{
 				*this = std::move(other);
 			}
-			~HTMLDocument()
-			{
-				Destroy();
-			}
+			~HTMLDocument();
 
 		public:
+			// IXDocument
 			bool IsNull() const override;
+			String GetDocumentMeta() const override;
 
-			bool Load(const String& htmlText);
-			bool Load(IInputStream& stream);
-			bool Save(IOutputStream& stream) const;
-			String Save() const
-			{
-				return GetHTML();
-			}
-			HTMLDocument Clone() const
-			{
-				return HTMLDocument(GetHTML());
-			}
+			bool LoadDocument(IInputStream& stream) override;
+			bool SaveDocument(IOutputStream& stream) const override;
+
+			// HTMLDocument
+			bool LoadDocument(const String& html);
+			String SaveDocument() const;
 
 		public:
 			HTMLDocument& operator=(const HTMLDocument&) = delete;
-			HTMLDocument& operator=(HTMLDocument&& other) noexcept
-			{
-				m_Buffer = std::move(other.m_Buffer);
-
-				m_ParserOutput = other.m_ParserOutput;
-				other.m_ParserOutput = nullptr;
-
-				m_ParserOptions = other.m_ParserOptions;
-				other.m_ParserOptions = nullptr;
-
-				return *this;
-			}
+			HTMLDocument& operator=(HTMLDocument&& other) noexcept;
 	};
 }
 
@@ -200,13 +253,13 @@ namespace kxf::HTML
 	{
 		None = -1,
 
-		Document = 0, // GumboNodeType::GUMBO_NODE_DOCUMENT,
-		Element = 1, // GumboNodeType::GUMBO_NODE_ELEMENT,
-		Text = 2, // GumboNodeType::GUMBO_NODE_TEXT,
-		CData = 3, // GumboNodeType::GUMBO_NODE_CDATA,
-		Comment = 4, // GumboNodeType::GUMBO_NODE_COMMENT,
-		NodeTemplate = 5, // GumboNodeType::GUMBO_NODE_TEMPLATE,
-		NodeWhitespace = 6, // GumboNodeType::GUMBO_NODE_WHITESPACE,
+		Document = 0,
+		Element = 1,
+		Text = 2,
+		CData = 3,
+		Comment = 4,
+		NodeTemplate = 5,
+		NodeWhitespace = 6
 	};
 	enum class TagType
 	{
@@ -373,14 +426,14 @@ namespace kxf
 	{
 		uint64_t Serialize(IOutputStream& stream, const HTMLDocument& value) const
 		{
-			return BinarySerializer<String>().Serialize(stream, value.Save());
+			return BinarySerializer<String>().Serialize(stream, value.SaveDocument());
 		}
 		uint64_t Deserialize(IInputStream& stream, HTMLDocument& value) const
 		{
 			String buffer;
 			auto read = BinarySerializer<String>().Deserialize(stream, buffer);
 
-			value.Load(buffer);
+			value.LoadDocument(buffer);
 			return read;
 		}
 	};

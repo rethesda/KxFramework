@@ -4,9 +4,10 @@
 
 namespace kxf
 {
-	class WebRequestHeader;
-	class JSONDocument;
 	class XMLDocument;
+	class JSONDocument;
+
+	class WebRequestHeader;
 }
 
 namespace kxf

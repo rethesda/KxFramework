@@ -1,47 +1,20 @@
 #include "kxf-pch.h"
 #include "XMLDocument.h"
-#include "Private/Utility.h"
+#include "kxf/IO/IStream.h"
 #include "kxf/Network/URI.h"
+#include "kxf/Core/ILibraryInfo.h"
 #include "kxf/Utility/SoftwareLicenseDB.h"
-#include <wx/memory.h>
+#include "TinyXML2.h"
 
 namespace
 {
 	constexpr char g_Copyright[] = "Copyright© Lee Thomason";
+	constexpr char g_DefaultDeclaredEncoding[] = "utf-8";
 }
 
 namespace kxf
 {
-	void XMLDocument::ReplaceDeclaration()
-	{
-		if (m_Document.FirstChild() && m_Document.FirstChild()->ToDeclaration())
-		{
-			m_Document.DeleteNode(m_Document.FirstChild());
-		}
-
-		String declaration = Format(R"(xml version="1.0" encoding="{}")", m_DeclaredEncoding);
-		auto utf8 = declaration.ToUTF8();
-		m_Document.InsertFirstChild(m_Document.NewDeclaration(utf8.data()));
-	}
-
-	void XMLDocument::Init()
-	{
-		m_DeclaredEncoding = XML::Private::DefaultDeclaredEncoding;
-		m_XPathIndexSeparator = XNode::GetXPathIndexSeparator();
-		m_Document.SetBOM(false);
-	}
-	void XMLDocument::DoLoad(const char* xml, size_t length)
-	{
-		DoUnload();
-
-		m_Document.Parse(xml, length);
-		ReplaceDeclaration();
-	}
-	void XMLDocument::DoUnload()
-	{
-		m_Document.Clear();
-	}
-
+	// IObject
 	RTTI::QueryInfo XMLDocument::DoQueryInterface(const IID& iid) noexcept
 	{
 		if (iid.IsOfType<ILibraryInfo>())
@@ -84,93 +57,127 @@ namespace kxf
 			static XMLDocumentLibraryInfo libraryInfo;
 			return static_cast<ILibraryInfo&>(libraryInfo);
 		}
-		else if (iid.IsOfType<XMLDocument>())
-		{
-			return *this;
-		}
-		return IObject::DoQueryInterface(iid);
+		return DynamicImplementation::DoQueryInterface(iid);
 	}
 
-	XMLNode XMLDocument::CreateElement(const String& name)
+	// XMLDocument
+	void XMLDocument::ReplaceDeclaration()
 	{
-		auto utf8 = name.ToUTF8();
-		return XMLNode(m_Document.NewElement(utf8.data()), *this);
+		if (m_Impl->FirstChild() && m_Impl->FirstChild()->ToDeclaration())
+		{
+			m_Impl->DeleteNode(m_Impl->FirstChild());
+		}
+
+		String declaration = Format(R"(xml version="1.0" encoding="{}")", g_DefaultDeclaredEncoding);
+		m_Impl->InsertFirstChild(m_Impl->NewDeclaration(declaration.utf8_str()));
 	}
-	XMLNode XMLDocument::CreateComment(const String& value)
+
+	bool XMLDocument::DoLoad(const char* xml, size_t length)
 	{
-		auto utf8 = value.ToUTF8();
-		return XMLNode(m_Document.NewComment(utf8.data()), *this);
+		DoUnload();
+		m_Impl->Parse(xml, length);
+		m_Impl->SetBOM(false);
+
+		return !m_Impl->Error();
 	}
-	XMLNode XMLDocument::CreateText(const String& value)
+	void XMLDocument::DoUnload()
 	{
-		auto utf8 = value.ToUTF8();
-		return XMLNode(m_Document.NewText(utf8.data()), *this);
+		m_Impl->Clear();
 	}
-	XMLNode XMLDocument::CreateDeclaration(const String& value)
+
+	XMLDocumentNode XMLDocument::CreateNewElement(const String& name)
+	{
+		return XMLDocumentNode(*this, m_Impl->NewElement(name.utf8_str()));
+	}
+	XMLDocumentNode XMLDocument::CreateNewComment(const String& value)
+	{
+		return XMLDocumentNode(*this, m_Impl->NewComment(value.utf8_str()));
+	}
+	XMLDocumentNode XMLDocument::CreateNewText(const String& value)
+	{
+		return XMLDocumentNode(*this, m_Impl->NewText(value.utf8_str()));
+	}
+	XMLDocumentNode XMLDocument::CreateNewDeclaration(const String& value)
 	{
 		if (!value.IsEmpty())
 		{
-			auto utf8 = value.ToUTF8();
-			return XMLNode(m_Document.NewDeclaration(utf8.data()), *this);
+			return XMLDocumentNode(*this, m_Impl->NewDeclaration(value.utf8_str()));
 		}
 		else
 		{
-			return XMLNode(m_Document.NewDeclaration(), *this);
+			return XMLDocumentNode(*this, m_Impl->NewDeclaration());
 		}
 	}
-	XMLNode XMLDocument::CreateUnknown(const String& value)
+	XMLDocumentNode XMLDocument::CreateNewUnknown(const String& value)
 	{
-		auto utf8 = value.ToUTF8();
-		return XMLNode(m_Document.NewUnknown(utf8.data()), *this);
+		return XMLDocumentNode(*this, m_Impl->NewUnknown(value.utf8_str()));
 	}
 
-	// XMLNode: General
-	String XMLDocument::GetXML(SerializationFormat mode) const
+	XMLDocument::XMLDocument()
+		:m_Impl(std::make_unique<tinyxml2::XMLDocument>())
 	{
-		return XML::Private::PrintDocument(m_Document, mode == SerializationFormat::HTML5);
-	}
+		m_Impl->SetBOM(false);
 
-	bool XMLDocument::Load(const String& xml)
-	{
-		auto utf8 = xml.ToUTF8();
-		DoLoad(utf8.data(), utf8.length());
-		return !IsNull();
+		// XMLDocumentNode
+		m_Document = this;
+		m_Node = m_Impl.get();
 	}
-	bool XMLDocument::Load(std::string_view xml)
-	{
-		DoLoad(xml.data(), xml.length());
-		return !IsNull();
-	}
-	bool XMLDocument::Load(std::wstring_view xml)
-	{
-		Load(String(xml));
-		return !IsNull();
-	}
-	bool XMLDocument::Load(IInputStream& stream)
-	{
-		wxMemoryBuffer buffer;
-		buffer.SetBufSize(stream.GetSize().ToBytes());
-		stream.ReadAll(buffer.GetData(), buffer.GetBufSize());
-		buffer.SetDataLen(stream.LastRead().ToBytes());
+	XMLDocument::XMLDocument(XMLDocument&&) noexcept = default;
+	XMLDocument::~XMLDocument() = default;
 
-		DoLoad(reinterpret_cast<const char*>(buffer.GetData()), buffer.GetDataLen());
-		return !IsNull();
-	}
-	bool XMLDocument::Save(IOutputStream& stream) const
+	// IXDocument
+	bool XMLDocument::IsNull() const
 	{
-		XML::Private::XMLPrinterDefault buffer;
-		m_Document.Print(&buffer);
-		return stream.WriteAll(buffer.CStr(), buffer.CStrSize() - 1);
+		return m_Impl->Error() || !m_Impl->FirstChild();
 	}
-
-	// XMLNode: Deletion
-	bool XMLDocument::RemoveNode(XMLNode& node)
+	String XMLDocument::GetDocumentMeta() const
 	{
-		if (!IsNull() && node)
+		if (auto node = m_Impl->FirstChild())
 		{
-			m_Document.DeleteNode(node.GetNode());
-			return true;
+			if (auto declaration = node->ToDeclaration())
+			{
+				return String::FromUTF8(declaration->Value());
+			}
 		}
-		return false;
+		return {};
 	}
+
+	bool XMLDocument::LoadDocument(IInputStream& stream)
+	{
+		std::vector<std::byte> buffer;
+		buffer.resize(stream.GetSize().ToBytes());
+		stream.ReadAll(buffer.data(), buffer.size());
+		buffer.resize(stream.LastRead().ToBytes());
+
+		return DoLoad(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+	}
+	bool XMLDocument::SaveDocument(IOutputStream& stream) const
+	{
+		return SerializeSubtree(stream);
+	}
+
+	// XMLDocument
+	bool XMLDocument::LoadDocument(const String& xml)
+	{
+		auto utf8 = xml.utf8_str();
+		return DoLoad(utf8.data(), utf8.length());
+	}
+	String XMLDocument::SaveDocument() const
+	{
+		return SerializeSubtree();
+	}
+
+	void XMLDocument::ClearDocument()
+	{
+		DoUnload();
+	}
+	void XMLDocument::RemoveNode(XMLDocumentNode& node)
+	{
+		if (node)
+		{
+			m_Impl->DeleteNode(node.m_Node);
+		}
+	}
+
+	XMLDocument& XMLDocument::operator=(XMLDocument&&) noexcept = default;
 }

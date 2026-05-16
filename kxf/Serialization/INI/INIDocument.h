@@ -19,122 +19,113 @@ namespace kxf
 		Quotes = 1u << 1,
 		MultiKey = 1u << 2,
 		InlineComments = 1u << 3,
-		IgnoreCase = 1u << 4
+		IgnoreCase = 1u << 4,
+		ExtendedSytnax = 1 << 5
 	};
 	kxf_FlagSet_Declare(INIDocumentOption);
 }
 
 namespace kxf
 {
-	class KXF_API INIDocumentSection: public XDocument::XNode<INIDocumentSection>
+	class KXF_API INIDocumentValue final: public IXDocumentNode,
+										  public XDocument::RWValue<INIDocumentValue>,
+										  public XDocument::RWAttribute<INIDocumentValue>,
+										  private XDocument::DefaultConverter<INIDocumentValue>
 	{
+		friend class ROValue;
+		friend class RWValue;
+		friend class ROAttribute;
+		friend class RWAttribute;
+		friend class DefaultConverter;
+
 		friend class INIDocument;
+		friend class INIDocumentImpl;
 
 		private:
 			INIDocument* m_Ref = nullptr;
-			AsCDATA m_AsCDATA = AsCDATA::Auto;
+			std::map<String, String> m_Attributes;
 			String m_SectionName;
-			String m_Comment;
-			size_t m_Index = npos;
+			String m_KeyName;
+			bool m_ExtendedSyntaxEnabled = false;
 
-		protected:
-			// IXNode
-			std::optional<String> DoGetValue() const override;
-			bool DoSetValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA) override;
+		private:
+			// XDocument::RWValue
+			std::optional<String> XDocument_QueryValue() const;
+			bool XDocument_WriteValue(const String& value, AsCDATA asCDATA);
 
-			std::optional<String> DoGetAttribute(const String& name) const override;
-			bool DoSetAttribute(const String& name, const String& value, WriteEmpty writeEmpty) override;
+			// XDocument::RWAttribute
+			std::optional<String> XDocument_QueryAttribute(const String& name) const;
+			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
+
+			void ReadAttributes();
+			void WriteAttributes();
 
 		public:
-			INIDocumentSection() = default;
-			INIDocumentSection(INIDocument& document, String sectionName, String comment = {}, size_t index = npos)
-				:m_Ref(&document), m_SectionName(std::move(sectionName)), m_Comment(std::move(comment)), m_Index(index)
-			{
-			}
-			INIDocumentSection(const INIDocumentSection&) = default;
-			INIDocumentSection(INIDocumentSection&& other) noexcept
+			INIDocumentValue() = default;
+			INIDocumentValue(const INIDocumentValue&) = default;
+			INIDocumentValue(INIDocumentValue&& other) noexcept
 			{
 				*this = std::move(other);
 			}
+		private:
+			INIDocumentValue(INIDocument& document, String sectionName, String keyName);
 
 		public:
-			// IXNode
+			// IXDocumentNode
 			bool IsNull() const override
 			{
 				return m_Ref == nullptr;
 			}
-			String GetXPath() const override
-			{
-				return m_SectionName;
-			}
+			String GetXPath() const override;
 
-			bool IsCDATA() const override
-			{
-				return m_AsCDATA == AsCDATA::Always;
-			}
-			bool SetCDATA(bool value) override
-			{
-				m_AsCDATA = value ? AsCDATA::Always : AsCDATA::Never;
-				return true;
-			}
-			void SetCDATA(AsCDATA asCDATA) noexcept
-			{
-				m_AsCDATA = asCDATA;
-			}
-
-			size_t GetIndexWithinParent() const override
-			{
-				return m_Index;
-			}
+			size_t GetIndexWithinParent() const override;
+			size_t GetRelativeIndexWithinParent() const override;
 			String GetName() const override
 			{
-				return m_SectionName;
+				return m_KeyName;
 			}
-			bool SetName(const String& name) override
+
+			// INIDocumentSection
+			bool DoesExist() const;
+			bool SetName(const String& name)
 			{
-				m_SectionName = name;
+				m_KeyName = name;
 				return true;
 			}
 
-			size_t GetChildrenCount() const override
+			String GetSectionName() const
 			{
-				return 0;
+				return m_SectionName;
 			}
-			bool ClearChildren() override
-			{
-				return false;
-			}
-			bool ClearNode() override;
+			INIDocumentSection GetSection() const;
 
-			size_t GetAttributeCount() const override;
-			CallbackResult<void> EnumAttributeNames(CallbackFunction<String> func) const override;
+			String GetComment() const;
+			bool SetComment(const String& comment);
+
+			bool HasAttributes() const
+			{
+				return GetAttributeCount() != 0;
+			}
+			size_t GetAttributeCount() const;
+			CallbackResult<void> EnumAttributeNames(CallbackFunction<String> func) const;
+			CallbackResult<void> EnumAttributeValues(const String& name, CallbackFunction<String> func) const;
 
 			bool HasAttribute(const String& name) const;
 			bool RemoveAttribute(const String& name);
-			bool ClearAttributes();
+			bool Remove();
+			bool Clear();
 
-			// INIDocumentSection
-			String GetComment() const
-			{
-				return m_Comment;
-			}
-			void SetComment(String comment)
-			{
-				m_Comment = std::move(comment);
-			}
-
-			CallbackResult<void> EnumKeyNames(CallbackFunction<String> func, bool uniqueOnly = false) const;
-			CallbackResult<void> EnumAttributeValues(const String& name, CallbackFunction<String> func) const;
+			void CommitAttributes();
 
 		public:
-			INIDocumentSection& operator=(const INIDocumentSection&) = default;
-			INIDocumentSection& operator=(INIDocumentSection&& other) noexcept
+			INIDocumentValue& operator=(const INIDocumentValue&) = default;
+			INIDocumentValue& operator=(INIDocumentValue&& other) noexcept
 			{
 				m_Ref = std::exchange(other.m_Ref, nullptr);
-				m_AsCDATA = std::exchange(other.m_AsCDATA, AsCDATA::Auto);
+				m_Attributes = std::move(other.m_Attributes);
 				m_SectionName = std::move(other.m_SectionName);
-				m_Comment = std::move(other.m_Comment);
-				m_Index = std::exchange(other.m_Index, npos);
+				m_KeyName = std::move(other.m_KeyName);
+				m_ExtendedSyntaxEnabled = std::exchange(other.m_ExtendedSyntaxEnabled, false);
 
 				return *this;
 			}
@@ -143,34 +134,122 @@ namespace kxf
 
 namespace kxf
 {
-	class KXF_API INIDocument final: public INIDocumentSection, public IObject
+	class KXF_API INIDocumentSection final: public IXDocumentNode,
+											public XDocument::RWValue<INIDocumentSection>,
+											public XDocument::RWAttribute<INIDocumentSection>,
+											private XDocument::DefaultConverter<INIDocumentSection>
 	{
+		friend class ROValue;
+		friend class RWValue;
+		friend class ROAttribute;
+		friend class RWAttribute;
+		friend class DefaultConverter;
+
+		friend class INIDocument;
+		friend class INIDocumentImpl;
+		friend class INIDocumentValue;
+
+		private:
+			INIDocument* m_Ref = nullptr;
+			String m_SectionName;
+
+		private:
+			// XDocument::RWValue
+			std::optional<String> XDocument_QueryValue() const;
+			bool XDocument_WriteValue(const String& value, AsCDATA asCDATA);
+
+			// XDocument::RWAttribute
+			std::optional<String> XDocument_QueryAttribute(const String& name) const;
+			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
+
+		public:
+			INIDocumentSection() = default;
+			INIDocumentSection(const INIDocumentSection&) = default;
+			INIDocumentSection(INIDocumentSection&& other) noexcept
+			{
+				*this = std::move(other);
+			}
+		private:
+			INIDocumentSection(INIDocument& document, String sectionName)
+				:m_Ref(&document), m_SectionName(std::move(sectionName))
+			{
+			}
+
+		public:
+			// IXDocumentNode
+			bool IsNull() const override
+			{
+				return m_Ref == nullptr;
+			}
+			String GetXPath() const override;
+
+			size_t GetIndexWithinParent() const override;
+			size_t GetRelativeIndexWithinParent() const override;
+			String GetName() const override
+			{
+				return m_SectionName;
+			}
+
+			// INIDocumentSection
+			bool DoesExist() const;
+			bool SetName(const String& name)
+			{
+				m_SectionName = name;
+				return true;
+			}
+
+			String GetComment() const;
+			bool SetComment(const String& comment);
+
+			bool HasAttributes() const
+			{
+				return GetAttributeCount() != 0;
+			}
+			size_t GetAttributeCount() const;
+			CallbackResult<void> EnumAttributeNames(CallbackFunction<String> func, bool uniqueOnly = false) const;
+			CallbackResult<void> EnumAttributeValues(const String& name, CallbackFunction<String> func) const;
+			INIDocumentValue QueryAttributeValue(const String& name) const;
+
+			bool HasAttribute(const String& name) const;
+			bool RemoveAttribute(const String& name);
+			bool Remove();
+			bool Clear();
+
+		public:
+			INIDocumentSection& operator=(const INIDocumentSection&) = default;
+			INIDocumentSection& operator=(INIDocumentSection&& other) noexcept
+			{
+				m_Ref = std::exchange(other.m_Ref, nullptr);
+				m_SectionName = std::move(other.m_SectionName);
+
+				return *this;
+			}
+	};
+}
+
+namespace kxf
+{
+	class KXF_API INIDocument final: public RTTI::DynamicImplementation<INIDocument, IXDocument>,
+									 public XDocument::RWAttribute<INIDocument>,
+									 private XDocument::DefaultConverter<INIDocument>
+	{
+		kxf_RTTI_DeclareIID(INIDocument, {0xd8bae2c7, 0xd44d, 0x4073, {0x91, 0x53, 0x82, 0x5f, 0x38, 0xc2, 0x5, 0x3b}});
+
+		friend class ROAttribute;
+		friend class RWAttribute;
+		friend class DefaultConverter;
+
+		friend class INIDocumentValue;
 		friend class INIDocumentSection;
-		friend class XDocument::XNode<INIDocument>;
 
 		private:
 			std::unique_ptr<INIDocumentImpl> m_Document;
 			FlagSet<INIDocumentOption> m_Options;
 
-		protected:
-			// IXNode
-			std::optional<String> DoGetValue() const override
-			{
-				return IniDoGetValue(m_SectionName, {});
-			}
-			bool DoSetValue(const String& value, WriteEmpty writeEmpty, AsCDATA asCDATA) override
-			{
-				return IniDoSetValue(m_SectionName, {}, value, m_Comment, writeEmpty, asCDATA);
-			}
-
-			std::optional<String> DoGetAttribute(const String& name) const override
-			{
-				return IniDoGetValue(m_SectionName, name);
-			}
-			bool DoSetAttribute(const String& name, const String& value, WriteEmpty writeEmpty) override
-			{
-				return IniDoSetValue(m_SectionName, name, value, m_Comment, writeEmpty, m_AsCDATA);
-			}
+		private:
+			// XDocument::RWAttribute
+			std::optional<String> XDocument_QueryAttribute(const String& name) const;
+			bool XDocument_WriteAttribute(const String& name, const String& value, AsCDATA asCDATA);
 
 			// IObject
 			RTTI::QueryInfo DoQueryInterface(const IID& iid) noexcept override;
@@ -180,8 +259,8 @@ namespace kxf
 			bool DoLoad(const char* ini, size_t length);
 			void DoUnload();
 
-			std::optional<String> IniDoGetValue(const String& sectionName, const String& keyName, String* comment = nullptr) const;
-			bool IniDoSetValue(const String& sectionName, const String& keyName, const String& value, const String& comment = {}, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto);
+			std::optional<String> IniDoGetValue(const String& sectionName, const String& keyName, String* comment = nullptr, size_t* order = nullptr) const;
+			bool IniDoSetValue(const String& sectionName, const String& keyName, const String& value, const String& comment = {}, AsCDATA asCDATA = AsCDATA::Auto);
 
 			bool RemoveQuotes(String& value) const;
 			bool RemoveInlineComments(String& value, String* comment = nullptr) const;
@@ -195,153 +274,136 @@ namespace kxf
 			{
 				if (!ini.IsEmpty())
 				{
-					Load(ini);
+					LoadDocument(ini);
 				}
-			}
-			INIDocument(IInputStream& stream)
-				:INIDocument()
-			{
-				Load(stream);
 			}
 			INIDocument(const INIDocument&) = delete;
 			INIDocument(INIDocument&& other) noexcept;
 			~INIDocument();
 
 		public:
-			// IXNode
+			// IXDocument
 			bool IsNull() const override;
-			String GetXPath() const override
-			{
-				return {};
-			}
+			String GetDocumentMeta() const override;
 
-			size_t GetIndexWithinParent() const override
-			{
-				return npos;
-			}
-			String GetName() const override
-			{
-				return {};
-			}
-			bool SetName(const String& name) override
-			{
-				return false;
-			}
+			bool LoadDocument(IInputStream& stream);
+			bool SaveDocument(IOutputStream& stream) const;
 
-			size_t GetChildrenCount() const override;
-			bool HasChildren() const override;
-			bool ClearChildren() override;
-			bool ClearNode() override;
-
-			// XNode
-			INIDocumentSection QueryElement(const String& XPath) const override;
-			INIDocumentSection ConstructElement(const String& XPath) override;
-
-			CallbackResult<void> EnumChildren(CallbackFunction<INIDocumentSection> func) const override;
-			INIDocumentSection GetFirstChild() const override;
-			INIDocumentSection GetLastChild() const override;
-
-		public:
 			// INIDocument
-			bool Load(const String& ini);
-			bool Load(std::span<const char8_t> utf8Data);
-			bool Load(IInputStream& stream);
-			bool Save(IOutputStream& stream) const;
-			String Save() const;
+			bool LoadDocument(const String& ini);
+			bool LoadDocument(std::span<const char8_t> utf8Data);
+			String SaveDocument() const;
+
 			INIDocument Clone() const;
+			void Clear();
 
 			FlagSet<INIDocumentOption> GetOptions() const;
 			void SetOptions(FlagSet<INIDocumentOption> options);
 
+			String GetComment() const;
+			bool SetComment(String comment);
+
+			// INIDocument: Sections
+			INIDocumentSection QuerySection(const String& sectionName) const;
+			CallbackResult<void> EnumSections(CallbackFunction<INIDocumentSection> func) const;
 			CallbackResult<void> EnumSectionNames(CallbackFunction<String> func) const;
-			CallbackResult<void> EnumSectionItems(const String& sectionName, CallbackFunction<String, String> func) const;
-			CallbackResult<void> EnumKeyNames(const String& sectionName, CallbackFunction<String> func, bool uniqueOnly = false) const;
-			CallbackResult<void> EnumKeyValues(const String& sectionName, const String& keyName, CallbackFunction<String> func) const;
-			using INIDocumentSection::EnumKeyNames;
+			CallbackResult<void> EnumSectionValues(const String& sectionName, CallbackFunction<String, String> func) const;
 
+			size_t GetSectionCount() const;
 			bool HasSection(const String& sectionName) const;
-			bool HasValue(const String& sectionName, const String& keyName) const;
+			bool ClearSection(const String& sectionName);
+			bool RemoveSection(const String& sectionName);
 
-			bool RemoveSection(const String& sectionName, bool removeEmpty = true);
-			bool RemoveValue(const String& sectionName, const String& keyName, bool removeEmpty = true);
+			// INIDocument: Attributes
+			INIDocumentValue QuerySectionValue(const String& sectionName, const String& keyName) const;
+			CallbackResult<void> EnumAttributeNames(const String& sectionName, CallbackFunction<String> func, bool uniqueOnly = false) const;
+			CallbackResult<void> EnumAttributeValues(const String& sectionName, const String& keyName, CallbackFunction<String> func) const;
 
-			std::optional<String> IniQueryValue(const String& sectionName, const String& keyName) const
+			bool HasSectionAttribute(const String& sectionName, const String& keyName) const;
+			bool RemoveSectionAttribute(const String& sectionName, const String& keyName);
+
+			template<class T = String>
+			requires(std::is_same_v<T, String>)
+			std::optional<T> QuerySectionAttribute(const String& sectionName, const String& keyName) const
 			{
 				return IniDoGetValue(sectionName, keyName);
 			}
-			String IniGetValue(const String& sectionName, const String& keyName, const String& defaultValue = {}) const
-			{
-				return IniDoGetValue(sectionName, keyName).value_or(defaultValue);
-			}
-			int64_t IniGetValueInt(const String& sectionName, const String& keyName, int64_t defaultValue = 0) const
-			{
-				return IniGetValueIntWithBase(sectionName, keyName, 10, defaultValue);
-			}
-			int64_t IniGetValueIntWithBase(const String& sectionName, const String& keyName, int base, int64_t defaultValue = 0) const
+
+			template<class T>
+			requires(std::is_same_v<T, bool>)
+			std::optional<T> QuerySectionAttribute(const String& sectionName, const String& keyName) const
 			{
 				if (auto value = IniDoGetValue(sectionName, keyName))
 				{
-					if (auto iValue = ParseInt(*value, base))
-					{
-						return *iValue;
-					}
+					return XDocument_ConvertToBool(*value);
 				}
-				return defaultValue;
-			}
-			double IniGetValueFloat(const String& sectionName, const String& keyName, double defaultValue = 0.0) const
-			{
-				if (auto value = IniDoGetValue(sectionName, keyName))
-				{
-					if (auto iValue = ParseFloat(*value))
-					{
-						return *iValue;
-					}
-				}
-				return defaultValue;
-			}
-			bool IniGetValueBool(const String& sectionName, const String& keyName, bool defaultValue = false) const
-			{
-				if (auto value = IniDoGetValue(sectionName, keyName))
-				{
-					if (auto bValue = ParseBool(*value))
-					{
-						return *bValue;
-					}
-				}
-				return defaultValue;
+				return {};
 			}
 
-			bool IniSetValue(const String& sectionName, const String& keyName, const String& value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+			template<class T>
+			requires(std::is_same_v<T, void*>)
+			std::optional<T> QuerySectionAttribute(const String& sectionName, const String& keyName) const
 			{
-				return IniDoSetValue(sectionName, keyName, value, {}, writeEmpty, asCDATA);
+				if (auto value = IniDoGetValue(sectionName, keyName))
+				{
+					return XDocument_ConvertToPointer(*value);
+				}
+				return {};
 			}
-			bool IniSetValue(const String& sectionName, const String& keyName, const char* value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+
+			template<class T>
+			requires((std::is_integral_v<T> || std::is_enum_v<T>) && !std::is_same_v<T, bool>)
+			std::optional<T> QuerySectionAttribute(const String& sectionName, const String& keyName) const
 			{
-				return IniDoSetValue(sectionName, keyName, String::FromUTF8(value), {}, writeEmpty, asCDATA);
+				if (auto value = IniDoGetValue(sectionName, keyName))
+				{
+					return XDocument_ConvertToInt<T>(*value);
+				}
+				return {};
 			}
-			bool IniSetValue(const String& sectionName, const String& keyName, const wchar_t* value, WriteEmpty writeEmpty = WriteEmpty::Always, AsCDATA asCDATA = AsCDATA::Auto)
+
+			template<class T>
+			requires(std::is_floating_point_v<T>)
+			std::optional<T> QuerySectionAttribute(const String& sectionName, const String& keyName) const
 			{
-				return IniDoSetValue(sectionName, keyName, String(value), {}, writeEmpty, asCDATA);
+				if (auto value = IniDoGetValue(sectionName, keyName))
+				{
+					return XDocument_ConvertToFloat<T>(*value);
+				}
+				return {};
 			}
-			bool IniSetValue(const String& sectionName, const String& keyName, int64_t value)
+
+			template<class T = String>
+			T GetSectionAttribute(const String& sectionName, const String& keyName) const
 			{
-				return IniDoSetValue(sectionName, keyName, FormatInt(value), {}, WriteEmpty::Always);
+				return QuerySectionAttribute<T>(sectionName, keyName).value_or(T{});
 			}
-			bool IniSetValue(const String& sectionName, const String& keyName, int value)
+
+			bool SetSectionAttribute(const String& sectionName, const String& keyName, const String& value, AsCDATA asCDATA = AsCDATA::Auto)
 			{
-				return IniDoSetValue(sectionName, keyName, FormatInt(value), {}, WriteEmpty::Always);
+				return IniDoSetValue(sectionName, keyName, value, {}, asCDATA);
 			}
-			bool IniSetValue(const String& sectionName, const String& keyName, double value, int precision = -1)
+			bool SetSectionAttribute(const String& sectionName, const String& keyName, bool value)
 			{
-				return IniDoSetValue(sectionName, keyName, FormatFloat(value, precision), {}, WriteEmpty::Always);
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromBool(value), {}, AsCDATA::Never);
 			}
-			bool IniSetValue(const String& sectionName, const String& keyName, float value, int precision = -1)
+			bool SetSectionAttribute(const String& sectionName, const String& keyName, void* value)
 			{
-				return IniDoSetValue(sectionName, keyName, FormatFloat(static_cast<double>(value), precision), {}, WriteEmpty::Always);
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromPointer(value), {}, AsCDATA::Never);
 			}
-			bool IniSetValue(const String& sectionName, const String& keyName, bool value)
+
+			template<class T>
+			requires(std::is_integral_v<T> && !std::is_same_v<T, bool>)
+			bool SetSectionAttribute(const String& sectionName, const String& keyName, T value)
 			{
-				return IniDoSetValue(sectionName, keyName, FormatBool(value), {}, WriteEmpty::Always);
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromInt<T>(value), {}, AsCDATA::Never);
+			}
+
+			template<class T>
+			requires(std::is_floating_point_v<T>)
+			bool SetSectionAttribute(const String& sectionName, const String& keyName, T value, int precision = -1)
+			{
+				return IniDoSetValue(sectionName, keyName, XDocument_ConvertFromFloat<T>(value, precision), {}, AsCDATA::Never);
 			}
 
 		public:
@@ -357,14 +419,14 @@ namespace kxf
 	{
 		uint64_t Serialize(IOutputStream& stream, const INIDocument& value) const
 		{
-			return BinarySerializer<String>().Serialize(stream, value.Save());
+			return BinarySerializer<String>().Serialize(stream, value.SaveDocument());
 		}
 		uint64_t Deserialize(IInputStream& stream, INIDocument& value) const
 		{
 			String buffer;
 			auto read = BinarySerializer<String>().Deserialize(stream, buffer);
 
-			value.Load(buffer);
+			value.LoadDocument(buffer);
 			return read;
 		}
 	};

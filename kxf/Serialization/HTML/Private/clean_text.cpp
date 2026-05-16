@@ -25,7 +25,7 @@
 #pragma warning(disable: 4005) // macro redefinition
 #include "gumbo.h"
 
-static std::string cleantext(GumboNode* node) {
+static std::string cleantext(GumboNode* node, std::string_view separator) {
   if (node->type == GUMBO_NODE_TEXT) {
     return std::string(node->v.text.text);
   } else if (node->type == GUMBO_NODE_ELEMENT &&
@@ -34,9 +34,9 @@ static std::string cleantext(GumboNode* node) {
     std::string contents = "";
     GumboVector* children = &node->v.element.children;
     for (unsigned int i = 0; i < children->length; ++i) {
-      const std::string text = cleantext((GumboNode*) children->data[i]);
+      const std::string text = cleantext((GumboNode*) children->data[i], separator);
       if (i != 0 && !text.empty()) {
-        contents.append(" ");
+        contents.append(separator);
       }
       contents.append(text);
     }
@@ -48,8 +48,8 @@ static std::string cleantext(GumboNode* node) {
 
 namespace kxf::HTML::Private
 {
-	std::string gumbo_ex_cleantext(GumboNode* node)
+	std::string gumbo_ex_cleantext(const GumboNode* node, std::string_view separator)
 	{
-		return cleantext(node);
+		return cleantext(const_cast<GumboNode*>(node), separator);
 	}
 }

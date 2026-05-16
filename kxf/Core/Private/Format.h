@@ -262,7 +262,7 @@ namespace kxf
 	template<class TFormat, class... Args>
 	String& String::FormatAt(size_t position, const TFormat& format, Args&&... arg)
 	{
-		position = std::clamp(position, 0, m_String.size());
+		position = std::clamp<size_t>(position, 0, m_String.size());
 		Private::DoFormatTo(std::inserter(m_String, m_String.begin() + position), StringViewOf(format), std::forward<Args>(arg)...);
 
 		return *this;

@@ -1,51 +1,52 @@
 #pragma once
 #include "../Common.h"
 #include "kxf/IO/IStream.h"
-#include "kxf/Core/ILibraryInfo.h"
+#include "../XDocument.h"
+#include "../BinarySerializer.h"
 #include <nlohmann/json.hpp>
 
 namespace kxf
 {
-	class KXF_API JSONDocument final: public nlohmann::json, public ILibraryInfo
+	class KXF_API JSONDocument final: public RTTI::DynamicImplementation<JSONDocument, IXDocument>
 	{
+		kxf_RTTI_DeclareIID(JSONDocument, {0x8a798487, 0x31c, 0x467d, {0x9a, 0x66, 0xb, 0x28, 0xf4, 0x63, 0x74, 0xaa}});
+
 		private:
-			nlohmann::json& AsBase() noexcept
-			{
-				return static_cast<nlohmann::json&>(*this);
-			}
-			const nlohmann::json& AsBase() const noexcept
-			{
-				return static_cast<const nlohmann::json&>(*this);
-			}
+			// IObject
+			RTTI::QueryInfo DoQueryInterface(const IID& iid) noexcept override;
+
+		private:
+			nlohmann::json m_Impl;
 
 		public:
-			using nlohmann::json::json;
+			JSONDocument() = default;
 			JSONDocument(const String& json)
 			{
-				Load(json);
+				LoadDocument(json);
 			}
-			JSONDocument(IInputStream& stream)
+
+		public:
+			// IXDocument
+			bool IsNull() const override;
+			String GetDocumentMeta() const override;
+
+			bool LoadDocument(IInputStream& stream) override;
+			bool SaveDocument(IOutputStream& stream) const override;
+
+			// JSONDocument
+			const nlohmann::json& json() const noexcept
 			{
-				Load(stream);
+				return m_Impl;
+			}
+			nlohmann::json& json() noexcept
+			{
+				return m_Impl;
 			}
 
-		public:
-			String Save() const;
-			bool Save(IOutputStream& stream) const;
+			bool LoadDocument(const String& json);
+			String SaveDocument() const;
 
-			bool Load(const String& json);
-			bool Load(IInputStream& stream);
-
-		public:
-			// ILibraryInfo
-			String GetName() const override;
-			Version GetVersion() const override;
-			URI GetHomePage() const override;
-			uint32_t GetAPILevel() const override;
-
-			String GetLicense() const override;
-			String GetLicenseName() const override;
-			String GetCopyright() const override;
+			void ClearDocument();
 	};
 }
 
@@ -54,20 +55,20 @@ namespace nlohmann
 	template<>
 	struct adl_serializer<kxf::String> final
 	{
-		static void to_json(json& jsonDocument, const kxf::String& value)
+		static void to_json(json& json, const kxf::String& value)
 		{
-			auto utf8 = value.ToUTF8();
-			jsonDocument = std::string_view(utf8.data(), utf8.length());
+			auto utf8 = value.utf8_str();
+			json = std::string_view(utf8.data(), utf8.length());
 		}
-		static void from_json(const json& jsonDocument, kxf::String& value)
+		static void from_json(const json& json, kxf::String& value)
 		{
-			if (jsonDocument.is_null())
+			if (json.is_null())
 			{
 				value.clear();
 			}
 			else
 			{
-				const json::string_t& string = jsonDocument.get_ref<const json::string_t&>();
+				auto& string = json.get_ref<const json::string_t&>();
 				value = kxf::String::FromUTF8({string.data(), string.length()});
 			}
 		}
@@ -81,14 +82,14 @@ namespace kxf
 	{
 		uint64_t Serialize(IOutputStream& stream, const JSONDocument& value) const
 		{
-			return BinarySerializer<String>().Serialize(stream, value.Save());
+			return BinarySerializer<String>().Serialize(stream, value.SaveDocument());
 		}
 		uint64_t Deserialize(IInputStream& stream, JSONDocument& value) const
 		{
 			String buffer;
 			auto read = BinarySerializer<String>().Deserialize(stream, buffer);
 
-			value.Load(buffer);
+			value.LoadDocument(buffer);
 			return read;
 		}
 	};

@@ -1,5 +1,6 @@
 #include "kxf-pch.h"
 #include "HTMLDocument.h"
+#include "kxf/IO/IStream.h"
 
 #pragma warning(disable: 4005) // macro redefinition
 #include "gumbo.h"
@@ -7,102 +8,140 @@
 
 namespace
 {
-	GumboOptions* GetOptions(void* options) noexcept
+	constexpr GumboOutput* CastOutput(void* output) noexcept
 	{
-		return reinterpret_cast<GumboOptions*>(options);
+		return static_cast<GumboOutput*>(output);
 	}
-	GumboOutput* GetOutput(void* output) noexcept
+
+	bool AnyError(const GumboOutput* output)
 	{
-		return reinterpret_cast<GumboOutput*>(output);
+		return output->errors.length != 0;
+	}
+	bool AnyErrorOfType(const GumboOutput* output, GumboErrorType errorType)
+	{
+		if (auto errors = reinterpret_cast<GumboError**>(output->errors.data))
+		{
+			for (size_t i = 0; i < output->errors.length; i++)
+			{
+				if (errors[i]->type == errorType)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
 
 namespace kxf
 {
-	void HTMLDocument::Init()
+	class HTMLDocument::ImplOptions final: public GumboOptions
 	{
-		auto options = std::make_unique<GumboOptions>(kGumboDefaultOptions);
-		options->userdata = this;
+		public:
+			ImplOptions(const GumboOptions& options, HTMLDocument& ref) noexcept
+				:GumboOptions(options)
+			{
+				userdata = &ref;
+				tab_stop = 4;
+			}
+	};
+}
 
-		m_ParserOptions = options.release();
-	}
-	void HTMLDocument::DoLoad()
+namespace kxf
+{
+	// HTMLDocument
+	bool HTMLDocument::DoLoad()
 	{
-		m_ParserOutput = gumbo_parse_with_options(GetOptions(m_ParserOptions), reinterpret_cast<const char*>(m_Buffer.data()), m_Buffer.size());
-		SetNode(GetOutput(m_ParserOutput)->document);
+		// Make sure it's allocated on the heap so it won't cause any issues if the object is moved
+		m_Buffer.reserve(64);
+
+		m_ParserOutput = gumbo_parse_with_options(m_ParserOptions.get(), m_Buffer.data(), m_Buffer.size());
+		if (m_ParserOutput)
+		{
+			// HTMLDocumentNode
+			m_Node = CastOutput(m_ParserOutput)->document;
+			m_Document = this;
+
+			return !AnyErrorOfType(CastOutput(m_ParserOutput), GUMBO_ERR_PARSER);
+		}
+		return false;
 	}
 	void HTMLDocument::DoUnload()
 	{
 		if (m_ParserOutput)
 		{
-			gumbo_destroy_output(GetOptions(m_ParserOptions), GetOutput(m_ParserOutput));
+			gumbo_destroy_output(m_ParserOptions.get(), CastOutput(m_ParserOutput));
+			m_ParserOutput = nullptr;
 		}
-
-		SetNode(nullptr);
 		m_Buffer.clear();
-		m_ParserOutput = nullptr;
+
+		// HTMLDocumentNode
+		m_Node = nullptr;
+		m_Document = nullptr;
 	}
-	void HTMLDocument::Destroy()
+
+	// HTMLDocument
+	HTMLDocument::HTMLDocument()
+	{
+		m_ParserOptions = std::make_unique<ImplOptions>(kGumboDefaultOptions, *this);
+	}
+	HTMLDocument::~HTMLDocument()
 	{
 		DoUnload();
-
-		delete GetOptions(m_ParserOptions);
-		m_ParserOptions = nullptr;
 	}
 
-	const void* HTMLDocument::GetNode() const
-	{
-		return GetOutput(m_ParserOutput)->document;
-	}
-	void HTMLDocument::SetNode(void* node)
-	{
-		// Nothing to do
-		//GetOutput(m_ParserOutput)->document = reinterpret_cast<GumboNode*>(node);
-	}
-
-	bool HTMLDocument::Load(const String& htmlText)
-	{
-		DoUnload();
-
-		auto utf8 = htmlText.ToUTF8();
-		m_Buffer.resize(utf8.length());
-		std::memcpy(m_Buffer.data(), utf8.data(), utf8.length());
-
-		DoLoad();
-		return !IsNull();
-	}
-	bool HTMLDocument::Load(IInputStream& stream)
-	{
-		DoUnload();
-		m_Buffer.resize(stream.GetSize().ToBytes());
-		stream.Read(m_Buffer.data(), m_Buffer.size());
-		m_Buffer.resize(stream.LastRead().ToBytes());
-
-		DoLoad();
-		return !IsNull();
-	}
-	bool HTMLDocument::Save(IOutputStream& stream) const
-	{
-		auto utf8 = GetHTML().ToUTF8();
-		return stream.WriteAll(utf8.data(), utf8.length());
-	}
-
+	// IXDocument
 	bool HTMLDocument::IsNull() const
 	{
 		if (!m_Buffer.empty() && m_ParserOutput)
 		{
-			if (GumboError** errors = reinterpret_cast<GumboError**>(GetOutput(m_ParserOutput)->errors.data))
-			{
-				for (size_t i = 0; i < GetOutput(m_ParserOutput)->errors.length; i++)
-				{
-					if (errors[i]->type == GUMBO_ERR_PARSER)
-					{
-						return true;
-					}
-				}
-			}
-			return false;
+			return AnyErrorOfType(CastOutput(m_ParserOutput), GUMBO_ERR_PARSER);
 		}
 		return true;
+	}
+	String HTMLDocument::GetDocumentMeta() const
+	{
+		return {};
+	}
+
+	bool HTMLDocument::LoadDocument(IInputStream& stream)
+	{
+		DoUnload();
+
+		m_Buffer.resize(stream.GetSize().ToBytes());
+		stream.Read(m_Buffer.data(), m_Buffer.size());
+		m_Buffer.resize(stream.LastRead().ToBytes());
+		return DoLoad();
+	}
+	bool HTMLDocument::SaveDocument(IOutputStream& stream) const
+	{
+		return SerializeSubtree(stream);
+	}
+
+	// HTMLDocument
+	bool HTMLDocument::LoadDocument(const String& html)
+	{
+		DoUnload();
+
+		m_Buffer = html.ToUTF8();
+		return DoLoad();
+	}
+	String HTMLDocument::SaveDocument() const
+	{
+		return SerializeSubtree();
+	}
+
+	HTMLDocument& HTMLDocument::operator=(HTMLDocument&& other) noexcept
+	{
+		// HTMLDocumentNode
+		m_Node = std::exchange(other.m_Node, nullptr);
+		m_Document = std::exchange(other.m_Document, nullptr);
+
+		// HTMLDocument
+		m_Buffer = std::move(other.m_Buffer);
+		m_ParserOptions = std::move(other.m_ParserOptions);
+		m_ParserOutput = std::exchange(other.m_ParserOutput, nullptr);
+
+		return *this;
 	}
 }

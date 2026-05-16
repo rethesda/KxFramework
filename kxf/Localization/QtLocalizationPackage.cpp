@@ -11,13 +11,13 @@ namespace kxf
 			m_Items.clear();
 		}
 
-		if (XMLNode tsNode = xml.QueryElement("TS"))
+		if (XMLDocumentNode tsNode = xml.QueryElement("TS"))
 		{
 			m_Locale = tsNode.GetAttribute("language");
 			m_Version = tsNode.GetAttribute("version");
 
 			size_t count = 0;
-			auto AddItem = [&](const XMLNode& messageNode, const String& contextName, ResourceID id, LocalizationItem item)
+			auto AddItem = [&](const XMLDocumentNode& messageNode, const String& contextName, ResourceID id, LocalizationItem item)
 			{
 				if (item)
 				{
@@ -40,11 +40,11 @@ namespace kxf
 				return false;
 			};
 
-			tsNode.EnumChildElements([&](XMLNode contextNode)
+			tsNode.EnumChildElements([&](XMLDocumentNode contextNode)
 			{
 				auto contextName = contextNode.GetFirstChildElement("name").GetValue();
 
-				contextNode.EnumChildElements([&](XMLNode messageNode)
+				contextNode.EnumChildElements([&](XMLDocumentNode messageNode)
 				{
 					auto id = messageNode.GetFirstChildElement("source").GetValue();
 					auto value = messageNode.GetFirstChildElement("translation").GetValue();
