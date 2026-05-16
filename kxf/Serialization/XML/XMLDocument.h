@@ -2,7 +2,6 @@
 #include "../Common.h"
 #include "../XDocument.h"
 #include "../BinarySerializer.h"
-#include "kxf/Core/ILibraryInfo.h"
 
 namespace tinyxml2
 {

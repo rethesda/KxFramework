@@ -1,33 +1,101 @@
 #include "kxf-pch.h"
 #include "JSONDocument.h"
 #include "kxf/Network/URI.h"
+#include "kxf/IO/IStream.h"
 #include "kxf/IO/StreamReaderWriter.h"
+#include "kxf/Core/ILibraryInfo.h"
 #include "kxf/Utility/SoftwareLicenseDB.h"
-#include <wx/string.h>
 
 namespace
 {
-	constexpr char g_Copyright[] = "Copyright© 2013-2023 Niels Lohmann";
+	constexpr char g_Copyright[] = "Copyright© 2013-2025 Niels Lohmann";
 }
 
 namespace kxf
 {
-	String JSONDocument::Save() const
+	// IObject
+	RTTI::QueryInfo JSONDocument::DoQueryInterface(const IID& iid) noexcept
 	{
-		try
+		if (iid.IsOfType<ILibraryInfo>())
 		{
-			return String::FromUTF8(AsBase().dump(1, '\t'));
+			class XMLDocumentLibraryInfo final: public ILibraryInfo
+			{
+				public:
+				// ILibraryInfo
+				String GetName() const override
+				{
+					return "JSON for Modern C++";
+				}
+				Version GetVersion() const override
+				{
+					return {NLOHMANN_JSON_VERSION_MAJOR, NLOHMANN_JSON_VERSION_MINOR, NLOHMANN_JSON_VERSION_PATCH};
+				}
+				URI GetHomePage() const override
+				{
+					return "https://github.com/nlohmann/json";
+				}
+				uint32_t GetAPILevel() const override
+				{
+					return NLOHMANN_JSON_VERSION_MAJOR * 1000 + NLOHMANN_JSON_VERSION_MINOR * 100 + NLOHMANN_JSON_VERSION_PATCH * 10;
+				}
+
+				String GetLicense() const override
+				{
+					return SoftwareLicenseDB::Get().GetText(SoftwareLicenseType::MIT, g_Copyright);
+				}
+				String GetLicenseName() const override
+				{
+					return SoftwareLicenseDB::Get().GetName(SoftwareLicenseType::MIT);
+				}
+				String GetCopyright() const override
+				{
+					return g_Copyright;
+				}
+			};
+
+			static XMLDocumentLibraryInfo libraryInfo;
+			return static_cast<ILibraryInfo&>(libraryInfo);
 		}
-		catch (...)
-		{
-			return {};
-		}
+		return DynamicImplementation::DoQueryInterface(iid);
 	}
-	bool JSONDocument::Save(IOutputStream& stream) const
+
+	// IXDocument
+	bool JSONDocument::IsNull() const
+	{
+		return m_Impl.empty();
+	}
+	String JSONDocument::GetDocumentMeta() const
+	{
+		return {};
+	}
+
+	bool JSONDocument::LoadDocument(IInputStream& stream)
+	{
+		if (auto size = stream.GetSize())
+		{
+			try
+			{
+				IO::InputStreamReader reader(stream);
+
+				m_Impl = nlohmann::json::parse(reader.ReadStdString(size.ToBytes()), nullptr, false);
+				return !m_Impl.empty();
+			}
+			catch (...)
+			{
+				m_Impl.clear();
+			}
+		}
+		else
+		{
+			m_Impl.clear();
+		}
+		return false;
+	}
+	bool JSONDocument::SaveDocument(IOutputStream& stream) const
 	{
 		try
 		{
-			std::string string = AsBase().dump(1, '\t');
+			std::string string = m_Impl.dump(1, '\t');
 			return stream.WriteAll(string.data(), string.length());
 		}
 		catch (...)
@@ -36,70 +104,34 @@ namespace kxf
 		}
 	}
 
-	bool JSONDocument::Load(const String& json)
+	// JSONDocument
+	bool JSONDocument::LoadDocument(const String& json)
 	{
 		try
 		{
-			AsBase() = nlohmann::json::parse(json.ToUTF8(), nullptr, false);
-			return !this->empty();
+			m_Impl = nlohmann::json::parse(json.ToUTF8(), nullptr, false);
+			return !m_Impl.empty();
 		}
 		catch (...)
 		{
-			this->clear();
+			m_Impl.clear();
 			return false;
 		}
 	}
-	bool JSONDocument::Load(IInputStream& stream)
+	String JSONDocument::SaveDocument() const
 	{
-		if (auto size = stream.GetSize())
+		try
 		{
-			try
-			{
-				IO::InputStreamReader reader(stream);
-
-				AsBase() = nlohmann::json::parse(reader.ReadStdString(size.ToBytes()), nullptr, false);
-				return this->empty();
-			}
-			catch (...)
-			{
-				this->clear();
-			}
+			return String::FromUTF8(m_Impl.dump(1, '\t'));
 		}
-		else
+		catch (...)
 		{
-			this->clear();
+			return {};
 		}
-		return false;
 	}
 
-	// ILibraryInfo
-	String JSONDocument::GetName() const
+	void JSONDocument::ClearDocument()
 	{
-		return "JSON for Modern C++";
-	}
-	Version JSONDocument::GetVersion() const
-	{
-		return {NLOHMANN_JSON_VERSION_MAJOR, NLOHMANN_JSON_VERSION_MINOR, NLOHMANN_JSON_VERSION_PATCH};
-	}
-	URI JSONDocument::GetHomePage() const
-	{
-		return "https://github.com/nlohmann/json";
-	}
-	uint32_t JSONDocument::GetAPILevel() const
-	{
-		return NLOHMANN_JSON_VERSION_MAJOR * 1000 + NLOHMANN_JSON_VERSION_MINOR * 100 + NLOHMANN_JSON_VERSION_PATCH * 10;
-	}
-
-	String JSONDocument::GetLicense() const
-	{
-		return SoftwareLicenseDB::Get().GetText(SoftwareLicenseType::MIT, g_Copyright);
-	}
-	String JSONDocument::GetLicenseName() const
-	{
-		return SoftwareLicenseDB::Get().GetName(SoftwareLicenseType::MIT);
-	}
-	String JSONDocument::GetCopyright() const
-	{
-		return g_Copyright;
+		m_Impl.clear();
 	}
 }

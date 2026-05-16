@@ -2,6 +2,7 @@
 #include "XMLDocument.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/Network/URI.h"
+#include "kxf/Core/ILibraryInfo.h"
 #include "kxf/Utility/SoftwareLicenseDB.h"
 #include "TinyXML2.h"
 

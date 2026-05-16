@@ -5,8 +5,8 @@
 #include "kxf/IO/NullStream.h"
 #include "kxf/IO/StreamReaderWriter.h"
 #include "kxf/FileSystem/FSPath.h"
-#include "kxf/Serialization/JSON.h"
 #include "kxf/Serialization/XML.h"
+#include "kxf/Serialization/JSON.h"
 
 namespace kxf
 {
@@ -45,7 +45,7 @@ namespace kxf
 		if (auto stream = GetStream())
 		{
 			JSONDocument document;
-			if (document.Load(*stream))
+			if (document.LoadDocument(*stream))
 			{
 				return document;
 			}
