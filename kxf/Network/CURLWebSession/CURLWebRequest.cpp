@@ -5,7 +5,6 @@
 #include "LibCURL.h"
 #include "kxf/IO/IStream.h"
 #include "kxf/IO/MemoryStream.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/Container.h"
 #include "kxf/Utility/ScopeGuard.h"

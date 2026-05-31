@@ -19,7 +19,7 @@ namespace kxf
 			virtual void RemoveItem(size_t index) = 0;
 
 			virtual size_t GetItemCount() const = 0;
-			virtual Enumerator<std::shared_ptr<IToolBarWidgetItem>> EnumItems() = 0;
+			virtual CallbackResult<void> EnumItems(CallbackFunction<std::shared_ptr<IToolBarWidgetItem>> func) = 0;
 
 			virtual std::shared_ptr<IToolBarWidgetItem> GetItemByID(const WidgetID& id) = 0;
 			virtual std::shared_ptr<IToolBarWidgetItem> GetItemByIndex(size_t index) = 0;

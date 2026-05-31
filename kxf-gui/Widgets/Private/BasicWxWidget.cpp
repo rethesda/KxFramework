@@ -1,7 +1,6 @@
 #include "kxf-pch.h"
 #include "BasicWxWidget.h"
 #include "kxf/System/NativeAPI.h"
-#include "kxf/Utility/Enumerator.h"
 #include "kxf/Utility/String.h"
 #include "kxf/wxWidgets/MapCore.h"
 #include "kxf-gui/Drawing/GDIRenderer/GDIFont.h"
@@ -457,12 +456,19 @@ namespace kxf::Private
 		}
 		return nullptr;
 	}
-	Enumerator<std::shared_ptr<IWidget>> BasicWxWidgetBase::EnumChildWidgets() const
+	CallbackResult<void> BasicWxWidgetBase::EnumChildWidgets(CallbackFunction<std::shared_ptr<IWidget>> func) const
 	{
-		return Utility::EnumerateIterableContainer<std::shared_ptr<IWidget>>(m_Window->GetChildren(), [](wxWindow* window)
+		for (wxWindow* window: m_Window->GetChildren())
 		{
-			return FindByWXObject(*window);
-		});
+			if (auto widget = FindByWXObject(*window))
+			{
+				if (func.Invoke(std::move(widget)).ShouldTerminate())
+				{
+					break;
+				}
+			}
+		}
+		return func.Finalize();
 	}
 
 	// Sibling and parent management functions

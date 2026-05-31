@@ -60,7 +60,7 @@ namespace kxf
 	}
 	DataSize WSPPWebResponse::GetContentLength() const
 	{
-		if (auto value = GetHeader("Content-Length").ToInteger<int64_t>())
+		if (auto value = GetHeader("Content-Length").ParseInteger<int64_t>())
 		{
 			return DataSize::FromBytes(*value);
 		}
@@ -83,11 +83,18 @@ namespace kxf
 		}
 		return {};
 	}
-	Enumerator<WebRequestHeader> WSPPWebResponse::EnumHeaders() const
+	CallbackResult<void> WSPPWebResponse::EnumHeaders(CallbackFunction<WebRequestHeader> func) const
 	{
-		return Utility::EnumerateIterableContainer<WebRequestHeader>(m_Request.m_ResponseHeaders);
+		for (const auto& item: m_Request.m_ResponseHeaders)
+		{
+			if (func.Invoke(item).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
-	Enumerator<String> WSPPWebResponse::EnumCookies() const
+	CallbackResult<void> WSPPWebResponse::EnumCookies(CallbackFunction<String> func) const
 	{
 		return {};
 	}

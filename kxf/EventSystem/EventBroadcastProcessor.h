@@ -43,12 +43,17 @@ namespace kxf
 		friend class EventBroadcastReceiver;
 
 		public:
-			using Order = EvtHandlerStack::Order;
+			enum class Order
+			{
+				Default = -1,
+				LastToFirst,
+				FirstToLast
+			};
 
 		private:
 			EventSystem::BroadcastProcessorHandler m_EvtHandler;
 			EvtHandlerStack m_Stack;
-			Order m_Order = Order::LastToFirst;
+			EvtHandlerStack::Order m_Order;
 
 		protected:
 			virtual bool PreProcessEvent(IEvent& event)
@@ -60,36 +65,26 @@ namespace kxf
 			}
 
 		public:
-			EventBroadcastProcessor()
-				:EvtHandlerDelegate(m_EvtHandler), m_EvtHandler(*this), m_Stack(m_EvtHandler)
-			{
-			}
+			EventBroadcastProcessor();
 			virtual ~EventBroadcastProcessor() = default;
 
 		public:
 			bool AddReceiver(EventBroadcastReceiver& reciever);
 			bool RemoveReceiver(EventBroadcastReceiver& reciever);
 
-			bool HasReceiveres() const
+			bool HasReceivers() const
 			{
 				return m_Stack.HasChainedItems();
 			}
-			size_t GetReceiveresCount() const
+			size_t GetReceiversCount() const
 			{
 				return m_Stack.GetCount();
 			}
 
-			Enumerator<IEvtHandler&> EnumReceiveres(Order order) const;
-			Enumerator<IEvtHandler&> EnumReceiveres() const;
+			CallbackResult<void> EnumReceivers(CallbackFunction<IEvtHandler&> func, Order order = Order::Default) const;
 
-			Order GetReceiversOrder() const
-			{
-				return m_Order;
-			}
-			void SetReceiversOrder(Order order)
-			{
-				m_Order = order;
-			}
+			Order GetReceiversOrder() const;
+			void SetReceiversOrder(Order order);
 	};
 }
 

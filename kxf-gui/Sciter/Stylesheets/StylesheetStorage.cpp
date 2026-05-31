@@ -5,7 +5,6 @@
 #include "../Widget.h"
 #include "../Private/Conversion.h"
 #include "kxf/Utility/Container.h"
-#include "kxf/Utility/Enumerator.h"
 
 namespace
 {
@@ -60,35 +59,55 @@ namespace kxf::Sciter
 	size_t StylesheetStorage::CopyItems(const StylesheetStorage& other)
 	{
 		size_t count = 0;
-		for (const String& item: other.EnumItems())
+		other.EnumItems([&](const String& item)
 		{
 			if (AddItem(item))
 			{
 				count++;
 			}
-		};
+			return CallbackCommand::Continue;
+		});
+
 		return count;
 	}
 	size_t StylesheetStorage::TakeItems(StylesheetStorage&& other)
 	{
 		size_t count = 0;
-		for (String& item: std::move(other).EnumItems())
+		std::move(other).EnumItems([&](String item)
 		{
 			if (AddItem(std::move(item)))
 			{
 				count++;
 			}
-		};
+			return CallbackCommand::Continue;
+		});
+
 		return count;
 	}
 
-	Enumerator<const String&> StylesheetStorage::EnumItems() const&
+	CallbackResult<void> StylesheetStorage::EnumItems(CallbackFunction<const String&> func) const&
 	{
-		return Utility::EnumerateIndexableContainer<const String&>(m_Items);
+		for (auto& item: m_Items)
+		{
+			if (func.Invoke(item).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
-	Enumerator<kxf::String> StylesheetStorage::EnumItems() &&
+	CallbackResult<void> StylesheetStorage::EnumItems(CallbackFunction<String> func) &&
 	{
-		return Utility::EnumerateIndexableContainer<String>(std::move(m_Items));
+		for (auto& item: m_Items)
+		{
+			if (func.Invoke(std::move(item)).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		m_Items.clear();
+
+		return func.Finalize();
 	}
 
 	bool StylesheetStorage::Apply(Host& host, const FSPath& basePath) const

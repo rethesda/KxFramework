@@ -2,19 +2,22 @@
 #include "WebView.h"
 #include "kxf/Core/Version.h"
 #include "kxf/Network/URI.h"
-#include "kxf/Utility/Enumerator.h"
 #include <wx/webview.h>
 
 namespace
 {
-	kxf::Enumerator<kxf::IWebViewWidget::HistoryItem> EnumHistory(wxVector<wxSharedPtr<wxWebViewHistoryItem>> items)
+	kxf::CallbackResult<void> EnumHistory(wxVector<wxSharedPtr<wxWebViewHistoryItem>> items, kxf::CallbackFunction<kxf::IWebViewWidget::HistoryItem>& func)
 	{
 		using namespace kxf;
 
-		return Utility::EnumerateIterableContainer<IWebViewWidget::HistoryItem>(std::move(items), [](const wxSharedPtr<wxWebViewHistoryItem>& item) -> IWebViewWidget::HistoryItem
+		for (auto& item: items)
 		{
-			return {item->GetUrl(), item->GetTitle()};
-		});
+			if (func.Invoke({item->GetUrl(), item->GetTitle()}).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
 }
 
@@ -248,13 +251,13 @@ namespace kxf::Widgets
 	{
 		Get()->ClearHistory();
 	}
-	Enumerator<IWebViewWidget::HistoryItem> WebView::EnumBackwardHistory() const
+	CallbackResult<void> WebView::EnumBackwardHistory(CallbackFunction<HistoryItem> func) const
 	{
-		return EnumHistory(const_cast<WebView*>(this)->Get()->GetBackwardHistory());
+		return EnumHistory(const_cast<WebView*>(this)->Get()->GetBackwardHistory(), func);
 	}
-	Enumerator<IWebViewWidget::HistoryItem> WebView::EnumForwardHistory() const
+	CallbackResult<void> WebView::EnumForwardHistory(CallbackFunction<HistoryItem> func) const
 	{
-		return EnumHistory(const_cast<WebView*>(this)->Get()->GetForwardHistory());
+		return EnumHistory(const_cast<WebView*>(this)->Get()->GetForwardHistory(), func);
 	}
 
 	// Selection

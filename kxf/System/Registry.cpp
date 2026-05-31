@@ -2,7 +2,6 @@
 #include "Registry.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/String.h"
-#include "kxf/Utility/Enumerator.h"
 
 #include <Windows.h>
 #include "kxf/Win32/UndefMacros.h"
@@ -347,43 +346,49 @@ namespace kxf
 		return RegistryValueType::None;
 	}
 
-	Enumerator<String> RegistryKey::EnumKeyNames() const
+	CallbackResult<void> RegistryKey::EnumKeyNames(CallbackFunction<String> func) const
 	{
 		DWORD keyCount = 0;
 		m_LastError = ::RegQueryInfoKeyW(AsHKEY(m_Handle), nullptr, nullptr, nullptr, &keyCount, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 		if (m_LastError && keyCount != 0)
 		{
-			return Utility::MakeEnumerator([this, index = 0ui32]() mutable -> String
-			{
-				wchar_t keyNameBuffer[g_MaxKeyNameLength] = {};
-				DWORD keyNameLength = std::size(keyNameBuffer);
+			wchar_t keyNameBuffer[g_MaxKeyNameLength] = {};
+			DWORD keyNameLength = std::size(keyNameBuffer);
 
-				if (m_LastError = ::RegEnumKeyExW(AsHKEY(m_Handle), index++, keyNameBuffer, &keyNameLength, nullptr, nullptr, nullptr, nullptr))
+			for (size_t i = 0; i < keyCount; i++)
+			{
+				if (m_LastError = ::RegEnumKeyExW(AsHKEY(m_Handle), i, keyNameBuffer, &keyNameLength, nullptr, nullptr, nullptr, nullptr))
 				{
-					return String(keyNameBuffer, keyNameLength);
+					if (func.Invoke(String(keyNameBuffer, keyNameLength)).ShouldTerminate())
+					{
+						break;
+					}
 				}
-				return {};
-			}, keyCount);
+			}
+			return func.Finalize();
 		}
 		return {};
 	}
-	Enumerator<String> RegistryKey::EnumValueNames() const
+	CallbackResult<void> RegistryKey::EnumValueNames(CallbackFunction<String> func) const
 	{
 		DWORD valueCount = 0;
 		m_LastError = ::RegQueryInfoKeyW(AsHKEY(m_Handle), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &valueCount, nullptr, nullptr, nullptr, nullptr);
 		if (m_LastError && valueCount != 0)
 		{
-			return Utility::MakeEnumerator([this, index = 0ui32]() mutable -> String
-			{
-				wchar_t valueNameBuffer[g_MaxValueNameLength] = {};
-				DWORD valueNameLength = std::size(valueNameBuffer);
+			wchar_t valueNameBuffer[g_MaxValueNameLength] = {};
+			DWORD valueNameLength = std::size(valueNameBuffer);
 
-				if (m_LastError = ::RegEnumValueW(AsHKEY(m_Handle), index++, valueNameBuffer, &valueNameLength, nullptr, nullptr, nullptr, nullptr))
+			for (size_t i = 0; i < valueCount; i++)
+			{
+				if (m_LastError = ::RegEnumValueW(AsHKEY(m_Handle), i, valueNameBuffer, &valueNameLength, nullptr, nullptr, nullptr, nullptr))
 				{
-					return String(valueNameBuffer, valueNameLength);
+					if (func.Invoke(String(valueNameBuffer, valueNameLength)).ShouldTerminate())
+					{
+						break;
+					}
 				}
-				return {};
-			}, valueCount);
+			}
+			return func.Finalize();
 		}
 		return {};
 	}

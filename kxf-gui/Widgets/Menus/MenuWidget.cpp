@@ -7,7 +7,6 @@
 #include "../Events/MenuWidgetEvent.h"
 #include "kxf/Threading/Common.h"
 #include "kxf/Utility/Drawing.h"
-#include "kxf/Utility/Enumerator.h"
 #include "kxf-gui/Drawing/GraphicsRenderer.h"
 #include <wx/menu.h>
 #include <wx/colour.h>
@@ -435,7 +434,7 @@ namespace kxf::Widgets
 	{
 		return nullptr;
 	}
-	Enumerator<std::shared_ptr<IWidget>> MenuWidget::EnumChildWidgets() const
+	CallbackResult<void> MenuWidget::EnumChildWidgets(CallbackFunction<std::shared_ptr<IWidget>> func) const
 	{
 		return {};
 	}
@@ -554,14 +553,21 @@ namespace kxf::Widgets
 	{
 		return m_Menu ? m_Menu->GetMenuItemCount() : 0;
 	}
-	Enumerator<std::shared_ptr<IMenuWidgetItem>> MenuWidget::EnumMenuItems() const
+	CallbackResult<void> MenuWidget::EnumMenuItems(CallbackFunction<std::shared_ptr<IMenuWidgetItem>> func) const
 	{
 		if (m_Menu)
 		{
-			return Utility::EnumerateIterableContainer<std::shared_ptr<IMenuWidgetItem>>(m_Menu->GetMenuItems(), [&](const wxMenuItem* item)
+			for (const wxMenuItem* item: m_Menu->GetMenuItems())
 			{
-				return FindByWXMenuItem(*item);
-			});
+				if (auto menuItem = FindByWXMenuItem(*item))
+				{
+					if (func.Invoke(std::move(menuItem)).ShouldTerminate())
+					{
+						break;
+					}
+				}
+			}
+			return func.Finalize();
 		}
 		return {};
 	}

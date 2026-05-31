@@ -1,6 +1,5 @@
 #include "kxf-pch.h"
 #include "EventHandlerStack.h"
-#include "kxf/Core/Enumerator.h"
 
 namespace kxf
 {
@@ -29,15 +28,17 @@ namespace kxf
 		if (!evtHandler.IsUnlinked())
 		{
 			// Is it part of our chain?
-			for (IEvtHandler& chainItem: EnumItems(Order::LastToFirst))
+			auto result = EnumItems([&](IEvtHandler& chainItem)
 			{
 				// Unlink it
 				if (&chainItem == &evtHandler)
 				{
 					chainItem.Unlink();
-					return true;
+					return CallbackCommand::Terminate;
 				}
-			};
+				return CallbackCommand::Continue;
+			}, Order::LastToFirst);
+			return result.RequestedToTerminate();
 		}
 		return false;
 	}
@@ -67,15 +68,19 @@ namespace kxf
 
 	size_t EvtHandlerStack::GetCount() const noexcept
 	{
-		return EnumItems(Order::LastToFirst).CalcTotalCount();
+		return EnumItems({}, Order::LastToFirst).GetCount();
 	}
-	Enumerator<IEvtHandler&> EvtHandlerStack::EnumItems(Order order, bool chainedItemsOnly) const noexcept
+	CallbackResult<void> EvtHandlerStack::EnumItems(CallbackFunction<IEvtHandler&> func, Order order, bool chainedItemsOnly) const noexcept
 	{
-		return [item = order == Order::FirstToLast ? m_Base : m_Top, this, order, chainedItemsOnly]() mutable -> optional_ref<IEvtHandler>
+		for (IEvtHandler* item = (order == Order::FirstToLast ? m_Base : m_Top); item; )
 		{
-			if (item && (!chainedItemsOnly || item != m_Base))
+			if (!chainedItemsOnly || item != m_Base)
 			{
-				auto result = item;
+				if (func.Invoke(*item).ShouldTerminate())
+				{
+					break;
+				}
+
 				if (order == Order::FirstToLast)
 				{
 					item = item->GetPrevHandler();
@@ -84,10 +89,8 @@ namespace kxf
 				{
 					item = item->GetNextHandler();
 				}
-
-				return *result;
 			}
-			return {};
-		};
+		}
+		return func.Finalize();
 	}
 }

@@ -41,7 +41,7 @@ namespace kxf
 			virtual std::shared_ptr<IMenuWidgetItem> GetDefaultItem() const = 0;
 
 			virtual size_t GetMenuItemCount() const = 0;
-			virtual Enumerator<std::shared_ptr<IMenuWidgetItem>> EnumMenuItems() const = 0;
+			virtual CallbackResult<void> EnumMenuItems(CallbackFunction<std::shared_ptr<IMenuWidgetItem>> func) const = 0;
 
 			virtual void Show(Point pos = Point::UnspecifiedPosition(), FlagSet<Alignment> alignment = {}) = 0;
 			virtual void ShowAt(const IWidget& widget, Point pos = Point::UnspecifiedPosition(), FlagSet<Alignment> alignment = {}) = 0;

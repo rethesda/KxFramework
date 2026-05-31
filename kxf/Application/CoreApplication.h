@@ -277,7 +277,7 @@ namespace kxf
 			void InitializeCommandLine(char** argv, size_t argc) override;
 			void InitializeCommandLine(wchar_t** argv, size_t argc) override;
 
-			Enumerator<String> EnumCommandLineArgs() const override;
+			CallbackResult<void> EnumCommandLineArgs(CallbackFunction<String> func) const override;
 			void OnCommandLineInit(CommandLineParser& parser) override;
 			bool OnCommandLineParsed(CommandLineParser& parser) override;
 			bool OnCommandLineError(CommandLineParser& parser) override;

@@ -84,13 +84,13 @@ It's all my own projects to be honest.
 - [xSE PluginPreloader](https://github.com/Karandra/xSE-PluginPreloader) is an utility for Bethesda games to load some XSE plugins before game's own static initializers were run.
 - [PrivateProfileRedirector](https://github.com/Karandra/PrivateProfileRedirector) - a quality-of-life mod to reduce some Bethesda games startup time due to its inefficient configuration loading methods.
 
-Most of them, one way or another, are related to Bethesda games too...
+Most of them, in one way or another, are related to Bethesda games too...
 
 # Future plans
 - Fully implement **Sciter** UI module for a more modern and flexible GUI library backend. Or find something with better documentation.
 - Eventually get rid of **wxWidgets** and native controls or, at least, hide wxWidgets inside the implementation part. Removing wxWidgets altogether would require a fully ready to use Sciter module and many other changes.
-- Either get rid of the `Enumerator` code (and revert all the code changes for it) or rewrite it to use C++20  coroutines. While being an interesting experiment, in its current state it's no better than a simple callback function while consuming a lot of maintenance time whenever I have to use it.
-  - Partially mitigated by a new `CallbackFunction` class and adapters for it, but it's not used in many places yet.
+- ~~Either get rid of the `Enumerator` code (and revert all the code changes for it) or rewrite it to use C++20 coroutines. While being an interesting experiment, in its current state it's no better than a simple callback function while consuming a lot of maintenance time whenever I have to use it.~~
+  - Fully replaced by `CallbackFunction` class now.
 - Incorporate any useful code from [KxVirtualFileSystem](https://github.com/Karandra/KxVirtualFileSystem) and [PrivateProfileRedirector](https://github.com/Karandra/PrivateProfileRedirector) code bases and make them use this framework.
   - PrivateProfileRedirector is done now.
 - Update old code to use newer C++ features.

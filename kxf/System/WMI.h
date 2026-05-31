@@ -4,7 +4,6 @@
 #include "UserCredentials.h"
 #include "kxf/Core/Any.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/FileSystem/FSPath.h"
 #include "kxf/Localization/Locale.h"
 struct IWbemLocator;
@@ -64,11 +63,11 @@ namespace kxf
 		public:
 			bool IsNull() const noexcept;
 
-			Enumerator<String> EnumClassNames() const;
-			Enumerator<String> EnumChildNamespaces() const;
+			CallbackResult<void> EnumClassNames(CallbackFunction<String> func, TimeSpan timeout = {}) const;
+			CallbackResult<void> EnumChildNamespaces(CallbackFunction<String> func, TimeSpan timeout = {}) const;
 
-			Enumerator<WMIClassObject> ExecuteQuery(const kxf::String& query);
-			Enumerator<WMIClassObject> SelectAll(const kxf::String& fromLocation);
+			CallbackResult<void> ExecuteQuery(const kxf::String& query, CallbackFunction<WMIClassObject> func, TimeSpan timeout = {});
+			CallbackResult<void> SelectAll(const kxf::String& fromLocation, CallbackFunction<WMIClassObject> func, TimeSpan timeout = {});
 
 		public:
 			explicit operator bool() const noexcept
@@ -106,7 +105,7 @@ namespace kxf
 			String GetName() const;
 			String GetClassName() const;
 
-			Enumerator<String> EnumPropertyNames(FlagSet<WMIClassObjectFlag> flags = {}) const;
+			CallbackResult<void> EnumPropertyNames(CallbackFunction<String> func, FlagSet<WMIClassObjectFlag> flags = {}) const;
 			Any GetProperty(const kxf::String& name) const;
 
 			WMIQualifierSet GetQualifierSet() const;
@@ -153,8 +152,8 @@ namespace kxf
 		public:
 			bool IsNull() const noexcept;
 
-			Enumerator<std::pair<String, Any>> EnumQualifiers() const;
-			Enumerator<String> EnumNames(FlagSet<WMIClassObjectFlag> flags = {}) const;
+			CallbackResult<void> EnumQualifiers(CallbackFunction<String, Any> func, FlagSet<WMIClassObjectFlag> flags = {}) const;
+			CallbackResult<void> EnumNames(CallbackFunction<String> func, FlagSet<WMIClassObjectFlag> flags = {}) const;
 			Any GetValue(const kxf::String& name) const;
 
 		public:

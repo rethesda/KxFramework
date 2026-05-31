@@ -801,16 +801,7 @@
     <ClInclude Include="kxf\RTTI\Interface.h">
       <Filter>kxf\RTTI</Filter>
     </ClInclude>
-    <ClInclude Include="kxf\Core\IEnumerator.h">
-      <Filter>kxf\Core</Filter>
-    </ClInclude>
     <ClInclude Include="kxf\Utility\Literals.h">
-      <Filter>kxf\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Core\Enumerator.h">
-      <Filter>kxf\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Utility\Enumerator.h">
       <Filter>kxf\Utility</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Utility\Functional.h">
@@ -827,9 +818,6 @@
     </ClInclude>
     <ClInclude Include="kxf\System\WMI.h">
       <Filter>kxf\System</Filter>
-    </ClInclude>
-    <ClInclude Include="kxf\Utility\RecursiveCollectionEnumerator.h">
-      <Filter>kxf\Utility</Filter>
     </ClInclude>
     <ClInclude Include="kxf\Core\ILibraryInfo.h">
       <Filter>kxf\Core</Filter>

@@ -68,15 +68,6 @@ namespace kxf
 
 namespace kxf
 {
-	Enumerator<WebRequestHeader> NullWebResponse::EnumHeaders() const
-	{
-		return {};
-	}
-	Enumerator<String> NullWebResponse::EnumCookies() const
-	{
-		return {};
-	}
-
 	FSPath NullWebResponse::GetSuggestedFilePath() const
 	{
 		return {};

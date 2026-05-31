@@ -1,5 +1,6 @@
 #pragma once
 #include "kxf/Common.hpp"
+#include "kxf/Core/CallbackFunction.h"
 #include <typeinfo>
 #include <type_traits>
 #include <string_view>
@@ -29,7 +30,7 @@ namespace kxf::RTTI
 		return T::ms_ClassInfo;
 	}
 
-	KXF_API Enumerator<const ClassInfo&> EnumClassInfo() noexcept;
+	KXF_API CallbackResult<void> EnumClassInfo(CallbackFunction<const ClassInfo&> func) noexcept;
 
 	KXF_API const ClassInfo* GetClassInfoByInterfaceID(const IID& iid) noexcept;
 	KXF_API const ClassInfo* GetClassInfoByName(const char* fullyQualifiedName) noexcept;

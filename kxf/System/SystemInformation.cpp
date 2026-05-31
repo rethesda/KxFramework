@@ -1,6 +1,6 @@
 #include "kxf-pch.h"
 
-// Make sure WinSock2 is included first because 'wx/msw/private.h' included 'Windows.h' and 'Private/SystemInformationDefinesMapping.h' includes it too
+// Make sure WinSock2 is included first because 'wx/msw/private.h' includes 'Windows.h' and 'Private/SystemInformationDefinesMapping.h' includes it too
 #include "kxf/Win32/Include-Network.h"
 #include "kxf/Win32/WrapperUnicode.h"
 #include "kxf/Win32/UndefMacros.h"
@@ -13,7 +13,6 @@
 #include "Private/SystemInformationDefinesMapping.h"
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/ScopeGuard.h"
-#include "kxf/Utility/Enumerator.h"
 #include "kxf/Utility/Literals.h"
 #include "kxf/Utility/Memory.h"
 #include "kxf/Utility/String.h"
@@ -497,15 +496,12 @@ namespace kxf::System
 	{
 		return wxSystemSettings::HasFeature(static_cast<wxSystemFeature>(feature));
 	}
-	Enumerator<String> EnumStandardSounds()
+	CallbackResult<void> EnumStandardSounds(CallbackFunction<String> func)
 	{
 		RegistryKey key(RegistryRootKey::CurrentUser, "AppEvents\\EventLabels", RegistryAccess::Read|RegistryAccess::Enumerate);
 		if (key)
 		{
-			return Utility::MakeForwardingEnumerator([](String&& value, IEnumerator& enumerator)
-			{
-				return value;
-			}, std::move(key), &RegistryKey::EnumKeyNames);
+			return key.EnumKeyNames(std::move(func));
 		}
 		return {};
 	}
@@ -529,13 +525,13 @@ namespace kxf::System
 		}
 		return {};
 	}
-	Enumerator<DisplayInfo> EnumDisplayModes(const String& deviceName)
+	CallbackResult<void> EnumDisplayModes(CallbackFunction<DisplayInfo> func, const String& deviceName)
 	{
-		return [deviceName, index = 0ui32]() mutable -> std::optional<DisplayInfo>
+		for (DWORD i = 0; true; i++)
 		{
 			DEVMODEW deviceMode = {};
 			deviceMode.dmSize = sizeof(deviceMode);
-			if (::EnumDisplaySettingsW(deviceName.IsEmpty() ? nullptr : deviceName.wc_str(), index++, &deviceMode))
+			if (::EnumDisplaySettingsW(deviceName.IsEmpty() ? nullptr : deviceName.wc_str(), i, &deviceMode))
 			{
 				DisplayInfo displayInfo;
 				displayInfo.Width = deviceMode.dmPelsWidth;
@@ -543,22 +539,25 @@ namespace kxf::System
 				displayInfo.BitDepth = deviceMode.dmBitsPerPel;
 				displayInfo.RefreshRate = deviceMode.dmDisplayFrequency;
 
-				return displayInfo;
+				if (!func.Invoke(std::move(displayInfo)).ShouldTerminate())
+				{
+					continue;
+				}
 			}
-			return {};
-		};
+			break;
+		}
+		return func.Finalize();
 	}
-	Enumerator<DisplayDeviceInfo> EnumDisplayDevices(const String& deviceName)
+	CallbackResult<void> EnumDisplayDevices(CallbackFunction<DisplayDeviceInfo> func, const String& deviceName)
 	{
-		return [deviceName, index = 0ui32]() mutable -> std::optional<DisplayDeviceInfo>
+		for (DWORD i = 0; true; i++)
 		{
-			DISPLAY_DEVICEW displayDevice = {};
-			displayDevice.cb = sizeof(displayDevice);
-
-			auto GetCurrent = [&]()
+			auto GetDeviceAt = [](DWORD index, const String& deviceName, DISPLAY_DEVICEW& displayDevice)
 			{
+				displayDevice.cb = sizeof(displayDevice);
+
 				auto name = deviceName.IsEmpty() ? nullptr : deviceName.wc_str();
-				if (::EnumDisplayDevicesW(name, index++, &displayDevice, 0))
+				if (::EnumDisplayDevicesW(name, index, &displayDevice, 0))
 				{
 					using T = std::remove_extent_t<decltype(displayDevice.DeviceString)>;
 					return !std::basic_string_view<T>(displayDevice.DeviceString).empty();
@@ -566,7 +565,10 @@ namespace kxf::System
 				return false;
 			};
 
-			if (GetCurrent())
+			DISPLAY_DEVICEW displayDevice = {};
+			
+
+			if (GetDeviceAt(i, deviceName, displayDevice))
 			{
 				DisplayDeviceInfo deviceInfo;
 				deviceInfo.DeviceName = displayDevice.DeviceName;
@@ -586,12 +588,16 @@ namespace kxf::System
 				deviceInfo.Flags.Add(DisplayDeviceFlag::Disconnect, displayDevice.StateFlags & DISPLAY_DEVICE_DISCONNECT);
 				deviceInfo.Flags.Add(DisplayDeviceFlag::Remote, displayDevice.StateFlags & DISPLAY_DEVICE_REMOTE);
 
-				return deviceInfo;
+				if (!func.Invoke(std::move(deviceInfo)).ShouldTerminate())
+				{
+					continue;
+				}
 			}
-			return {};
-		};
+			break;
+		}
+		return func.Finalize();
 	}
-	Enumerator<DisplayAdapterInfo> EnumDisplayAdapters()
+	CallbackResult<void> EnumDisplayAdapters(CallbackFunction<DisplayAdapterInfo> func)
 	{
 		HResult hr = HResult::Fail();
 
@@ -612,13 +618,13 @@ namespace kxf::System
 
 		if (dxgiFactory && hr)
 		{
-			return [dxgiFactory = std::move(dxgiFactory), index = 0u](IEnumerator& enumerator) mutable -> std::optional<DisplayAdapterInfo>
+			for (uint32_t i = 0; true; i++)
 			{
 				COMPtr<IDXGIAdapter1> adapter;
-				if (dxgiFactory->EnumAdapters1(index, &adapter) != DXGI_ERROR_NOT_FOUND)
+				if (dxgiFactory->EnumAdapters1(i, &adapter) != DXGI_ERROR_NOT_FOUND)
 				{
 					DisplayAdapterInfo info = {};
-					info.Index = index++;
+					info.Index = i;
 
 					DXGI_ADAPTER_DESC1 description = {};
 					if (HResult(adapter->GetDesc1(&description)))
@@ -636,12 +642,15 @@ namespace kxf::System
 						info.Flags.Add(DisplayAdapterFlag::Software, description.Flags & DXGI_ADAPTER_FLAG_SOFTWARE);
 						info.Flags.Add(DisplayAdapterFlag::Remote, description.Flags & DXGI_ADAPTER_FLAG_REMOTE);
 
-						return info;
+						if (!func.Invoke(std::move(info)).ShouldTerminate())
+						{
+							continue;
+						}
 					}
-					enumerator.SkipCurrent();
 				}
-				return {};
-			};
+				break;
+			}
+			return func.Finalize();
 		}
 		return {};
 	}
@@ -674,27 +683,23 @@ namespace kxf::System
 	{
 		return ::SetEnvironmentVariableW(name.wc_str(), value.wc_str());
 	}
-	Enumerator<EnvironmentVariable> EnumEnvironmentVariables()
+	CallbackResult<void> EnumEnvironmentVariables(CallbackFunction<EnvironmentVariable> func)
 	{
-		return [item = ::GetEnvironmentStringsW()](IEnumerator& enumerator) mutable -> std::optional<EnvironmentVariable>
+		for (auto item = ::GetEnvironmentStringsW(); item; item += std::wcslen(item) + 1)
 		{
-			if (*item)
+			const wchar_t* separator = std::wcschr(item, L'=');
+			if (separator && separator != item)
 			{
-				auto current = item;
-				item += std::wcslen(item) + 1;
+				StringView name(item, separator - item);
+				StringView value(separator + 1);
 
-				const wchar_t* separator = std::wcschr(current, L'=');
-				if (separator && separator != current)
+				if (func.Invoke(EnvironmentVariable{.Name = name, .Value = value}).ShouldTerminate())
 				{
-					StringView name(current, separator - current);
-					StringView value(separator + 1);
-
-					return EnvironmentVariable{String(name), String(value)};
+					break;
 				}
-				enumerator.SkipCurrent();
 			}
-			return {};
-		};
+		}
+		return func.Finalize();
 	}
 
 	bool LockWorkstation(LockWorkstationCommand command) noexcept

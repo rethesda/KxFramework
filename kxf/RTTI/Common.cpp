@@ -2,42 +2,41 @@
 #include "Common.h"
 #include "ClassInfo.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/Enumerator.h"
-#include "kxf/Utility/Enumerator.h"
 
 namespace
 {
 	template<class TFunc>
 	const kxf::RTTI::ClassInfo* DoGetClassInfo(TFunc&& func) noexcept
 	{
+		using namespace kxf;
 		using namespace kxf::RTTI;
 
-		for (const ClassInfo& classInfo: EnumClassInfo())
+		const kxf::RTTI::ClassInfo* result = nullptr;
+		EnumClassInfo([&](const ClassInfo& classInfo)
 		{
 			if (std::invoke(func, classInfo))
 			{
-				return &classInfo;
+				result = &classInfo;
+				return CallbackCommand::Terminate;
 			}
-		};
-		return nullptr;
+			return CallbackCommand::Continue;
+		});
+		return result;
 	}
 }
 
 namespace kxf::RTTI
 {
-	Enumerator<const ClassInfo&> EnumClassInfo() noexcept
+	CallbackResult<void> EnumClassInfo(CallbackFunction<const ClassInfo&> func) noexcept
 	{
-		return [classInfo = ClassInfo::GetFirstClassInfo()]() mutable -> optional_ref<const ClassInfo>
+		for (auto classInfo = ClassInfo::GetFirstClassInfo(); classInfo; classInfo = classInfo->GetNextClassInfo())
 		{
-			if (classInfo)
+			if (func.Invoke(*classInfo).ShouldTerminate())
 			{
-				decltype(auto) ref = *classInfo;
-				classInfo = classInfo->GetNextClassInfo();
-
-				return ref;
+				break;
 			}
-			return {};
-		};
+		}
+		return func.Finalize();
 	}
 
 	const kxf::RTTI::ClassInfo* GetClassInfoByInterfaceID(const IID& iid) noexcept

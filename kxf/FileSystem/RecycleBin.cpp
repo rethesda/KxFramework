@@ -29,10 +29,6 @@ namespace
 
 namespace kxf
 {
-	RecycleBin::RecycleBin(LegacyVolume volume)
-		:RecycleBin(volume, nullptr)
-	{
-	}
 	RecycleBin::RecycleBin(LegacyVolume volume, std::shared_ptr<IFileSystem> fileSystem)
 		:m_Volume(volume), m_FileSystem(std::move(fileSystem))
 	{
@@ -44,7 +40,7 @@ namespace kxf
 			m_Path[3] = '\0';
 		}
 
-		if (m_FileSystem)
+		if (!m_FileSystem)
 		{
 			m_FileSystem = std::make_shared<kxf::NativeFileSystem>();
 		}
@@ -52,11 +48,11 @@ namespace kxf
 
 	bool RecycleBin::IsEnabled() const
 	{
-		return m_Volume && !GetSize().IsValid();
+		return m_Volume && GetSize().IsValid();
 	}
-	void RecycleBin::SetWindow(SystemWindow window)
+	void RecycleBin::SetHostWindow(SystemWindow window)
 	{
-		m_Window = std::move(window);
+		m_HostWindow = std::move(window);
 	}
 
 	DataSize RecycleBin::GetSize() const
@@ -77,15 +73,15 @@ namespace kxf
 	}
 	bool RecycleBin::ClearItems(FlagSet<FSActionFlag> flags)
 	{
-		DWORD emptyFlags = m_Window ? 0 : SHERB_NOCONFIRMATION|SHERB_NOPROGRESSUI|SHERB_NOSOUND;
-		return ::SHEmptyRecycleBinW(static_cast<HWND>(m_Window.GetHandle()), m_Path, emptyFlags) == S_OK;
+		DWORD emptyFlags = m_HostWindow ? 0 : SHERB_NOCONFIRMATION|SHERB_NOPROGRESSUI|SHERB_NOSOUND;
+		return ::SHEmptyRecycleBinW(static_cast<HWND>(m_HostWindow.GetHandle()), m_Path, emptyFlags) == S_OK;
 	}
 
 	FileItem RecycleBin::GetItem(const FSPath& path) const
 	{
 		throw std::logic_error(__FUNCTION__ ": the method or operation is not implemented.");
 	}
-	Enumerator<FileItem> RecycleBin::EnumItems() const
+	CallbackResult<void> RecycleBin::EnumItems(CallbackFunction<FileItem> func) const
 	{
 		throw std::logic_error(__FUNCTION__ ": the method or operation is not implemented.");
 	}
@@ -99,7 +95,7 @@ namespace kxf
 				FlagSet<SHOperationFlags> shellFlags = SHOperationFlags::AllowUndo|SHOperationFlags::Recursive;
 				shellFlags.Add(SHOperationFlags::LimitToFiles, flags & FSActionFlag::LimitToFiles);
 
-				return Shell::FileOperation(SHOperationType::Delete, path, {}, m_Window, shellFlags);
+				return Shell::FileOperation(SHOperationType::Delete, path, {}, m_HostWindow, shellFlags);
 			}
 			return false;
 		}
@@ -112,11 +108,11 @@ namespace kxf
 					FlagSet<SHOperationFlags> shellFlags = SHOperationFlags::AllowUndo;
 					shellFlags.Add(SHOperationFlags::Recursive, flags & FSActionFlag::Recursive);
 
-					return Shell::FileOperation(SHOperationType::Delete, path, {}, m_Window, shellFlags);
+					return Shell::FileOperation(SHOperationType::Delete, path, {}, m_HostWindow, shellFlags);
 				}
 				else
 				{
-					return Shell::FileOperation(SHOperationType::Delete, path, {}, m_Window, SHOperationFlags::AllowUndo|SHOperationFlags::LimitToFiles);
+					return Shell::FileOperation(SHOperationType::Delete, path, {}, m_HostWindow, SHOperationFlags::AllowUndo|SHOperationFlags::LimitToFiles);
 				}
 			}
 		}

@@ -292,9 +292,7 @@
     <ClInclude Include="kxf\Core\CombinedVariableCollection.h" />
     <ClInclude Include="kxf\Core\DynamicVariableCollection.h" />
     <ClInclude Include="kxf\Core\ErrorCode.h" />
-    <ClInclude Include="kxf\Core\Enumerator.h" />
     <ClInclude Include="kxf\Core\IEncodingConverter.h" />
-    <ClInclude Include="kxf\Core\IEnumerator.h" />
     <ClInclude Include="kxf\Core\IErrorCode.h" />
     <ClInclude Include="kxf\Core\ILibraryInfo.h" />
     <ClInclude Include="kxf\Core\IMemoryAllocator.h" />
@@ -423,10 +421,8 @@
     <ClInclude Include="kxf\Utility\ConstEvalString.h" />
     <ClInclude Include="kxf\Utility\RecursionGuard.h" />
     <ClInclude Include="kxf\Utility\CallbackAdapters.h" />
-    <ClInclude Include="kxf\Utility\Enumerator.h" />
     <ClInclude Include="kxf\Utility\Functional.h" />
     <ClInclude Include="kxf\Utility\Literals.h" />
-    <ClInclude Include="kxf\Utility\RecursiveCollectionEnumerator.h" />
     <ClInclude Include="kxf\Utility\SoftwareLicenseDB.h" />
     <ClInclude Include="kxf\Win32\Include-DirectX.h" />
     <ClInclude Include="kxf\Win32\Include-Network.h" />

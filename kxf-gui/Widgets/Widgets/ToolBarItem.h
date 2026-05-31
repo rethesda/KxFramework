@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "../IToolBarWidget.h"
 #include "../IToolBarWidgetItem.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/EventSystem/BasicEvtHandler.h"
 #include "kxf/EventSystem/EventHandlerStack.h"
 class wxAuiToolBarItem;

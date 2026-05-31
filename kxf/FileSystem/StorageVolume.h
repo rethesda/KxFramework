@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "FSPath.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/Core/UniversallyUniqueID.h"
 #include "kxf/Core/DataSize.h"
 
@@ -23,8 +24,8 @@ namespace kxf
 			};
 
 		public:
-			static Enumerator<StorageVolume> EnumVolumes();
-			static Enumerator<std::pair<StorageVolume, LegacyVolume>> EnumLegacyVolumes();
+			static CallbackResult<void> EnumVolumes(CallbackFunction<StorageVolume> func);
+			static CallbackResult<void> EnumLegacyVolumes(CallbackFunction<StorageVolume, LegacyVolume> func);
 
 			static bool RemoveMountPoint(const FSPath& path) noexcept;
 			static bool RemoveMountPoint(const LegacyVolume& volume) noexcept;
@@ -79,7 +80,7 @@ namespace kxf
 			DataSize GetFreeSpace() const noexcept;
 
 			LegacyVolume GetLegacyVolume() const;
-			Enumerator<FSPath> EnumMountPoints() const;
+			CallbackResult<void> EnumMountPoints(CallbackFunction<FSPath> func) const;
 			bool SetMountPoint(const FSPath& path);
 			bool SetMountPoint(const LegacyVolume& volume) noexcept;
 

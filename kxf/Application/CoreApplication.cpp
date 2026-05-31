@@ -2,7 +2,6 @@
 #include "CoreApplication.h"
 #include "Private/Utility.h"
 #include "Private/Win32ConsoleEventLoop.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/Log/ScopedLogger.h"
 #include "kxf/EventSystem/IEventExecutor.h"
 #include "kxf/EventSystem/IdleEvent.h"
@@ -666,11 +665,11 @@ namespace kxf
 		KXF_SCOPEDLOG.SetSuccess();
 	}
 
-	Enumerator<String> CoreApplication::EnumCommandLineArgs() const
+	CallbackResult<void> CoreApplication::EnumCommandLineArgs(CallbackFunction<String> func) const
 	{
 		if (m_CommandLineParser)
 		{
-			return m_CommandLineParser.EnumParameters();
+			return m_CommandLineParser.EnumParameters(std::move(func));
 		}
 		return {};
 	}

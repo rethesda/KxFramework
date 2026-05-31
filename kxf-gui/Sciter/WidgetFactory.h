@@ -17,7 +17,7 @@ namespace kxf::Sciter
 		public:
 			static std::unique_ptr<Widget> NewWidget(Host& host, const Element& element, const String& fullyQualifiedClassName);
 
-			static Enumerator<WidgetFactory&> EnumFactories();
+			static CallbackResult<void> EnumFactories(CallbackFunction<WidgetFactory&> func);
 			static void RegisterFactory(WidgetFactory& factory);
 			static void RegisterFactory(std::unique_ptr<WidgetFactory> factory);
 

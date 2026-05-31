@@ -4,7 +4,6 @@
 #include "../IGraphicsRendererAwareWidget.h"
 #include "../Private/WidgetFreezeHandler.h"
 #include "../Private/AnonymousNativeWindow.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/EventSystem/BasicEvtHandler.h"
 #include "kxf/EventSystem/EventHandlerStack.h"
 class wxMenu;
@@ -312,7 +311,7 @@ namespace kxf::Widgets
 
 			std::shared_ptr<IWidget> FindChildWidgetByID(WidgetID id) const override;
 			std::shared_ptr<IWidget> FindChildWidgetByName(const String& widgetName) const override;
-			Enumerator<std::shared_ptr<IWidget>> EnumChildWidgets() const override;
+			CallbackResult<void> EnumChildWidgets(CallbackFunction<std::shared_ptr<IWidget>> func) const override;
 
 			// Sibling and parent management functions
 			std::shared_ptr<IWidget> GetParentWidget() const override
@@ -521,7 +520,7 @@ namespace kxf::Widgets
 			std::shared_ptr<IMenuWidgetItem> GetDefaultItem() const override;
 
 			size_t GetMenuItemCount() const override;
-			Enumerator<std::shared_ptr<IMenuWidgetItem>> EnumMenuItems() const override;
+			CallbackResult<void> EnumMenuItems(CallbackFunction<std::shared_ptr<IMenuWidgetItem>> func) const override;
 
 			void Show(Point pos = Point::UnspecifiedPosition(), FlagSet<Alignment> alignment = {}) override;
 			void ShowAt(const IWidget& widget, Point pos = Point::UnspecifiedPosition(), FlagSet<Alignment> alignment = {}) override;

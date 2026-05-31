@@ -4,7 +4,6 @@
 #include "Host.h"
 #include "Element.h"
 #include "Stylesheets/MasterStylesheetStorage.h"
-#include "kxf/Utility/Enumerator.h"
 
 namespace
 {
@@ -15,19 +14,30 @@ namespace kxf::Sciter
 {
 	std::unique_ptr<Widget> WidgetFactory::NewWidget(Host& host, const Element& element, const String& fullyQualifiedClassName)
 	{
-		for (WidgetFactory& factory: EnumFactories())
+		std::unique_ptr<Widget> result;
+		EnumFactories([&](WidgetFactory& factory)
 		{
 			if (factory.GetFullyQualifiedClassName() == fullyQualifiedClassName)
 			{
-				return factory.CreateWidget(host, element);
+				result = factory.CreateWidget(host, element);
+				return CallbackCommand::Terminate;
 			}
-		}
-		return nullptr;
+			return CallbackCommand::Continue;
+		});
+
+		return result;
 	}
 
-	kxf::Enumerator<WidgetFactory&> WidgetFactory::EnumFactories()
+	CallbackResult<void> WidgetFactory::EnumFactories(CallbackFunction<WidgetFactory&> func)
 	{
-		return Utility::EnumerateIndexableContainer<WidgetFactory&, Utility::ReferenceOf>(g_RegisteredFactories);
+		for (auto& factory: g_RegisteredFactories)
+		{
+			if (func.Invoke(*factory).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
 	void WidgetFactory::RegisterFactory(WidgetFactory& factory)
 	{

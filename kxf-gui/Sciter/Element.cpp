@@ -9,7 +9,6 @@
 #include "Private/Conversion.h"
 #include "kxf/Core/RegEx.h"
 #include "kxf/Utility/Drawing.h"
-#include "kxf/Utility/Enumerator.h"
 
 #pragma warning(disable: 4312) // 'reinterpret_cast': conversion from 'UINT' to 'void *' of greater size
 
@@ -1195,23 +1194,14 @@ namespace kxf::Sciter
 	}
 
 	// Selectors
-	size_t Element::Select(const String& query, std::function<bool(Element)> onElement) const
+	CallbackResult<void> Element::Select(const String& query, CallbackFunction<Element> func) const
 	{
-		struct CallContext
-		{
-			decltype(onElement)& Callback;
-			size_t Count = 0;
-		};
-
-		CallContext context = {onElement};
 		GetSciterAPI()->SciterSelectElementsW(ToSciterElement(m_Handle), query.wc_str(), [](HELEMENT nativeElement, void* context) -> BOOL
 		{
-			CallContext& callContext = *reinterpret_cast<CallContext*>(context);
-			callContext.Count++;
-
-			return !std::invoke(callContext.Callback, FromSciterElement(nativeElement));
-		}, &context);
-		return context.Count;
+			auto& callback = *reinterpret_cast<decltype(func)*>(context);
+			return callback.Invoke(FromSciterElement(nativeElement)).ShouldTerminate();
+		}, &func);
+		return func.Finalize();
 	}
 	Element Element::SelectAny(const String& query) const
 	{
@@ -1219,40 +1209,28 @@ namespace kxf::Sciter
 		Select(query, [&](Element element)
 		{
 			result = std::move(element);
-			return false;
+			return CallbackCommand::Terminate;
 		});
 		return result;
 	}
-	Enumerator<Element> Element::SelectAll(const String& query) const
-	{
-		std::vector<Element> results;
-		Select(query, [&](Element element)
-		{
-			results.emplace_back(std::move(element));
-			return true;
-		});
-		return Utility::EnumerateIndexableContainer<Element>(std::move(results));
-	}
 
 	// Widgets
-	size_t Element::SelectWidgets(const String& query, std::function<bool(Widget&)> onWidget) const
+	CallbackResult<void> Element::SelectWidgets(const String& query, CallbackFunction<Widget&> func) const
 	{
 		auto DoSelectWidgets = [&](const String& query)
 		{
-			size_t count = 0;
 			Select(query, [&](Element element)
 			{
 				if (Widget* widget = Widget::FromElement(element))
 				{
-					count++;
-					if (!std::invoke(onWidget, *widget))
+					if (func.Invoke(*widget).ShouldTerminate())
 					{
-						return false;
+						return CallbackCommand::Terminate;
 					}
 				}
-				return true;
+				return CallbackCommand::Continue;
 			});
-			return count;
+			return func.Finalize();
 		};
 
 		if (query.IsEmptyOrWhitespace() || query == '*')
@@ -1270,19 +1248,9 @@ namespace kxf::Sciter
 		SelectWidgets(query, [&](Widget& widget)
 		{
 			result = &widget;
-			return false;
+			return CallbackCommand::Terminate;
 		});
 		return result;
-	}
-	Enumerator<Widget&> Element::SelectAllWidgets(const String& query) const
-	{
-		std::vector<Widget*> results;
-		SelectWidgets(query, [&](Widget& widget)
-		{
-			results.emplace_back(&widget);
-			return true;
-		});
-		return Utility::EnumerateIndexableContainer<Widget&, Utility::ReferenceOf>(std::move(results));
 	}
 
 	// Scripts
@@ -1290,6 +1258,7 @@ namespace kxf::Sciter
 	{
 		ScriptValue result;
 		GetSciterAPI()->SciterEvalElementScript(ToSciterElement(m_Handle), script.wc_str(), script.length(), ToSciterScriptValue(result.GetNativeValue()));
+
 		return result;
 	}
 }

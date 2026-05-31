@@ -4,7 +4,6 @@
 #include "Private/NativeFSUtility.h"
 #include "kxf/Application/ICoreApplication.h"
 #include "kxf/Core/UninitializedStorage.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/System/DynamicLibrary.h"
 #include "kxf/System/SystemInformation.h"
 #include "kxf/System/HandlePtr.h"
@@ -12,7 +11,6 @@
 #include "kxf/Utility/Common.h"
 #include "kxf/Utility/String.h"
 #include "kxf/Utility/ScopeGuard.h"
-#include "kxf/Utility/RecursiveCollectionEnumerator.h"
 #include <wx/filename.h>
 
 namespace
@@ -154,12 +152,16 @@ namespace kxf::FileSystem::Private
 			}
 	};
 
-	class NativeDirectoryEnumerator final: public RecursiveCollectionEnumerator<FileItem, FSPath>
+	class NativeDirectoryEnumerator final
 	{
 		private:
+			FSPath m_Path;
 			FSPath m_Query;
 			FlagSet<FSActionFlag> m_Flags;
-			bound_handle_ptr<HANDLE, ::FindClose, INVALID_HANDLE_VALUE> m_SearchHandle;
+
+			FSPath m_CurrentPath;
+			std::vector<FSPath> m_SubDirectories;
+			std::vector<FSPath> m_NextSubDirectories;
 
 		private:
 			String ConstructFullQuery(const FSPath& directory) const
@@ -173,13 +175,13 @@ namespace kxf::FileSystem::Private
 					return (directory / kxfS("*")).GetFullPathTryNS(FSPathNamespace::Win32File);
 				}
 			}
-			std::optional<FileItem> DoItem(IEnumerator& enumerator, WIN32_FIND_DATAW& findInfo, const FSPath& directory, std::vector<FSPath>& childDirectories)
+
+			CallbackCommand DoItem(CallbackFunction<FileItem>& callback, WIN32_FIND_DATAW& findInfo, const FSPath& directory, std::vector<FSPath>& childDirectories)
 			{
 				// Skip invalid items and current and parent directory links
 				if (!FileSystem::Private::IsValidFindItem(findInfo))
 				{
-					enumerator.SkipCurrent();
-					return {};
+					return CallbackCommand::Discard;
 				}
 
 				// Add directory to the stack if we need to scan child directories
@@ -193,8 +195,7 @@ namespace kxf::FileSystem::Private
 				// Filter files and/or directories
 				if ((m_Flags.Contains(FSActionFlag::LimitToFiles) && isDirectory) || (m_Flags.Contains(FSActionFlag::LimitToDirectories) && !isDirectory))
 				{
-					enumerator.SkipCurrent();
-					return {};
+					return CallbackCommand::Discard;
 				}
 
 				// Fetch the file info
@@ -203,48 +204,69 @@ namespace kxf::FileSystem::Private
 				// Make final path relative if needed
 				if (m_Flags.Contains(FSActionFlag::RelativePath))
 				{
-					fileItem.SetPath(fileItem.GetPath().GetAfter(GetRootPath()));
+					fileItem.SetPath(fileItem.GetPath().GetAfter(m_Path));
 				}
-				return fileItem;
+				return callback.Invoke(std::move(fileItem)).GetLastCommand();
 			};
-
-		protected:
-			std::optional<FileItem> SearchDirectory(IEnumerator& enumerator, const FSPath& directory, std::vector<FSPath>& childDirectories, bool& isSubTreeDone) override
+			CallbackCommand SearchDirectory(CallbackFunction<FileItem>& callback, const FSPath& directory, std::vector<FSPath>& childDirectories)
 			{
-				if (directory)
-				{
-					WIN32_FIND_DATAW findInfo = {};
-					if (!m_SearchHandle)
-					{
-						if (m_SearchHandle = FileSystem::Private::CallFindFirstFile(ConstructFullQuery(directory), findInfo, m_Flags & FSActionFlag::CaseSensitive))
-						{
-							return DoItem(enumerator, findInfo, directory, childDirectories);
-						}
-					}
-					else if (::FindNextFileW(*m_SearchHandle, &findInfo))
-					{
-						return DoItem(enumerator, findInfo, directory, childDirectories);
-					}
-					else
-					{
-						m_SearchHandle = nullptr;
-						isSubTreeDone = true;
+				CallbackCommand command = CallbackCommand::Continue;
 
-						// Skip this step if we need to scan subdirectories because otherwise we'd terminate the process
-						if (m_Flags.Contains(FSActionFlag::Recursive))
-						{
-							enumerator.SkipCurrent();
-						}
+				WIN32_FIND_DATAW findInfo = {};
+				bound_handle_ptr<HANDLE, ::FindClose, INVALID_HANDLE_VALUE> handle = FileSystem::Private::CallFindFirstFile(ConstructFullQuery(directory), findInfo, m_Flags & FSActionFlag::CaseSensitive);
+				while (handle && command != CallbackCommand::Terminate)
+				{
+					command = DoItem(callback, findInfo, directory, childDirectories);
+					if (command == CallbackCommand::Terminate)
+					{
+						break;
+					}
+
+					if (!::FindNextFileW(*handle, &findInfo))
+					{
+						break;
 					}
 				}
-				return {};
+
+				// Skip this step if we need to scan sub-directories because otherwise we'd terminate the process
+				if (m_Flags.Contains(FSActionFlag::Recursive))
+				{
+					return command;
+				}
+				return CallbackCommand::Terminate;
 			};
 
 		public:
-			NativeDirectoryEnumerator() = default;
-			NativeDirectoryEnumerator(FSPath rootPath, FSPath query, FlagSet<FSActionFlag> flags)
-				:RecursiveCollectionEnumerator(std::move(rootPath)), m_Query(std::move(query)), m_Flags(flags)
+			NativeDirectoryEnumerator(FSPath path, FSPath query, FlagSet<FSActionFlag> flags)
+				:m_Path(std::move(path)), m_Query(std::move(query)), m_Flags(flags)
 			{
+			}
+
+		public:
+			CallbackResult<void> Run(CallbackFunction<FileItem>& callback)
+			{
+				if (m_Path)
+				{
+					// Do the current level
+					CallbackCommand command = SearchDirectory(callback, m_Path, m_SubDirectories);
+
+					// Do the nested levels if we're allowed to and there are any
+					while (!m_SubDirectories.empty() && !callback.ShouldTerminate() && command != CallbackCommand::Terminate)
+					{
+						for (const FSPath& path: m_SubDirectories)
+						{
+							command = SearchDirectory(callback, path, m_NextSubDirectories);
+							if (callback.ShouldTerminate() || command == CallbackCommand::Terminate)
+							{
+								break;
+							}
+						}
+
+						m_SubDirectories = std::move(m_NextSubDirectories);
+					}
+					return callback.Finalize();
+				}
+				return {};
 			}
 	};
 }
@@ -332,7 +354,7 @@ namespace kxf
 			return {};
 		});
 	}
-	Enumerator<FileItem> NativeFileSystem::EnumItems(const FSPath& directory, const FSPath& query, FlagSet<FSActionFlag> flags) const
+	CallbackResult<void> NativeFileSystem::EnumItems(const FSPath& directory, CallbackFunction<FileItem> func, const FSPath& query, FlagSet<FSActionFlag> flags) const
 	{
 		// Invalid flags combination
 		if (flags.Contains(FSActionFlag::LimitToFiles|FSActionFlag::LimitToDirectories))
@@ -343,7 +365,7 @@ namespace kxf
 		FileSystem::Private::PathResolver pathResolver(*this);
 		return pathResolver.DoWithResolvedPath1(directory, [&](FSPath path)
 		{
-			return FileSystem::Private::NativeDirectoryEnumerator(std::move(path), query, flags);
+			return FileSystem::Private::NativeDirectoryEnumerator(std::move(path), query, flags).Run(func);
 		});
 	}
 
@@ -547,7 +569,7 @@ namespace kxf
 				if (flags.Contains(FSActionFlag::Recursive))
 				{
 					std::vector<String> directories;
-					for (const FileItem& item: EnumItems(path, {}, FSActionFlag::Recursive))
+					EnumItems(path, [&](FileItem item)
 					{
 						String filePath = item.GetPath().GetFullPathTryNS(FSPathNamespace::Win32File);
 						if (item.IsDirectory())
@@ -559,14 +581,15 @@ namespace kxf
 									// Defer deletion for later
 									directories.emplace_back(std::move(filePath));
 								}
-								return false;
+								return CallbackCommand::Terminate;
 							}
 						}
 						else if (!DoRemoveFile(filePath))
 						{
-							return false;
+							return CallbackCommand::Terminate;
 						}
-					}
+						return CallbackCommand::Continue;
+					}, {}, FSActionFlag::Recursive);
 					directories.emplace_back(path);
 
 					size_t failCount = 0;
@@ -656,7 +679,7 @@ namespace kxf
 		}
 		return {};
 	}
-	Enumerator<FileItem> NativeFileSystem::EnumItems(const UniversallyUniqueID& id, FlagSet<FSActionFlag> flags) const
+	CallbackResult<void> NativeFileSystem::EnumItems(const UniversallyUniqueID& id, CallbackFunction<FileItem> func, FlagSet<FSActionFlag> flags) const
 	{
 		return {};
 	}

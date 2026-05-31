@@ -3,7 +3,6 @@
 #include "Locale.h"
 #include "ILocalizationPackage.h"
 #include "kxf-gui/Widgets/WidgetID.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/System/DynamicLibrary.h"
 #include "kxf/wxWidgets/StandardLocalization.h"
 #include "kxf/Utility/String.h"
@@ -45,27 +44,25 @@ namespace kxf::Localization
 	CallbackResult<void> SearchPackages(const IFileSystem& fileSystem, const FSPath& directory, CallbackFunction<Locale, FileItem, String> func)
 	{
 		Utility::UnorderedSetIC<String> extensions;
-		for (auto&& classInfo: RTTI::GetClassInfo<ILocalizationPackage>().EnumDerivedClasses())
+		RTTI::GetClassInfo<ILocalizationPackage>().EnumDerivedClasses([&](const RTTI::ClassInfo& classInfo)
 		{
 			if (auto instance = classInfo.CreateObjectInstance<ILocalizationPackage>())
 			{
 				for (auto ext: instance->GetFileExtensions())
 				{
-					extensions.insert(ext);
+					extensions.insert(std::move(ext));
 				}
 			}
-		}
+		});
 
-		for (FileItem item: fileSystem.EnumItems(directory, {}, FSActionFlag::LimitToFiles))
+		fileSystem.EnumItems(directory, [&](FileItem item)
 		{
 			if (extensions.find(item.GetFileExtension()) != extensions.end())
 			{
-				if (OnSearchPackage(func, std::move(item)) == CallbackCommand::Terminate)
-				{
-					break;
-				}
+				return OnSearchPackage(func, std::move(item));
 			}
-		}
+			return CallbackCommand::Continue;
+		}, {}, FSActionFlag::LimitToFiles);
 		return func.Finalize();
 	}
 	CallbackResult<void> SearchPackages(const DynamicLibrary& library, CallbackFunction<Locale, FileItem, String> func)

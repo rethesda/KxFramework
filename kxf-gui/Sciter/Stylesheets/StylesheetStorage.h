@@ -1,5 +1,6 @@
 #pragma once
 #include "../Common.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/Utility/Container.h"
 
 namespace kxf::Sciter
@@ -28,8 +29,8 @@ namespace kxf::Sciter
 			size_t CopyItems(const StylesheetStorage& other);
 			size_t TakeItems(StylesheetStorage&& other);
 
-			Enumerator<const String&> EnumItems() const &;
-			Enumerator<String> EnumItems() &&;
+			CallbackResult<void> EnumItems(CallbackFunction<const String&> func) const&;
+			CallbackResult<void> EnumItems(CallbackFunction<String> func) &&;
 
 			bool Apply(Host& host, const FSPath& basePath = {}) const;
 			bool Apply(Host& host, const URI& baseURI) const;

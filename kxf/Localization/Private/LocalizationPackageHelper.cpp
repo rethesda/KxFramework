@@ -3,7 +3,6 @@
 #include "LocalizationResources.h"
 #include "kxf/System/DynamicLibrary.h"
 #include "kxf/Serialization/XML.h"
-#include "kxf/Utility/Enumerator.h"
 
 namespace kxf::Localization::Private
 {

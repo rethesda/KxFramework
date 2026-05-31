@@ -37,7 +37,7 @@ namespace kxf
 			virtual FSPath GetLookupDirectory() const = 0;
 
 			virtual FileItem GetItem(const FSPath& path) const = 0;
-			virtual Enumerator<FileItem> EnumItems(const FSPath& directory, const FSPath& query = {}, FlagSet<FSActionFlag> flags = {}) const = 0;
+			virtual CallbackResult<void> EnumItems(const FSPath& directory, CallbackFunction<FileItem> func, const FSPath& query = {}, FlagSet<FSActionFlag> flags = {}) const = 0;
 			virtual bool IsDirectoryEmpty(const FSPath& directory) const;
 			
 			virtual bool CreateDirectory(const FSPath& path, FlagSet<FSActionFlag> flags = {}) = 0;
@@ -83,7 +83,7 @@ namespace kxf
 			virtual UniversallyUniqueID GetLookupScope() const = 0;
 
 			virtual FileItem GetItem(const UniversallyUniqueID& id) const = 0;
-			virtual Enumerator<FileItem> EnumItems(const UniversallyUniqueID& id, FlagSet<FSActionFlag> flags = {}) const = 0;
+			virtual CallbackResult<void> EnumItems(const UniversallyUniqueID& id, CallbackFunction<FileItem> func, FlagSet<FSActionFlag> flags = {}) const = 0;
 			virtual bool IsDirectoryEmpty(const UniversallyUniqueID& id) const;
 
 			virtual bool ChangeAttributes(const UniversallyUniqueID& id, FlagSet<FileAttribute> attributes) = 0;

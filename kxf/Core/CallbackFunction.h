@@ -23,6 +23,8 @@ namespace kxf
 		template<class T>
 		friend class CallbackResult;
 
+		friend class CallbackResultBase;
+
 		private:
 			std::array<size_t, 3> m_Counters;
 			CallbackCommand m_LastCommand = CallbackCommand::None;
@@ -66,38 +68,19 @@ namespace kxf
 			}
 	};
 
-	template<class T>
-	class CallbackResult final
+	class CallbackResultBase
 	{
-		public:
-			using TResult = typename T;
-
-		private:
+		protected:
 			CallbackFunctionState m_State;
-			std::optional<T> m_Result;
 
-		public:
-			CallbackResult() noexcept = default;
-			CallbackResult(CallbackCommand command, T result)
-				:m_Result(std::move(result))
-			{
-				m_State.UpdateWith(command);
-			}
-			CallbackResult(CallbackFunctionState state, T result)
-				:m_State(std::move(state)), m_Result(std::move(result))
+		protected:
+			CallbackResultBase() noexcept = default;
+			CallbackResultBase(CallbackFunctionState state) noexcept
+				:m_State(std::move(state))
 			{
 			}
 
 		public:
-			bool IsNull() const noexcept
-			{
-				return m_State.GetLastCommand() != CallbackCommand::None && m_Result.has_value();
-			}
-			T Take() noexcept(std::is_nothrow_move_constructible_v<T>)
-			{
-				return std::exchange(m_Result, std::nullopt).value();
-			}
-
 			CallbackFunctionState GetState() const noexcept
 			{
 				return m_State;
@@ -109,6 +92,51 @@ namespace kxf
 			size_t GetCount() const noexcept
 			{
 				return m_State.GetCount();
+			}
+			size_t GetCount(CallbackCommand command) const noexcept
+			{
+				return m_State.GetCount(command);
+			}
+
+			bool RequestedToTerminate() const noexcept
+			{
+				return m_State.m_LastCommand == CallbackCommand::Terminate;
+			}
+			bool Completed() const noexcept
+			{
+				return m_State.m_LastCommand == CallbackCommand::Continue || m_State.m_LastCommand == CallbackCommand::Discard;
+			}
+	};
+
+	template<class T>
+	class CallbackResult final: public CallbackResultBase
+	{
+		public:
+			using TResult = typename T;
+
+		private:
+			std::optional<T> m_Result;
+
+		public:
+			CallbackResult() noexcept = default;
+			CallbackResult(CallbackCommand command, T result)
+				:m_Result(std::move(result))
+			{
+				m_State.UpdateWith(command);
+			}
+			CallbackResult(CallbackFunctionState state, T result)
+				:CallbackResultBase(std::move(state)), m_Result(std::move(result))
+			{
+			}
+
+		public:
+			bool IsNull() const noexcept
+			{
+				return m_State.GetLastCommand() == CallbackCommand::None || !m_Result.has_value();
+			}
+			T Take() noexcept(std::is_nothrow_move_constructible_v<T>)
+			{
+				return std::exchange(m_Result, std::nullopt).value();
 			}
 
 		public:
@@ -121,22 +149,110 @@ namespace kxf
 				return IsNull();
 			}
 
-			T& operator*() noexcept
+			T& operator*() & noexcept
 			{
-				return *m_Result;
+				if constexpr(std::is_reference_v<T>)
+				{
+					return *m_Result.value();
+				}
+				else
+				{
+					return *m_Result;
+				}
 			}
-			const T& operator*() const noexcept
+			T&& operator*() && noexcept
 			{
-				return *m_Result;
+				if constexpr(std::is_reference_v<T>)
+				{
+					return *m_Result.value();
+				}
+				else
+				{
+					return *m_Result;
+				}
+			}
+			const T& operator*() const& noexcept
+			{
+				if constexpr(std::is_reference_v<T>)
+				{
+					return *m_Result.value();
+				}
+				else
+				{
+					return *m_Result;
+				}
+			}
+			const T&& operator*() const&& noexcept
+			{
+				if constexpr(std::is_reference_v<T>)
+				{
+					return *m_Result.value();
+				}
+				else
+				{
+					return *m_Result;
+				}
+			}
+
+			T* operator->() noexcept
+			{
+				if constexpr(std::is_reference_v<T>)
+				{
+					return m_Result.has_value() ? &m_Result.value().get() : nullptr;
+				}
+				else
+				{
+					return m_Result.has_value() ? &m_Result.value() : nullptr;
+				}
+			}
+			const T* operator->() const noexcept
+			{
+				if constexpr(std::is_reference_v<T>)
+				{
+					return m_Result.has_value() ? &m_Result.value().get() : nullptr;
+				}
+				else
+				{
+					return m_Result.has_value() ? &m_Result.value() : nullptr;
+				}
+			}
+	};
+
+	template<class T>
+	class CallbackResult<T&> final: public CallbackResultBase
+	{
+		public:
+			using TResult = typename T;
+
+		private:
+			std::optional<std::reference_wrapper<T>> m_Result;
+
+		public:
+			CallbackResult() noexcept = default;
+			CallbackResult(CallbackCommand command, T& result)
+				:m_Result(result)
+			{
+				m_State.UpdateWith(command);
+			}
+			CallbackResult(CallbackFunctionState state, T& result)
+				:CallbackResultBase(std::move(state)), m_Result(result)
+			{
+			}
+
+		public:
+			bool IsNull() const noexcept
+			{
+				return m_State.GetLastCommand() == CallbackCommand::None || !m_Result.has_value();
+			}
+			T& Take() noexcept
+			{
+				return std::exchange(m_Result, std::nullopt).value().get();
 			}
 	};
 
 	template<>
-	class CallbackResult<void> final
+	class CallbackResult<void> final: public CallbackResultBase
 	{
-		private:
-			CallbackFunctionState m_State;
-
 		public:
 			CallbackResult() noexcept = default;
 			CallbackResult(CallbackCommand command)
@@ -144,7 +260,7 @@ namespace kxf
 				m_State.UpdateWith(command);
 			}
 			CallbackResult(CallbackFunctionState state) noexcept
-				:m_State(std::move(state))
+				:CallbackResultBase(std::move(state))
 			{
 			}
 
@@ -152,19 +268,6 @@ namespace kxf
 			bool IsNull() const noexcept
 			{
 				return m_State.GetLastCommand() == CallbackCommand::None;
-			}
-
-			CallbackFunctionState GetState() const noexcept
-			{
-				return m_State;
-			}
-			CallbackCommand GetLastCommand() const noexcept
-			{
-				return m_State.m_LastCommand;
-			}
-			size_t GetCount() const noexcept
-			{
-				return m_State.GetCount();
 			}
 
 		public:
@@ -237,7 +340,7 @@ namespace kxf
 			{
 				return !static_cast<bool>(m_Callable);
 			}
-			Rx_ Invoke(Args_... arg)
+			Rx_ Invoke(Args_... arg) noexcept(std::is_nothrow_invocable_r_v<Rx_, decltype(m_Callable), Args_...>)
 			{
 				return std::invoke(m_Callable, std::forward<Args_>(arg)...);
 			}
@@ -260,7 +363,7 @@ namespace kxf
 namespace kxf
 {
 	template<class... Args_>
-	class CallbackFunction final: public BasicCallbackFunction<CallbackCommand, Args_...>
+	class CallbackFunction final: private BasicCallbackFunction<CallbackCommand, Args_...>
 	{
 		private:
 			CallbackFunctionState m_State;
@@ -291,7 +394,7 @@ namespace kxf
 			requires(std::is_same_v<std::invoke_result_t<TFunc, Args_...>, void>)
 			CallbackFunction(TFunc&& func)
 			{
-				this->m_Callable = [callable = std::move(func)](Args_&&... arg) mutable
+				this->m_Callable = [callable = std::move(func)](Args_&&... arg) mutable noexcept(std::is_nothrow_invocable_v<TFunc, Args_...>)
 				{
 					std::invoke(callable, std::forward<Args_>(arg)...);
 					return CallbackCommand::Continue;
@@ -299,7 +402,12 @@ namespace kxf
 			}
 
 		public:
-			CallbackFunction& Invoke(Args_... arg)
+			bool IsNull() const noexcept
+			{
+				return !static_cast<bool>(this->m_Callable);
+			}
+
+			CallbackFunction& Invoke(Args_... arg) noexcept(std::is_nothrow_invocable_r_v<CallbackCommand, decltype(CallbackFunction::m_Callable), Args_...>)
 			{
 				if (this->m_Callable)
 				{
@@ -341,6 +449,16 @@ namespace kxf
 			{
 				OnFinalize();
 				return {std::move(m_State), std::move(result)};
+			}
+
+		public:
+			explicit operator bool() const noexcept
+			{
+				return !IsNull();
+			}
+			bool operator!() const noexcept
+			{
+				return IsNull();
 			}
 	};
 };

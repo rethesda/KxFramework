@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "../IWidget.h"
 #include "../INativeWidget.h"
-#include "kxf/Core/Enumerator.h"
 #include "kxf/EventSystem/EvtHandler.h"
 #include "kxf/EventSystem/EvtHandlerAccessor.h"
 #include "kxf/EventSystem/EventHandlerStack.h"
@@ -101,7 +100,7 @@ namespace kxf::Private
 
 			std::shared_ptr<IWidget> FindChildWidgetByID(WidgetID id) const;
 			std::shared_ptr<IWidget> FindChildWidgetByName(const String& widgetName) const;
-			Enumerator<std::shared_ptr<IWidget>> EnumChildWidgets() const;
+			CallbackResult<void> EnumChildWidgets(CallbackFunction<std::shared_ptr<IWidget>> func) const;
 
 			// Sibling and parent management functions
 			std::shared_ptr<IWidget> GetParentWidget() const;
@@ -546,9 +545,9 @@ namespace kxf::Private
 			{
 				return m_Window.FindChildWidgetByName(widgetName);
 			}
-			Enumerator<std::shared_ptr<IWidget>> EnumChildWidgets() const override
+			CallbackResult<void> EnumChildWidgets(CallbackFunction<std::shared_ptr<IWidget>> func) const override
 			{
-				return m_Window.EnumChildWidgets();
+				return m_Window.EnumChildWidgets(std::move(func));
 			}
 
 			// Sibling and parent management functions

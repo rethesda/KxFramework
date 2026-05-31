@@ -3,7 +3,6 @@
 #include "../SciterAPI.h"
 #include "../Widget.h"
 #include "../Private/Conversion.h"
-#include "kxf/Core/Enumerator.h"
 
 namespace kxf::Sciter
 {
@@ -14,14 +13,15 @@ namespace kxf::Sciter
 		GetSciterAPI()->SciterSetMasterCSS(null, 0);
 		
 		// Apply new master styles
-		for (const String& css: EnumItems())
+		auto result = EnumItems([](const String& css)
 		{
 			auto utf8 = ToSciterUTF8(css);
 			if (!GetSciterAPI()->SciterAppendMasterCSS(utf8.data(), utf8.size()))
 			{
-				return false;
+				return CallbackCommand::Terminate;
 			}
-		}
-		return true;
+			return CallbackCommand::Continue;
+		});
+		return !result.RequestedToTerminate();
 	}
 }

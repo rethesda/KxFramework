@@ -31,8 +31,8 @@ namespace kxf
 			virtual String GetStatusText() const = 0;
 
 			virtual String GetHeader(const String& name) const = 0;
-			virtual Enumerator<WebRequestHeader> EnumHeaders() const = 0;
-			virtual Enumerator<String> EnumCookies() const = 0;
+			virtual CallbackResult<void> EnumHeaders(CallbackFunction<WebRequestHeader> func) const = 0;
+			virtual CallbackResult<void> EnumCookies(CallbackFunction<String> func) const = 0;
 
 			virtual FSPath GetSuggestedFilePath() const;
 			virtual std::shared_ptr<IInputStream> GetStream() const = 0;
@@ -105,8 +105,14 @@ namespace kxf
 			{
 				return {};
 			}
-			Enumerator<WebRequestHeader> EnumHeaders() const override;
-			Enumerator<String> EnumCookies() const override;
+			CallbackResult<void> EnumHeaders(CallbackFunction<WebRequestHeader> func) const override
+			{
+				return {};
+			}
+			CallbackResult<void> EnumCookies(CallbackFunction<String> func) const override
+			{
+				return {};
+			}
 
 			FSPath GetSuggestedFilePath() const override;
 			std::shared_ptr<IInputStream> GetStream() const override;

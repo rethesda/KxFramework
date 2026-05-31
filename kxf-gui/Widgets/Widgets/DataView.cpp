@@ -2,7 +2,6 @@
 #include "DataView.h"
 #include "WXUI/DataView/View.h"
 #include "WXUI/DataView/MainWindow.h"
-#include "kxf/Utility/Enumerator.h"
 #include "kxf/Utility/Functional.h"
 #include "kxf-gui/Drawing/GraphicsRenderer.h"
 
@@ -98,9 +97,16 @@ namespace kxf::Widgets
 	{
 		return Get()->GetSortingColumn();
 	}
-	Enumerator<DataView::Column&> DataView::GetSortingColumns() const
+	CallbackResult<void> DataView::GetSortingColumns(CallbackFunction<DataView::Column&> func) const
 	{
-		return Utility::EnumerateIterableContainer<DataView::Column&, Utility::ReferenceOf>(Get()->GetSortingColumns());
+		for (auto& item: Get()->GetSortingColumns())
+		{
+			if (func.Invoke(*item).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
 
 	DataView::Column* DataView::GetCurrentColumn() const
@@ -132,21 +138,42 @@ namespace kxf::Widgets
 	{
 		return Get()->GetColumnPhysicallyDisplayedAt(index);
 	}
-	Enumerator<DataView::Column&> DataView::EnumColumns(ColumnOrder order) const
+	CallbackResult<void> DataView::EnumColumns(CallbackFunction<DataView::Column&> func, ColumnOrder order) const
 	{
 		switch (order)
 		{
 			case ColumnOrder::Display:
 			{
-				return Utility::EnumerateIterableContainer<DataView::Column&, Utility::ReferenceOf>(Get()->GetColumnsInDisplayOrder());
+				for (auto& item: Get()->GetColumnsInDisplayOrder())
+				{
+					if (func.Invoke(*item).ShouldTerminate())
+					{
+						break;
+					}
+				}
+				return func.Finalize();
 			}
 			case ColumnOrder::Physical:
 			{
-				return Utility::EnumerateIterableContainer<DataView::Column&, Utility::ReferenceOf>(Get()->GetColumnsInPhysicalDisplayOrder());
+				for (auto& item: Get()->GetColumnsInPhysicalDisplayOrder())
+				{
+					if (func.Invoke(*item).ShouldTerminate())
+					{
+						break;
+					}
+				}
+				return func.Finalize();
 			}
 			default:
 			{
-				return Utility::EnumerateIterableContainer<DataView::Column&, Utility::ReferenceOf, Utility::UnfancyPtr>(Get()->m_Columns);
+				for (auto& item: Get()->m_Columns)
+				{
+					if (func.Invoke(*item).ShouldTerminate())
+					{
+						break;
+					}
+				}
+				return func.Finalize();
 			}
 		};
 	}

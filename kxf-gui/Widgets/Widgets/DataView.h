@@ -48,7 +48,7 @@ namespace kxf::Widgets
 
 			bool IsMultiColumnSortUsed() const override;
 			DataView::Column* GetSortingColumn() const override;
-			Enumerator<DataView::Column&> GetSortingColumns() const override;
+			CallbackResult<void> GetSortingColumns(CallbackFunction<DataView::Column&> func) const override;
 
 			DataView::Column* GetCurrentColumn() const override;
 			DataView::Column* GetHotTrackColumn() const override;
@@ -62,7 +62,7 @@ namespace kxf::Widgets
 			DataView::Column* GetColumnAt(size_t index) const override;
 			DataView::Column* GetColumnDisplayedAt(size_t index) const override;
 			DataView::Column* GetColumnPhysicallyDisplayedAt(size_t index) const override;
-			Enumerator<DataView::Column&> EnumColumns(ColumnOrder order = ColumnOrder::Default) const override;
+			CallbackResult<void> EnumColumns(CallbackFunction<DataView::Column&> func, ColumnOrder order = ColumnOrder::Default) const override;
 
 			// IGraphicsRendererAwareWidget
 			std::shared_ptr<IGraphicsRenderer> GetActiveGraphicsRenderer() const override;

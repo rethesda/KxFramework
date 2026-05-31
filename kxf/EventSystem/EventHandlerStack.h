@@ -1,5 +1,6 @@
 #pragma once
 #include "IEvtHandler.h"
+#include "kxf/Core/CallbackFunction.h"
 
 namespace kxf
 {
@@ -47,7 +48,7 @@ namespace kxf
 			}
 
 			size_t GetCount() const noexcept;
-			Enumerator<IEvtHandler&> EnumItems(Order order, bool chainedItemsOnly = false) const noexcept;
+			CallbackResult<void> EnumItems(CallbackFunction<IEvtHandler&> func, Order order, bool chainedItemsOnly = false) const noexcept;
 
 		public:
 			EvtHandlerStack& operator=(EvtHandlerStack&& other) noexcept

@@ -1,6 +1,5 @@
 #include "kxf-pch.h"
 #include "CommandLineParser.h"
-#include "kxf/Utility/Enumerator.h"
 #include "kxf/wxWidgets/Setup.h"
 
 #include "wx/datetime.h"
@@ -202,20 +201,20 @@ namespace kxf
 	{
 		return m_Parser->GetParam(index);
 	}
-	Enumerator<String> CommandLineParser::EnumParameters() const
+	CallbackResult<void> CommandLineParser::EnumParameters(CallbackFunction<String> func) const
 	{
-		return [this, index = 0_uz]() -> std::optional<String>
+		for (size_t i = 0; i < m_Parser->GetParamCount(); i++)
 		{
-			if (index < m_Parser->GetParamCount())
+			if (func.Invoke(m_Parser->GetParam(i)).ShouldTerminate())
 			{
-				return m_Parser->GetParam(index);
+				break;
 			}
-			return {};
-		};
+		}
+		return func.Finalize();
 	}
-	Enumerator<CommandLineArg> CommandLineParser::EnumArguments() const
+	CallbackResult<void> CommandLineParser::EnumArguments(CallbackFunction<CommandLineArg> func) const
 	{
-		return Utility::EnumerateIterableContainer<CommandLineArg>(m_Parser->GetArguments(), [](const wxCmdLineArg& argWx)
+		for (auto& argWx: m_Parser->GetArguments())
 		{
 			CommandLineArg arg;
 			arg.m_LongName = argWx.GetLongName();
@@ -245,8 +244,13 @@ namespace kxf
 					break;
 				}
 			};
-			return arg;
-		});
+
+			if (func.Invoke(std::move(arg)).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
 
 	std::optional<String> CommandLineParser::GetStringOption(const String& name) const

@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "IObject.h"
 #include "kxf/Core/FlagSet.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/Utility/Memory.h"
 
 namespace kxf::RTTI::Private
@@ -119,12 +120,12 @@ namespace kxf::RTTI
 			bool IsBaseOf(const ClassInfo& other) const noexcept;
 			bool IsSameAs(const ClassInfo& other) const noexcept;
 
-			Enumerator<const ClassInfo&> EnumImmediateBaseClasses() const noexcept;
-			Enumerator<const ClassInfo&> EnumBaseClasses() const noexcept;
-			Enumerator<const ClassInfo&> EnumDerivedClasses() const noexcept;
-			Enumerator<const ClassInfo&> EnumImplementations() const noexcept;
-			Enumerator<const ClassInfo&> EnumDynamicImplementations() const noexcept;
-			Enumerator<const ClassInfo&> EnumDerivedInterfaces() const noexcept;
+			CallbackResult<void> EnumImmediateBaseClasses(CallbackFunction<const ClassInfo&> func) const noexcept;
+			CallbackResult<void> EnumBaseClasses(CallbackFunction<const ClassInfo&> func) const noexcept;
+			CallbackResult<void> EnumDerivedClasses(CallbackFunction<const ClassInfo&> func) const noexcept;
+			CallbackResult<void> EnumImplementations(CallbackFunction<const ClassInfo&> func) const noexcept;
+			CallbackResult<void> EnumDynamicImplementations(CallbackFunction<const ClassInfo&> func) const noexcept;
+			CallbackResult<void> EnumDerivedInterfaces(CallbackFunction<const ClassInfo&> func) const noexcept;
 
 			template<std::derived_from<IObject> T = IObject>
 			std::shared_ptr<T> CreateObjectInstance() const

@@ -2,7 +2,6 @@
 #include "WMI.h"
 #include "SafeArray.h"
 #include "VariantProperty.h"
-#include "kxf/Utility/Enumerator.h"
 
 #include <Windows.h>
 #include <wbemcli.h>
@@ -108,66 +107,77 @@ namespace kxf
 		return m_Locator.IsNull() || m_Service.IsNull();
 	}
 
-	Enumerator<String> WMINamespace::EnumClassNames() const
+	CallbackResult<void> WMINamespace::EnumClassNames(CallbackFunction<String> func, TimeSpan timeout) const
 	{
-		return Utility::MakeConvertingEnumerator<String>([](WMIClassObject classObject, IEnumerator& enumerator) -> std::optional<String>
+		const_cast<WMINamespace&>(*this).SelectAll("meta_class", [&](WMIClassObject classObject)
 		{
-			// Only return the class object if it has its 'dynamic' qualifier set ti 'true'
+			// Only return the class object if it has its 'dynamic' qualifier set to true
 			if (auto qualifierSet = classObject.GetQualifierSet())
 			{
 				if (qualifierSet.GetValue("Dynamic").QueryAs<bool>() == true)
 				{
 					String name = classObject.GetClassName();
-					if (!name.IsEmpty())
+					if (!name.IsEmpty() && func.Invoke(name).ShouldTerminate())
 					{
-						return name;
+						return CallbackCommand::Terminate;
 					}
 				}
 			}
-			enumerator.SkipCurrent();
-			return {};
-		}, const_cast<WMINamespace&>(*this), &WMINamespace::SelectAll, "meta_class");
+			return CallbackCommand::Continue;
+		}, timeout);
+		return func.Finalize();
 	}
-	Enumerator<String> WMINamespace::EnumChildNamespaces() const
+	CallbackResult<void> WMINamespace::EnumChildNamespaces(CallbackFunction<String> func, TimeSpan timeout) const
 	{
-		return Utility::MakeConvertingEnumerator<String>([](WMIClassObject classObject, IEnumerator& enumerator) -> std::optional<String>
+		const_cast<WMINamespace&>(*this).SelectAll("__NAMESPACE", [&](WMIClassObject classObject)
 		{
 			String name = classObject.GetName();
-			if (!name.IsEmpty())
+			if (!name.IsEmpty() && func.Invoke(name).ShouldTerminate())
 			{
-				return name;
+				return CallbackCommand::Terminate;
 			}
-			else
-			{
-				enumerator.SkipCurrent();
-			}
-			return {};
-		}, const_cast<WMINamespace&>(*this), &WMINamespace::SelectAll, "__NAMESPACE");
+			return CallbackCommand::Continue;
+		}, timeout);
+		return func.Finalize();
 	}
 
-	Enumerator<WMIClassObject> WMINamespace::ExecuteQuery(const kxf::String& query)
+	CallbackResult<void> WMINamespace::ExecuteQuery(const kxf::String& query, CallbackFunction<WMIClassObject> func, TimeSpan timeout)
 	{
 		if (auto wbemEnumerator = GetWbemEnumerator(*m_Service, query))
 		{
-			return [wbemEnumerator = std::move(wbemEnumerator)]() -> std::optional<WMIClassObject>
+			while (true)
 			{
-				COMPtr<IWbemClassObject> classObject;
 				ULONG count = 0;
-
-				HResult result = wbemEnumerator->Next(WBEM_INFINITE, 1, &classObject, &count);
-				if (result && count != 0)
+				COMPtr<IWbemClassObject> classObject;
+				HResult result = wbemEnumerator->Next([&]() -> long
 				{
-					return std::move(classObject);
+					if (timeout.IsNegative())
+					{
+						return WBEM_INFINITE;
+					}
+					else if (timeout.IsNull())
+					{
+						return WBEM_NO_WAIT;
+					}
+					else
+					{
+						return timeout.GetMilliseconds();
+					}
+				}(), 1, & classObject, & count);
+				if (result && count != 0 && !func.Invoke(std::move(classObject)).ShouldTerminate())
+				{
+					continue;
 				}
-				return {};
-			};
+				break;
+			}
+			return func.Finalize();
 		}
 		return {};
 	}
-	Enumerator<WMIClassObject> WMINamespace::SelectAll(const kxf::String& fromLocation)
+	CallbackResult<void> WMINamespace::SelectAll(const kxf::String& fromLocation, CallbackFunction<WMIClassObject> func, TimeSpan timeout)
 	{
 		// TODO: Add input sanitization of some kind?
-		return ExecuteQuery(Format("SELECT * FROM {}", fromLocation));
+		return ExecuteQuery(Format("SELECT * FROM {}", fromLocation), std::move(func), timeout);
 	}
 
 	WMINamespace& WMINamespace::operator=(const WMINamespace&) noexcept = default;
@@ -222,7 +232,7 @@ namespace kxf
 		return GetProperty("__Class").GetAs<String>();
 	}
 
-	Enumerator<String> WMIClassObject::EnumPropertyNames(FlagSet<WMIClassObjectFlag> flags) const
+	CallbackResult<void> WMIClassObject::EnumPropertyNames(CallbackFunction<String> func, FlagSet<WMIClassObjectFlag> flags) const
 	{
 		auto MapFlags = [](FlagSet<WMIClassObjectFlag> flags) constexpr noexcept
 		{
@@ -239,14 +249,16 @@ namespace kxf
 		if (HResult result = m_ClassObject->GetNames(nullptr, MapFlags(flags), nullptr, nameArray.GetAddress()))
 		{
 			size_t size = nameArray.GetSize();
-			return Utility::MakeEnumerator([this, nameArray = std::move(nameArray), index = 0_uz]() mutable -> std::optional<String>
+			auto items = nameArray.GetItems<BSTR>();
+
+			for (size_t i = 0; i < size; i++)
 			{
-				if (auto items = nameArray.GetItems<BSTR>())
+				if (func.Invoke(FromBSTR(items[i])).ShouldTerminate())
 				{
-					return FromBSTR(items[index++]);
+					break;
 				}
-				return {};
-			}, size);
+			}
+			return func.Finalize();
 		}
 		return {};
 	}
@@ -307,20 +319,38 @@ namespace kxf
 		return m_QualifierSet.IsNull();
 	}
 
-	Enumerator<std::pair<String, kxf::Any>> WMIQualifierSet::EnumQualifiers() const
+	CallbackResult<void> WMIQualifierSet::EnumQualifiers(CallbackFunction<String, Any> func, FlagSet<WMIClassObjectFlag> flags) const
 	{
-		return [this]() -> std::optional<std::pair<String, kxf::Any>>
+		auto MapFlags = [](FlagSet<WMIClassObjectFlag> flags) constexpr noexcept
 		{
-			BSTRPtr name;
-			VARIANT value;
-			if (HResult result = m_QualifierSet->Next(0, &name, &value, nullptr))
-			{
-				return std::make_pair(name.Get(), VariantProperty(value).ToAny());
-			}
-			return {};
+			FlagSet<long> nativeFlags;
+			nativeFlags.Add(WBEM_FLAG_LOCAL_ONLY, flags & WMIClassObjectFlag::LocalOnly);
+			nativeFlags.Add(WBEM_FLAG_PROPAGATED_ONLY, flags & WMIClassObjectFlag::PropagatedOnly);
+
+			return *nativeFlags;
 		};
+
+		if (HResult result = m_QualifierSet->BeginEnumeration(MapFlags(flags)))
+		{
+			while (result.IsSuccess())
+			{
+				BSTRPtr name;
+				VARIANT value;
+				if (result = m_QualifierSet->Next(0, &name, &value, nullptr))
+				{
+					if (func.Invoke(name.Get(), VariantProperty(value).ToAny()).ShouldTerminate())
+					{
+						break;
+					}
+				}
+			}
+			m_QualifierSet->EndEnumeration();
+
+			return func.Finalize();
+		}
+		return {};
 	}
-	Enumerator<String> WMIQualifierSet::EnumNames(FlagSet<WMIClassObjectFlag> flags) const
+	CallbackResult<void> WMIQualifierSet::EnumNames(CallbackFunction<String> func, FlagSet<WMIClassObjectFlag> flags) const
 	{
 		auto MapFlags = [](FlagSet<WMIClassObjectFlag> flags) constexpr noexcept
 		{
@@ -334,14 +364,16 @@ namespace kxf
 		if (HResult result = m_QualifierSet->GetNames(MapFlags(flags), nameArray.GetAddress()))
 		{
 			size_t size = nameArray.GetSize();
-			return Utility::MakeEnumerator([this, nameArray = std::move(nameArray), index = 0_uz]() mutable -> std::optional<String>
+			auto items = nameArray.GetItems<BSTR>();
+
+			for (size_t i = 0; i < size; i++)
 			{
-				if (auto items = nameArray.GetItems<BSTR>())
+				if (func.Invoke(FromBSTR(items[i])).ShouldTerminate())
 				{
-					return FromBSTR(items[index++]);
+					break;
 				}
-				return {};
-			}, size);
+			}
+			return func.Finalize();
 		}
 		return {};
 	}

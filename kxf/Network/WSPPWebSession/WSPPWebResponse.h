@@ -51,8 +51,8 @@ namespace kxf
 			}
 
 			String GetHeader(const String& name) const override;
-			Enumerator<WebRequestHeader> EnumHeaders() const override;
-			Enumerator<String> EnumCookies() const override;
+			CallbackResult<void> EnumHeaders(CallbackFunction<WebRequestHeader> func) const override;
+			CallbackResult<void> EnumCookies(CallbackFunction<String> func) const override;
 
 			std::shared_ptr<IInputStream> GetStream() const override;
 	};

@@ -51,7 +51,7 @@ namespace kxf
 
 			virtual bool IsMultiColumnSortUsed() const = 0;
 			virtual DataView::Column* GetSortingColumn() const = 0;
-			virtual Enumerator<DataView::Column&> GetSortingColumns() const = 0;
+			virtual CallbackResult<void> GetSortingColumns(CallbackFunction<DataView::Column&> func) const = 0;
 
 			virtual DataView::Column* GetCurrentColumn() const = 0;
 			virtual DataView::Column* GetHotTrackColumn() const = 0;
@@ -76,6 +76,6 @@ namespace kxf
 			virtual DataView::Column* GetColumnAt(size_t index) const = 0;
 			virtual DataView::Column* GetColumnDisplayedAt(size_t index) const = 0;
 			virtual DataView::Column* GetColumnPhysicallyDisplayedAt(size_t index) const = 0;
-			virtual Enumerator<DataView::Column&> EnumColumns(ColumnOrder order = ColumnOrder::Default) const = 0;
+			virtual CallbackResult<void> EnumColumns(CallbackFunction<DataView::Column&> func, ColumnOrder order = ColumnOrder::Default) const = 0;
 	};
 }

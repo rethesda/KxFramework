@@ -194,7 +194,8 @@ namespace kxf::FileSystem::Private
 												 FlagSet<FSActionFlag> flags,
 												 bool move)
 	{
-		for (const FileItem& item: fileSystem.EnumItems(source, {}, flags|FSActionFlag::Recursive))
+		bool result = false;
+		fileSystem.EnumItems(source, [&](FileItem item)
 		{
 			FSPath target = destination / item.GetPath().GetAfter(source);
 			if (item.IsDirectory())
@@ -209,12 +210,12 @@ namespace kxf::FileSystem::Private
 				}
 				else
 				{
-					return func.Finalize(false);
+					result = false;
+					return CallbackCommand::Terminate;
 				}
 			}
 			else
 			{
-				bool result = false;
 				if (func)
 				{
 					auto ForwardCallback = [&](DataSize copied, DataSize total)
@@ -230,10 +231,12 @@ namespace kxf::FileSystem::Private
 
 				if (!result)
 				{
-					return func.Finalize(false);
+					return CallbackCommand::Terminate;
 				}
 			}
-		}
-		return func.Finalize(true);
+			return CallbackCommand::Continue;
+		}, {}, flags|FSActionFlag::Recursive);
+
+		return func.Finalize(result);
 	}
 }

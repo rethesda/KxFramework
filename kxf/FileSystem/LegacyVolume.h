@@ -1,13 +1,14 @@
 #pragma once
 #include "Common.h"
 #include "FSPath.h"
+#include "kxf/Core/CallbackFunction.h"
 
 namespace kxf
 {
 	class KXF_API LegacyVolume final
 	{
 		public:
-			static Enumerator<LegacyVolume> EnumVolumes();
+			static CallbackResult<void> EnumVolumes(CallbackFunction<LegacyVolume> func);
 
 			static LegacyVolume FromChar(const UniChar& value)
 			{

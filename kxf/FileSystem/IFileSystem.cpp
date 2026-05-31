@@ -33,11 +33,11 @@ namespace kxf
 			return false;
 		}
 
-		for (const FileItem& item: EnumItems(directory))
+		auto result = EnumItems(directory, [](FileItem item)
 		{
-			return false;
-		}
-		return true;
+			return CallbackCommand::Terminate;
+		});
+		return !result.RequestedToTerminate();
 	}
 
 	std::shared_ptr<IInputStream> IFileSystem::OpenToRead(const FSPath& path, IOStreamDisposition disposition, FlagSet<IOStreamShare> share, FlagSet<FSActionFlag> flags) const
@@ -59,11 +59,11 @@ namespace kxf
 			return false;
 		}
 
-		for (const FileItem& item: EnumItems(id))
+		auto result = EnumItems(id, [](FileItem item)
 		{
-			return false;
-		}
-		return true;
+			return CallbackCommand::Terminate;
+		});
+		return !result.RequestedToTerminate();
 	}
 
 	std::shared_ptr<IInputStream> IFileSystemWithID::OpenToRead(const UniversallyUniqueID& id, IOStreamDisposition disposition, FlagSet<IOStreamShare> share, FlagSet<FSActionFlag> flags) const

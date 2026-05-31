@@ -77,8 +77,8 @@ namespace kxf::Widgets
 			void SetHistoryEnabled(bool enabled = true) override;
 
 			void ClearHistory() override;
-			Enumerator<HistoryItem> EnumBackwardHistory() const override;
-			Enumerator<HistoryItem> EnumForwardHistory() const override;
+			CallbackResult<void> EnumBackwardHistory(CallbackFunction<HistoryItem> func) const override;
+			CallbackResult<void> EnumForwardHistory(CallbackFunction<HistoryItem> func) const override;
 
 			// Selection
 			bool HasSelection() const override;

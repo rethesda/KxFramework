@@ -82,8 +82,8 @@ namespace kxf
 			virtual void SetHistoryEnabled(bool enabled = true) = 0;
 
 			virtual void ClearHistory() = 0;
-			virtual Enumerator<HistoryItem> EnumBackwardHistory() const = 0;
-			virtual Enumerator<HistoryItem> EnumForwardHistory() const = 0;
+			virtual CallbackResult<void> EnumBackwardHistory(CallbackFunction<HistoryItem> func) const = 0;
+			virtual CallbackResult<void> EnumForwardHistory(CallbackFunction<HistoryItem> func) const = 0;
 
 			// Selection
 			virtual bool HasSelection() const = 0;

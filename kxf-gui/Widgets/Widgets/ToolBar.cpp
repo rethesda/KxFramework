@@ -2,7 +2,6 @@
 #include "ToolBar.h"
 #include "ToolBarItem.h"
 #include "WXUI/ToolBar.h"
-#include "kxf/Utility/Enumerator.h"
 #include "kxf-gui/Drawing/GraphicsRenderer.h"
 
 namespace kxf::Widgets
@@ -90,12 +89,16 @@ namespace kxf::Widgets
 	{
 		return Get()->GetToolCount();
 	}
-	Enumerator<std::shared_ptr<IToolBarWidgetItem>> ToolBar::EnumItems()
+	CallbackResult<void> ToolBar::EnumItems(CallbackFunction<std::shared_ptr<IToolBarWidgetItem>> func)
 	{
-		return Utility::EnumerateIterableContainer<std::shared_ptr<IToolBarWidgetItem>>(Get()->m_Items, {}, [](auto&& items)
+		for (auto& item: Get()->m_Items)
 		{
-			return items.second;
-		});
+			if (func.Invoke(item.second).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
 
 	std::shared_ptr<IToolBarWidgetItem> ToolBar::GetItemByID(const WidgetID& id)

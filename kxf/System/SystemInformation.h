@@ -7,10 +7,11 @@
 #include "kxf/Core/Version.h"
 #include "kxf/Core/DataSize.h"
 #include "kxf/Core/LocallyUniqueID.h"
-#include "kxf/Core/Enumerator.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/DateTime/TimeSpan.h"
 #include "kxf/Drawing/Geometry.h"
 #include "kxf/Drawing/Color.h"
+#include "kxf/Drawing/ColorDepth.h"
 #include "kxf/Drawing/Font.h"
 
 namespace kxf::System
@@ -85,7 +86,7 @@ namespace kxf::System
 	{
 		int Width = 0;
 		int Height = 0;
-		int BitDepth = 0;
+		ColorDepth BitDepth = 0;
 		int RefreshRate = 0;
 	};
 	struct DisplayDeviceInfo final
@@ -133,17 +134,17 @@ namespace kxf::System
 	KXF_API Size GetMetric(SystemSizeMetric index, SystemWindow window = {}) noexcept;
 	KXF_API TimeSpan GetMetric(SystemTimeMetric index, SystemWindow window = {}) noexcept;
 	KXF_API bool HasFeature(SystemFeature feature) noexcept;
-	KXF_API Enumerator<String> EnumStandardSounds();
+	KXF_API CallbackResult<void> EnumStandardSounds(CallbackFunction<String> func);
 
 	KXF_API std::optional<DisplayInfo> GetDisplayInfo() noexcept;
-	KXF_API Enumerator<DisplayInfo> EnumDisplayModes(const String& deviceName = {});
-	KXF_API Enumerator<DisplayDeviceInfo> EnumDisplayDevices(const String& deviceName = {});
-	KXF_API Enumerator<DisplayAdapterInfo> EnumDisplayAdapters();
+	KXF_API CallbackResult<void> EnumDisplayModes(CallbackFunction<DisplayInfo> func, const String& deviceName = {});
+	KXF_API CallbackResult<void> EnumDisplayDevices(CallbackFunction<DisplayDeviceInfo> func, const String& deviceName = {});
+	KXF_API CallbackResult<void> EnumDisplayAdapters(CallbackFunction<DisplayAdapterInfo> func);
 
 	KXF_API String ExpandEnvironmentStrings(const String& strings);
 	KXF_API String GetEnvironmentVariable(const String& name);
 	KXF_API bool SetEnvironmentVariable(const String& name, const String& value);
-	KXF_API Enumerator<EnvironmentVariable> EnumEnvironmentVariables();
+	KXF_API CallbackResult<void> EnumEnvironmentVariables(CallbackFunction<EnvironmentVariable> func);
 
 	KXF_API bool LockWorkstation(LockWorkstationCommand command) noexcept;
 	KXF_API bool ExitWorkstation(FlagSet<ExitWorkstationCommand> command) noexcept;

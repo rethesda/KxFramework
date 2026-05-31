@@ -52,7 +52,4 @@
 namespace kxf
 {
 	class String;
-
-	template<class TValue>
-	class Enumerator;
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Private/WidgetUtility.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/EventSystem/IEvtHandler.h"
 #include "kxf/EventSystem/IEvent.h"
 
@@ -126,7 +127,7 @@ namespace kxf
 
 			virtual std::shared_ptr<IWidget> FindChildWidgetByID(WidgetID id) const = 0;
 			virtual std::shared_ptr<IWidget> FindChildWidgetByName(const String& widgetName) const = 0;
-			virtual Enumerator<std::shared_ptr<IWidget>> EnumChildWidgets() const = 0;
+			virtual CallbackResult<void> EnumChildWidgets(CallbackFunction<std::shared_ptr<IWidget>> func) const = 0;
 
 			// Sibling and parent management functions
 			virtual std::shared_ptr<IWidget> GetParentWidget() const = 0;

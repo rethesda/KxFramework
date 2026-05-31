@@ -3,6 +3,7 @@
 #include "ScriptValue.h"
 #include "Utility/HandleWrapper.h"
 #include "kxf/Core/String.h"
+#include "kxf/Core/CallbackFunction.h"
 
 namespace kxf
 {
@@ -242,9 +243,8 @@ namespace kxf::Sciter
 			bool SetStyleFont(const Font& font);
 
 			// Selectors
-			size_t Select(const String& query, std::function<bool(Element)> onElement) const;
+			CallbackResult<void> Select(const String& query, CallbackFunction<Element> func) const;
 			Element SelectAny(const String& query) const;
-			Enumerator<Element> SelectAll(const String& query) const;
 
 			Element GetElementByAttribute(const String& name, const String& value) const
 			{
@@ -260,9 +260,8 @@ namespace kxf::Sciter
 			}
 
 			// Widgets
-			size_t SelectWidgets(const String& query, std::function<bool(Widget&)> onWidget) const;
+			CallbackResult<void> SelectWidgets(const String& query, CallbackFunction<Widget&> func) const;
 			Widget* SelectAnyWidget(const String& query) const;
-			Enumerator<Widget&> SelectAllWidgets(const String& query) const;
 
 			Widget* GetWidgetByAttribute(const String& name, const String& value) const
 			{

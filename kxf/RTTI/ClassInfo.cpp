@@ -1,9 +1,6 @@
 #include "kxf-pch.h"
 #include "ClassInfo.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/Enumerator.h"
-#include "kxf/Utility/Enumerator.h"
-#include "kxf/Utility/RecursiveCollectionEnumerator.h"
 
 namespace
 {
@@ -83,35 +80,37 @@ namespace
 
 namespace kxf::RTTI::Private
 {
-	class BaseClassesEnumerator final: public RecursiveCollectionEnumerator<const ClassInfo&, const ClassInfo&>
+	class BaseClassesEnumerator final
 	{
 		private:
 			const ClassInfo& m_This;
+			std::vector<const ClassInfo*> m_SubDirectories;
+			std::vector<const ClassInfo*> m_NextSubDirectories;
 			bool m_Recurse = false;
 
 			size_t m_Index = 0;
 			size_t m_Count = std::numeric_limits<size_t>::max();
 
 		protected:
-			TValueContainer SearchDirectory(IEnumerator& enumerator, const TPathWrapper& directory, std::vector<TPathWrapper>& childDirectories, bool& isSubTreeDone) override
+			CallbackCommand SearchDirectory(CallbackFunction<const ClassInfo&>& callback, const ClassInfo& directory, std::vector<const ClassInfo*>& childDirectories, bool& subTreeDone)
 			{
 				if (m_Count == std::numeric_limits<size_t>::max())
 				{
-					m_Count = directory.get().DoGetBaseClass(nullptr);
+					m_Count = directory.DoGetBaseClass(nullptr);
 				}
 
 				if (m_Index < m_Count)
 				{
 					const ClassInfo* classInfo = nullptr;
-					directory.get().DoGetBaseClass(&classInfo, m_Index++);
+					directory.DoGetBaseClass(&classInfo, m_Index++);
 
 					if (classInfo)
 					{
 						if (m_Recurse && classInfo->DoGetBaseClass(nullptr) != 0)
 						{
-							childDirectories.emplace_back(*classInfo);
+							childDirectories.emplace_back(classInfo);
 						}
-						return *classInfo;
+						return callback.Invoke(*classInfo).GetLastCommand();
 					}
 					else
 					{
@@ -122,28 +121,52 @@ namespace kxf::RTTI::Private
 						// we still can't find them for some reason. This shouldn't really happen but it happens
 						// anyway. Skip such items.
 
-						enumerator.SkipCurrent();
+						return CallbackCommand::Discard;
 					}
 				}
 				else
 				{
-					isSubTreeDone = true;
+					subTreeDone = true;
 					m_Count = std::numeric_limits<size_t>::max();
 					m_Index = 0;
 
 					if (m_Recurse)
 					{
-						enumerator.SkipCurrent();
+						return CallbackCommand::Discard;
 					}
+					return CallbackCommand::Terminate;
 				}
-				return {};
 			};
 
 		public:
 			BaseClassesEnumerator() = default;
 			BaseClassesEnumerator(const ClassInfo& thisClassInfo, bool recurse = false)
-				:RecursiveCollectionEnumerator(thisClassInfo), m_This(thisClassInfo), m_Recurse(recurse)
+				:m_This(thisClassInfo), m_Recurse(recurse)
 			{
+			}
+
+		public:
+			CallbackResult<void> Run(CallbackFunction<const ClassInfo&>& callback)
+			{
+				// Do the current level
+				bool subTreeDone = false;
+				CallbackCommand command = SearchDirectory(callback, m_This, m_SubDirectories, subTreeDone);
+
+				// Do the nested levels if we're allowed to and there are any
+				while (!m_SubDirectories.empty() && !callback.ShouldTerminate() && command != CallbackCommand::Terminate)
+				{
+					for (auto classInfo: m_SubDirectories)
+					{
+						command = SearchDirectory(callback, *classInfo, m_NextSubDirectories, subTreeDone);
+						if (callback.ShouldTerminate() || command == CallbackCommand::Terminate)
+						{
+							break;
+						}
+					}
+
+					m_SubDirectories = std::move(m_NextSubDirectories);
+				}
+				return callback.Finalize();
 			}
 	};
 }
@@ -170,13 +193,17 @@ namespace kxf::RTTI
 	{
 		if (m_Traits.Contains(ClassTrait::Interface) && iid)
 		{
-			for (const ClassInfo& classInfo: EnumDynamicImplementations())
+			std::shared_ptr<IObject> ref;
+			EnumDynamicImplementations([&](const ClassInfo& classInfo)
 			{
 				if (classInfo.GetIID() == iid)
 				{
-					return classInfo.DoCreateObjectInstance();
+					ref = classInfo.DoCreateObjectInstance();
+					return CallbackCommand::Terminate;
 				}
-			};
+				return CallbackCommand::Continue;
+			});
+			return ref;
 		}
 		return nullptr;
 	}
@@ -184,13 +211,17 @@ namespace kxf::RTTI
 	{
 		if (m_Traits.Contains(ClassTrait::Interface) && !fullyQualifiedName.IsEmpty())
 		{
-			for (const ClassInfo& classInfo: EnumDynamicImplementations())
+			std::shared_ptr<IObject> ref;
+			EnumDynamicImplementations([&](const ClassInfo& classInfo)
 			{
 				if (fullyQualifiedName.IsSameAs(classInfo.m_FullyQualifiedName))
 				{
-					return classInfo.DoCreateObjectInstance();
+					ref = classInfo.DoCreateObjectInstance();
+					return CallbackCommand::Terminate;
 				}
-			};
+				return CallbackCommand::Continue;
+			});
+			return ref;
 		}
 		return nullptr;
 	}
@@ -198,10 +229,13 @@ namespace kxf::RTTI
 	{
 		if (m_Traits.Contains(ClassTrait::Interface))
 		{
-			for (const ClassInfo& classInfo: EnumDynamicImplementations())
+			std::shared_ptr<IObject> ref;
+			EnumDynamicImplementations([&](const ClassInfo& classInfo)
 			{
-				return classInfo.DoCreateObjectInstance();
-			};
+				ref = classInfo.DoCreateObjectInstance();
+				return CallbackCommand::Terminate;
+			});
+			return ref;
 		}
 		return nullptr;
 	}
@@ -237,14 +271,17 @@ namespace kxf::RTTI
 	}
 	bool ClassInfo::IsBaseOf(const ClassInfo& other) const noexcept
 	{
-		for (const ClassInfo& classInfo: other.EnumBaseClasses())
+		bool result = false;
+		other.EnumBaseClasses([&](const ClassInfo& classInfo)
 		{
 			if (classInfo == *this)
 			{
-				return true;
+				result = true;
+				return CallbackCommand::Terminate;
 			}
-		};
-		return false;
+			return CallbackCommand::Continue;
+		});
+		return result;
 	}
 	bool ClassInfo::IsSameAs(const ClassInfo& other) const noexcept
 	{
@@ -258,72 +295,62 @@ namespace kxf::RTTI
 		}
 	}
 
-	Enumerator<const ClassInfo&> ClassInfo::EnumImmediateBaseClasses() const noexcept
+	CallbackResult<void> ClassInfo::EnumImmediateBaseClasses(CallbackFunction<const ClassInfo&> func) const noexcept
 	{
-		return Private::BaseClassesEnumerator(*this, false);
+		return Private::BaseClassesEnumerator(*this, false).Run(func);
 	}
-	Enumerator<const ClassInfo&> ClassInfo::EnumBaseClasses() const noexcept
+	CallbackResult<void> ClassInfo::EnumBaseClasses(CallbackFunction<const ClassInfo&> func) const noexcept
 	{
-		return Private::BaseClassesEnumerator(*this, true);
+		return Private::BaseClassesEnumerator(*this, true).Run(func);
 	}
-	Enumerator<const ClassInfo&> ClassInfo::EnumDerivedClasses() const noexcept
+	CallbackResult<void> ClassInfo::EnumDerivedClasses(CallbackFunction<const ClassInfo&> func) const noexcept
 	{
-		return [this, classInfo = m_FirstClassInfo](IEnumerator& en) mutable -> optional_ref<const ClassInfo>
+		for (auto classInfo = m_FirstClassInfo; classInfo; classInfo = classInfo->m_NextClassInfo)
 		{
-			if (classInfo)
+			if (this->IsBaseOf(*classInfo) && func.Invoke(*classInfo).ShouldTerminate())
 			{
-				const ClassInfo& other = *classInfo;
-				classInfo = classInfo->m_NextClassInfo;
-
-				if (this->IsBaseOf(other))
-				{
-					return other;
-				}
-				en.SkipCurrent();
+				break;
 			}
-			return {};
-		};
+		}
+		return func.Finalize();
 	}
-	Enumerator<const ClassInfo&> ClassInfo::EnumImplementations() const noexcept
+	CallbackResult<void> ClassInfo::EnumImplementations(CallbackFunction<const ClassInfo&> func) const noexcept
 	{
-		return Utility::MakeForwardingEnumerator([](const ClassInfo& classInfo, IEnumerator& enumerator) -> optional_ref<const ClassInfo>
+		EnumDerivedClasses([&](const ClassInfo& classInfo)
 		{
 			auto traits = classInfo.GetTraits();
 			if (traits.Contains(ClassTrait::Implementation) && !traits.Contains(ClassTrait::Abstract|ClassTrait::Private))
 			{
-				return classInfo;
+				return func.Invoke(classInfo).GetLastCommand();
 			}
-
-			enumerator.SkipCurrent();
-			return {};
-		}, *this, &ClassInfo::EnumDerivedClasses);
+			return CallbackCommand::Discard;
+		});
+		return func.Finalize();
 	}
-	Enumerator<const ClassInfo&> ClassInfo::EnumDynamicImplementations() const noexcept
+	CallbackResult<void> ClassInfo::EnumDynamicImplementations(CallbackFunction<const ClassInfo&> func) const noexcept
 	{
-		return Utility::MakeForwardingEnumerator([](const ClassInfo& classInfo, IEnumerator& enumerator) -> optional_ref<const ClassInfo>
+		EnumDerivedClasses([&](const ClassInfo& classInfo)
 		{
 			auto traits = classInfo.GetTraits();
 			if (traits.Contains(ClassTrait::Dynamic|ClassTrait::Implementation) && !traits.Contains(ClassTrait::Abstract|ClassTrait::Private))
 			{
-				return classInfo;
+				return func.Invoke(classInfo).GetLastCommand();
 			}
-
-			enumerator.SkipCurrent();
-			return {};
-		}, *this, &ClassInfo::EnumDerivedClasses);
+			return CallbackCommand::Discard;
+		});
+		return func.Finalize();
 	}
-	Enumerator<const ClassInfo&> ClassInfo::EnumDerivedInterfaces() const noexcept
+	CallbackResult<void> ClassInfo::EnumDerivedInterfaces(CallbackFunction<const ClassInfo&> func) const noexcept
 	{
-		return Utility::MakeForwardingEnumerator([](const ClassInfo& classInfo, IEnumerator& enumerator) -> optional_ref<const ClassInfo>
+		EnumDerivedClasses([&](const ClassInfo& classInfo)
 		{
 			auto traits = classInfo.GetTraits();
 			if (traits.Contains(ClassTrait::Interface) && !traits.Contains(ClassTrait::Private))
 			{
-				return classInfo;
+				return func.Invoke(classInfo).GetLastCommand();
 			}
-
-			enumerator.SkipCurrent();
-			return {};
-		}, *this, &ClassInfo::EnumDerivedClasses);
+			return CallbackCommand::Discard;
+		});
+		return func.Finalize();
 	}
 }

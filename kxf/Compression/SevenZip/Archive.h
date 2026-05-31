@@ -269,7 +269,7 @@ namespace kxf::SevenZip
 			}
 
 			FileItem GetItem(const FSPath& path) const override;
-			Enumerator<FileItem> EnumItems(const FSPath& directory, const FSPath& query = {}, FlagSet<FSActionFlag> flags = {}) const override;
+			CallbackResult<void> EnumItems(const FSPath& directory, CallbackFunction<FileItem> func, const FSPath& query = {}, FlagSet<FSActionFlag> flags = {}) const override;
 
 			bool CreateDirectory(const FSPath& path, FlagSet<FSActionFlag> flags = {}) override
 			{
@@ -324,7 +324,7 @@ namespace kxf::SevenZip
 			}
 
 			FileItem GetItem(const UniversallyUniqueID& id) const override;
-			Enumerator<FileItem> EnumItems(const UniversallyUniqueID& id, FlagSet<FSActionFlag> flags = {}) const override;
+			CallbackResult<void> EnumItems(const UniversallyUniqueID& id, CallbackFunction<FileItem> func, FlagSet<FSActionFlag> flags = {}) const override;
 
 			bool ChangeAttributes(const UniversallyUniqueID& id, FlagSet<FileAttribute> attributes) override
 			{
@@ -364,7 +364,7 @@ namespace kxf::SevenZip
 			}
 
 		public:
-			Archive& operator=(Archive&& other);
+			Archive& operator=(Archive&& other) noexcept;
 			Archive& operator=(const Archive&) = delete;
 
 			explicit operator bool() const

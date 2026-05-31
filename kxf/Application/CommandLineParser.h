@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "kxf/Core/String.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/Core/UninitializedStorage.h"
 #include "kxf/DateTime/DateTime.h"
 class wxCmdLineParser;
@@ -155,8 +156,8 @@ namespace kxf
 
 			size_t GetParameterCount() const;
 			String GetParameterAt(size_t index) const;
-			Enumerator<String> EnumParameters() const;
-			Enumerator<CommandLineArg> EnumArguments() const;
+			CallbackResult<void> EnumParameters(CallbackFunction<String> func) const;
+			CallbackResult<void> EnumArguments(CallbackFunction<CommandLineArg> func) const;
 
 			std::optional<String> GetStringOption(const String& name) const;
 			std::optional<DateTime> GetDateTimeOption(const String& name) const;

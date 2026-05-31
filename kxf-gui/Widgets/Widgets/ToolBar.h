@@ -40,7 +40,7 @@ namespace kxf::Widgets
 			void RemoveItem(size_t index) override;
 
 			size_t GetItemCount() const override;
-			Enumerator<std::shared_ptr<IToolBarWidgetItem>> EnumItems() override;
+			CallbackResult<void> EnumItems(CallbackFunction<std::shared_ptr<IToolBarWidgetItem>> func) override;
 
 			std::shared_ptr<IToolBarWidgetItem> GetItemByID(const WidgetID& id) override;
 			std::shared_ptr<IToolBarWidgetItem> GetItemByIndex(size_t index) override;

@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "IFileSystem.h"
 #include "FileItem.h"
-#include "kxf/Core/Enumerator.h"
 
 namespace kxf::FileSystem
 {
@@ -44,7 +43,7 @@ namespace kxf::FileSystem
 			{
 				return {};
 			}
-			Enumerator<FileItem> EnumItems(const FSPath& directory, const FSPath& query = {}, FlagSet<FSActionFlag> flags = {}) const override
+			CallbackResult<void> EnumItems(const FSPath& directory, CallbackFunction<FileItem> func, const FSPath& query = {}, FlagSet<FSActionFlag> flags = {}) const override
 			{
 				return {};
 			}
@@ -109,7 +108,7 @@ namespace kxf::FileSystem
 			{
 				return {};
 			}
-			Enumerator<FileItem> EnumItems(const UniversallyUniqueID& id, FlagSet<FSActionFlag> flags = {}) const override
+			CallbackResult<void> EnumItems(const UniversallyUniqueID& id, CallbackFunction<FileItem> func, FlagSet<FSActionFlag> flags = {}) const override
 			{
 				return {};
 			}

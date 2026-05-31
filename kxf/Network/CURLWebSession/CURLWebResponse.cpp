@@ -7,7 +7,6 @@
 
 #include "kxf/System/HandlePtr.h"
 #include "kxf/Utility/Container.h"
-#include "kxf/Utility/Enumerator.h"
 
 namespace kxf
 {
@@ -103,25 +102,30 @@ namespace kxf
 		}
 		return {};
 	}
-	Enumerator<WebRequestHeader> CURLWebResponse::EnumHeaders() const
+	CallbackResult<void> CURLWebResponse::EnumHeaders(CallbackFunction<WebRequestHeader> func) const
 	{
-		return Utility::EnumerateIterableContainer<WebRequestHeader>(m_Request.m_ResponseHeaders);
+		for (const auto& item: m_Request.m_ResponseHeaders)
+		{
+			if (func.Invoke(item).ShouldTerminate())
+			{
+				break;
+			}
+		}
+		return func.Finalize();
 	}
-	Enumerator<String> CURLWebResponse::EnumCookies() const
+	CallbackResult<void> CURLWebResponse::EnumCookies(CallbackFunction<String> func) const
 	{
 		if (auto cookesList = static_cast<curl_slist*>(GetRequestHandle().GetOptionPtr(CURLINFO_COOKIELIST).value_or(nullptr)))
 		{
-			return[handle = make_handle_ptr<::curl_slist_free_all>(cookesList), item = cookesList]() mutable -> std::optional<String>
+			auto handle = make_handle_ptr<::curl_slist_free_all>(cookesList);
+			for (auto item = cookesList; item; item = item->next)
 			{
-				auto curentItem = item;
-				item = item->next;
-
-				if (curentItem)
+				if (func.Invoke(String::FromUTF8(item->data)).ShouldTerminate())
 				{
-					return String::FromUTF8(curentItem->data);
+					break;
 				}
-				return {};
-			};
+			}
+			return func.Finalize();
 		}
 		return {};
 	}

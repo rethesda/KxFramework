@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "IEventLoop.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/EventSystem/IEvtHandler.h"
 #include "kxf/FileSystem/FSActionEvent.h"
 #include "kxf/Localization/ILocalizationPackage.h"
@@ -125,7 +126,7 @@ namespace kxf
 			virtual void InitializeCommandLine(char** argv, size_t argc) = 0;
 			virtual void InitializeCommandLine(wchar_t** argv, size_t argc) = 0;
 
-			virtual Enumerator<String> EnumCommandLineArgs() const = 0;
+			virtual CallbackResult<void> EnumCommandLineArgs(CallbackFunction<String> func) const = 0;
 			virtual void OnCommandLineInit(CommandLineParser& parser) = 0;
 			virtual bool OnCommandLineParsed(CommandLineParser& parser) = 0;
 			virtual bool OnCommandLineError(CommandLineParser& parser) = 0;

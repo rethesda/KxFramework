@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "kxf/Core/String.h"
-#include "kxf/Core/Enumerator.h"
+#include "kxf/Core/CallbackFunction.h"
 #include "kxf/FileSystem/FSPath.h"
 #include "kxf/System/Win32Error.h"
 
@@ -172,8 +172,8 @@ namespace kxf
 			bool DoesValueExist(const String& valueName) const;
 			RegistryValueType GetValueType(const String& valueName) const;
 
-			Enumerator<String> EnumKeyNames() const;
-			Enumerator<String> EnumValueNames() const;
+			CallbackResult<void> EnumKeyNames(CallbackFunction<String> func) const;
+			CallbackResult<void> EnumValueNames(CallbackFunction<String> func) const;
 
 			std::optional<String> GetStringValue(const String& valueName) const;
 			bool SetStringValue(const String& valueName, const String& value);
