@@ -23,7 +23,7 @@ You'll need [Visual Studio 2022](https://visualstudio.microsoft.com) and [VCPkg]
 	- [xxHash](https://github.com/Cyan4973/xxHash) - `xxhash`
 	- [URIParser](https://github.com/uriparser/uriparser) - `uriparser`
 	- [Scintilla](https://www.scintilla.org) - `scintilla`. It's already built-in into wxWidgets, but kxf-framework uses its headers directly and they're not available from wxWidgets includes.
-	- [lunasvg](https://github.com/sammycage/lunasvg) - `lunasvg`. Use the v1.4.2 VCPkg port provided in this repository for it. The new version has a different API and is not compatible at the time.
+	- [lunasvg](https://github.com/sammycage/lunasvg) - `lunasvg`
 	- [Microsoft Detours](https://github.com/microsoft/Detours) - `detours`
 
 - Set this instance of VCPkg as the default (`vcpkg integrate install`) or use project-specific linking (a NuGet package generated from a VCPkg installation: `vcpkg integrate project`).
