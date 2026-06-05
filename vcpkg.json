@@ -1,5 +1,4 @@
 {
-	"builtin-baseline": "6f1ddd6b6878e7e66fcc35c65ba1d8feec2e01f8",
 	"dependencies": [
 		{
 			"name": "wxwidgets",
@@ -17,23 +16,22 @@
 			"features": [
 				"non-http",
 				"http2",
-				"openssl"
+				"openssl",
+				"websockets"
 			]
 		},
 		"sciter-js",
 		"openssl",
-		"openssl-windows",
-		"websocketpp",
 		"gumbo",
 		"libffi",
 		"lz4",
+		"7zip",
 		"nlohmann-json",
 		"simpleini",
 		"tinyxml2",
-		"scintilla",
 		"xxhash",
-		"7zip",
 		"uriparser",
+		"scintilla",
 		"lunasvg",
 		"detours"
 	]

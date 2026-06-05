@@ -12,7 +12,7 @@ You'll need [Visual Studio 2022](https://visualstudio.microsoft.com) and [VCPkg]
 	- [wxWidgets](https://www.wxwidgets.org) - `wxwidgets[fonts,media,sound,webview]`
 	- [Sciter-JS](https://github.com/c-smile/sciter-js-sdk) - `sciter-js` (see notes).
 	- [libcurl](https://curl.haxx.se) - `curl[non-http,http2,openssl,websockets]`
-	- [OpenSSL](https://www.openssl.org) - `openssl` and `openssl-windows`. Should be downloaded as a dependency for libcurl, but it's used directly as well.
+	- [OpenSSL](https://www.openssl.org) - `openssl`. Should be downloaded as a dependency for libcurl, but it's used directly as well.
 	- [Gumbo HTML5 Parser](https://github.com/google/gumbo-parser) - `gumbo`
 	- [libffi](https://github.com/libffi/libffi) - `libffi`
 	- [LZ4](https://github.com/lz4/lz4) - `lz4`
