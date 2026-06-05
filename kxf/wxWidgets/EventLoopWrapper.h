@@ -220,7 +220,7 @@ namespace kxf::wxWidgets
 			{
 				m_EventLoop->Exit(exitCode);
 			}
-			void ScheduleExit(int exitCode = 0) override
+			void DoStop(int exitCode = 0) override
 			{
 				m_EventLoop->ScheduleExit(exitCode);
 			}

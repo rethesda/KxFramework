@@ -389,13 +389,17 @@ namespace kxf
 				return m_String.data();
 			}
 
-			const string_type& impl_str() const noexcept
+			string_type& impl_str() & noexcept
 			{
 				return m_String;
 			}
-			string_type& impl_str() noexcept
+			const string_type& impl_str() const& noexcept
 			{
 				return m_String;
+			}
+			string_type impl_str() && noexcept
+			{
+				return std::move(m_String);
 			}
 
 			ConvertedCStrBuffer nc_str() const

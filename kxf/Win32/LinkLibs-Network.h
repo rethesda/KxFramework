@@ -2,3 +2,6 @@
 #pragma comment(lib, "DNSAPI.lib")
 #pragma comment(lib, "WinINet.lib")
 #pragma comment(lib, "Wldap32.lib")
+#pragma comment(lib, "Secur32.lib")
+#pragma comment(lib, "Bcrypt.lib")
+#pragma comment(lib, "Iphlpapi.lib")

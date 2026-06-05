@@ -8,6 +8,7 @@
 #include "kxf-gui/Drawing/GDIRenderer/GDIMemoryContext.h"
 #include <wx/toplevel.h>
 #include <wx/button.h>
+#include <wx/dcbuffer.h>
 
 namespace
 {
@@ -56,7 +57,9 @@ namespace kxf::UI
 	{
 		using namespace kxf;
 
-		GDIAutoBufferedPaintContext dc(*this);
+		wxAutoBufferedPaintDC wxdc(this);
+		GDIContext dc(wxdc);
+
 		UxTheme::ClearDC(*this, dc);
 		wxRendererNative& renderer = wxRendererNative::Get();
 

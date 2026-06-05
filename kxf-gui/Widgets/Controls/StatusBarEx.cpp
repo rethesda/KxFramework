@@ -13,7 +13,9 @@ namespace kxf::UI
 
 	void StatusBarEx::OnPaint(wxPaintEvent& event)
 	{
-		GDIAutoBufferedPaintContext dc(*this);
+		wxAutoBufferedPaintDC wxdc(this);
+		GDIContext dc(wxdc);
+
 		dc.SetBackgroundTransparent();
 		dc.SetTextForeground(GetForegroundColour());
 
@@ -118,7 +120,7 @@ namespace kxf::UI
 				}
 				else
 				{
-					dc.DrawLabel(label, rect, GetImageList()->GetBitmap(imageIndex).AsWXBitmap(), Alignment::CenterVertical);
+					dc.DrawLabel(label, rect, GetImageList()->GetBitmap(imageIndex), Alignment::CenterVertical);
 				}
 
 				if (m_IsSeparatorsVisible && m_BorderColor && i != fieldsCount - 1)

@@ -9,11 +9,11 @@ namespace kxf
 		WX_AUTO_LOWEST = -32000,
 		WX_AUTO_HIGHEST = -2000,
 
-		// All predefined ids are between wxID_LOWEST and wxID_HIGHEST
-		WX_LOWEST = 4999,
+		// All predefined ids are between WX_LOWEST and WX_HIGHEST
+		WX_LOWEST = 5000,
 
 		// Highest wxWidgets generic ID
-		WX_HIGHEST = 5999,
+		WX_HIGHEST = 6000,
 
 		// No ID matches this one when compared to it
 		None = -3,
@@ -25,7 +25,7 @@ namespace kxf
 		Any = -1,
 
 		// Regular IDs
-		Open = WX_LOWEST + 1,
+		Open = WX_LOWEST,
 		Close,
 		New,
 		Save,
@@ -169,8 +169,8 @@ namespace kxf
 		// IDs used by generic file control (4 consecutive starting from this value)
 		FileControl = 5950,
 
-		// KxFramework IDs
-		KX_LOWEST = WX_HIGHEST + 1,
+		// kxf-framework IDs
+		KXF_LOWEST = WX_HIGHEST + 1,
 
 		Move,
 		Error,
@@ -182,6 +182,6 @@ namespace kxf
 		CopyLink,
 		CopyAddress,
 
-		KX_HIGHEST
+		KXF_HIGHEST
 	};
 }

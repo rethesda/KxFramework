@@ -36,7 +36,7 @@ namespace kxf::UI
 		int newIndex = wxNOT_FOUND;
 		if (HasImageList() && imageID != Drawing::InvalidImageIndex)
 		{
-			newIndex = wxBitmapComboBox::Insert(label, GetImageList()->GetBitmap(imageID).AsWXBitmap(), index);
+			newIndex = wxBitmapComboBox::Insert(label, GetImageList()->GetBitmap(imageID), index);
 		}
 		else
 		{
@@ -79,7 +79,7 @@ namespace kxf::UI
 			if (imageID != Drawing::InvalidImageIndex)
 			{
 				m_ImageIDs[index] = imageID;
-				wxBitmapComboBox::SetItemBitmap(index, GetImageList()->GetBitmap(imageID).AsWXBitmap());
+				wxBitmapComboBox::SetItemBitmap(index, GetImageList()->GetBitmap(imageID));
 			}
 			else
 			{

@@ -60,7 +60,7 @@ namespace kxf
 	// IImage2D
 	bool SVGImage::IsNull() const
 	{
-		return !m_Document || !m_Document->rootElement();
+		return !m_Document || !m_Document->documentElement();
 	}
 	bool SVGImage::IsSameAs(const IImage2D& other) const
 	{

@@ -1,6 +1,9 @@
 #include "kxf-pch.h"
 #include "ICoreApplication.h"
 
+#include "kxf/wxWidgets/Common.h"
+#include <wx/module.h>
+
 namespace
 {
 	std::atomic<kxf::ICoreApplication*> g_AppInstance = nullptr;
@@ -15,6 +18,15 @@ namespace kxf
 	void ICoreApplication::SetInstance(ICoreApplication* instance) noexcept
 	{
 		g_AppInstance = instance;
+	}
+
+	void ICoreApplication::RegisterModules()
+	{
+		wxModule::RegisterModules();
+	}
+	bool ICoreApplication::InitializeModules()
+	{
+		return wxModule::InitializeModules();
 	}
 
 	// ICoreApplication -> Active Event Loop

@@ -35,13 +35,9 @@ static_assert(wxUSE_UNICODE_WCHAR == 1);
 // ----------------------------------------------------------------------------
 // Interoperability with the standard library
 // ----------------------------------------------------------------------------
-static_assert(wxUSE_STL == 1);
-static_assert(wxUSE_STD_DEFAULT == 1);
-static_assert(wxUSE_STD_CONTAINERS_COMPATIBLY == wxUSE_STD_DEFAULT);
-static_assert(wxUSE_STD_CONTAINERS == wxUSE_STD_DEFAULT);
-static_assert(wxUSE_STD_IOSTREAM == wxUSE_STD_DEFAULT);
-static_assert(wxUSE_STD_STRING == wxUSE_STD_DEFAULT);
-static_assert(wxUSE_STD_STRING_CONV_IN_WXSTRING == wxUSE_STL);
+static_assert(wxUSE_STD_IOSTREAM == 1);
+static_assert(wxUSE_STD_CONTAINERS == 1);
+static_assert(wxUSE_STD_STRING_CONV_IN_WXSTRING == 1);
 
 // ----------------------------------------------------------------------------
 // Non GUI features selection

@@ -34,6 +34,9 @@ namespace kxf
 			static ICoreApplication* GetInstance() noexcept;
 			static void SetInstance(ICoreApplication* instance) noexcept;
 
+			static void RegisterModules();
+			static bool InitializeModules();
+
 		private:
 			// IEvtHandler
 			using IEvtHandler::ProcessPendingEvents;

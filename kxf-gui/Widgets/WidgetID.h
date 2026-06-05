@@ -53,7 +53,7 @@ namespace kxf
 			}
 			constexpr bool IsStandard() const noexcept
 			{
-				return IsWxStandard() || Utility::TestRange(CastToInt(m_ID), CastToInt(StdID::KX_LOWEST), CastToInt(StdID::KX_HIGHEST));
+				return IsWxStandard() || Utility::TestRange(CastToInt(m_ID), CastToInt(StdID::KXF_LOWEST), CastToInt(StdID::KXF_HIGHEST));
 			}
 			constexpr bool IsWxStandard() const noexcept
 			{

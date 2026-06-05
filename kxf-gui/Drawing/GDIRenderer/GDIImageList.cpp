@@ -85,7 +85,7 @@ namespace kxf
 
 		for (size_t i = 0; i < count; i++)
 		{
-			clone->Add(GetIcon(i));
+			clone->Add(GDIIcon(GetIcon(i)));
 		}
 		return clone;
 	}
@@ -138,9 +138,9 @@ namespace kxf
 		return nullptr;
 	}
 
-	size_t GDIImageList::GetImageCount() const noexcept
+	int GDIImageList::GetImageCount() const noexcept
 	{
-		return static_cast<size_t>(wxImageList::GetImageCount());
+		return wxImageList::GetImageCount();
 	}
 	bool GDIImageList::Create(int width, int height, int initialCount) noexcept
 	{
@@ -196,17 +196,17 @@ namespace kxf
 		return wxImageList::Replace(index, image.ToWXBitmap(), wxNullBitmap);
 	}
 
-	GDIIcon GDIImageList::GetIcon(int index) const
+	wxIcon GDIImageList::GetIcon(int index) const
 	{
 		return wxImageList::GetIcon(index);
 	}
-	GDIBitmap GDIImageList::GetBitmap(int index) const
+	wxBitmap GDIImageList::GetBitmap(int index) const
 	{
-		return GDIIcon(wxImageList::GetIcon(index)).ToGDIBitmap();
+		return wxImageList::GetBitmap(index);
 	}
 	BitmapImage GDIImageList::GetImage(int index) const
 	{
-		return GetBitmap(index).ToBitmapImage();
+		return GetBitmap(index).ConvertToImage();
 	}
 
 	Color GDIImageList::GetBackgroundColor() const noexcept

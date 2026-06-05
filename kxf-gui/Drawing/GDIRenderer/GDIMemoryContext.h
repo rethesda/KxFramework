@@ -183,26 +183,4 @@ namespace kxf
 				return m_DC;
 			}
 	};
-
-	class KXF_API GDIAutoBufferedPaintContext final: public Drawing::GDIBufferedContextBase
-	{
-		private:
-			wxAutoBufferedPaintDC m_DC;
-
-		public:
-			GDIAutoBufferedPaintContext(wxWindow& window)
-				:GDIBufferedContextBase(m_DC), m_DC(&window)
-			{
-			}
-
-		public:
-			const wxAutoBufferedPaintDC& AsWXDC() const noexcept
-			{
-				return m_DC;
-			}
-			wxAutoBufferedPaintDC& AsWXDC() noexcept
-			{
-				return m_DC;
-			}
-	};
 }

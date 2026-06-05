@@ -63,7 +63,7 @@ namespace kxf
 			bool HasMask() const noexcept;
 			COMPtr<IImageList2> QueryNativeInterface() const noexcept;
 
-			size_t GetImageCount() const noexcept;
+			int GetImageCount() const noexcept;
 			bool Create(int width, int height, int initialCount = 1) noexcept;
 			bool Create(const Size& size, int initialCount = 1) noexcept;
 
@@ -79,8 +79,8 @@ namespace kxf
 			bool Replace(int index, const GDIBitmap& bitmap);
 			bool Replace(int index, const BitmapImage& image);
 
-			GDIIcon GetIcon(int index) const;
-			GDIBitmap GetBitmap(int index) const;
+			wxIcon GetIcon(int index) const;
+			wxBitmap GetBitmap(int index) const;
 			BitmapImage GetImage(int index) const;
 
 			Color GetBackgroundColor() const noexcept;

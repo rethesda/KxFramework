@@ -323,7 +323,7 @@ namespace kxf
 		{
 			static_assert(std::is_floating_point_v<Ta>);
 
-			return value * ColorTraits<T>::max();
+			return static_cast<T>(value * ColorTraits<T>::max());
 		}
 
 		template<class T>
@@ -331,7 +331,7 @@ namespace kxf
 		{
 			static_assert(std::is_integral_v<T> && std::is_unsigned_v<T>);
 
-			return value / static_cast<float>(ColorTraits<T>::max());
+			return static_cast<float>(value / static_cast<float>(ColorTraits<T>::max()));
 		}
 	}
 

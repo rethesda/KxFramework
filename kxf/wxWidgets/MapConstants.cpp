@@ -34,7 +34,7 @@ namespace kxf
 
 	static_assert(ToInt(StdID::FileDialog) == wxID_FILEDLGG);
 	static_assert(ToInt(StdID::FileControl) == wxID_FILECTRL);
-	static_assert(ToInt(StdID::KX_LOWEST) == wxID_HIGHEST + 1);
+	static_assert(ToInt(StdID::KXF_LOWEST) == wxID_HIGHEST + 1);
 }
 
 namespace kxf::wxWidgets

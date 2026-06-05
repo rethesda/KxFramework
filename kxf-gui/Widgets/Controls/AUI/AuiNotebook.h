@@ -110,7 +110,7 @@ namespace kxf::UI
 		public:
 			AuiDefaultTabArt* Clone() override
 			{
-				return new AuiDefaultTabArt(*this);
+				return new AuiDefaultTabArt(*m_Notebook);
 			}
 
 			void DrawBackground(wxDC& dc, wxWindow* window, const wxRect& rect) override;

@@ -77,7 +77,7 @@ namespace kxf::WXUI::Private
 		public:
 			TabBookTabRenderer* Clone() override
 			{
-				return new TabBookTabRenderer(*this);
+				return new TabBookTabRenderer(*m_TabBook);
 			}
 
 			int GetIndentSize() override

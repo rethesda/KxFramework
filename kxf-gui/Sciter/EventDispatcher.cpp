@@ -22,10 +22,10 @@ namespace kxf::Sciter
 
 	void AssignKeyboardState(wxKeyboardState& state, UINT sciterValues)
 	{
-		state.SetAltDown(sciterValues & KEYBOARD_STATES::ALT_KEY_PRESSED);
-		state.SetShiftDown(sciterValues & KEYBOARD_STATES::SHIFT_KEY_PRESSED);
-		state.SetControlDown(sciterValues & KEYBOARD_STATES::CONTROL_KEY_PRESSED);
-		state.SetMetaDown(wxGetKeyState(wxKeyCode::WXK_WINDOWS_LEFT) || wxGetKeyState(wxKeyCode::WXK_WINDOWS_RIGHT));
+		state.SetAltDown(sciterValues & KEYBOARD_STATES::KEYBOARD_STATE_ALT);
+		state.SetShiftDown(sciterValues & KEYBOARD_STATES::KEYBOARD_STATE_SHIFT);
+		state.SetControlDown(sciterValues & KEYBOARD_STATES::KEYBOARD_STATE_CONTROL);
+		state.SetMetaDown(sciterValues & KEYBOARD_STATES::KEYBOARD_STATE_COMMAND);
 	}
 	void AssignMouseState(wxMouseState& state, UINT sciterValues)
 	{

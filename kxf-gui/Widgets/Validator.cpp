@@ -106,22 +106,22 @@ namespace kxf::UI::Private
 				{
 					case 2:
 					{
-						value = Format("{:0b}", spinInteger->GetValue());
+						value = Format("{:0b}", spinInteger->GetValue()).impl_str();
 						break;
 					}
 					case 8:
 					{
-						value = Format("{:0o}", spinInteger->GetValue());
+						value = Format("{:0o}", spinInteger->GetValue()).impl_str();
 						break;
 					}
 					case 16:
 					{
-						value = Format("{:0x}", spinInteger->GetValue());
+						value = Format("{:0x}", spinInteger->GetValue()).impl_str();
 						break;
 					}
 					default:
 					{
-						value = Format("{:0d}", spinInteger->GetValue());
+						value = Format("{:0d}", spinInteger->GetValue()).impl_str();
 						break;
 					}
 				};
