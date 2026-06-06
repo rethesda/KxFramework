@@ -642,6 +642,7 @@ namespace kxf
 			std::atomic<std::shared_ptr<IScopedLoggerContext>> m_UserContext;
 			std::atomic<TimeZoneOffset> m_TimeOffset;
 			std::atomic<LogLevel> m_LogLevel = LogLevel::Unknown;
+			std::atomic<bool> m_LogAsserts = true;
 
 			std::optional<ScopedLoggerUnknownTLS> m_UnknownContextTLS;
 			FiberLocalSlot m_TLSIndex;
@@ -696,6 +697,15 @@ namespace kxf
 			void SetTimeOffset(const TimeZoneOffset& timeOffset)
 			{
 				m_TimeOffset = timeOffset;
+			}
+
+			bool ShouldLogAsserts() const noexcept
+			{
+				return m_LogAsserts;
+			}
+			void LogAsserts(bool enable = true) noexcept
+			{
+				m_LogAsserts = enable;
 			}
 	};
 }

@@ -54,10 +54,11 @@ namespace kxf::Log
 
 		wxSetAssertHandler([](const wxString& file, int line, const wxString& func, const wxString& condition, const wxString& message)
 		{
-			if (ScopedLoggerAutoScope logger; true)
+			if (ScopedLoggerAutoScope logger; ScopedLoggerGlobalContext::GetInstance().ShouldLogAsserts())
 			{
-				 logger.Debug().Format("[wxWidgets] Assestion failed [File={}:{}], [Function={}], [Condition={}], [Message={}]", file, line, func, condition, message);
+				 logger.Debug().Format("[wxWidgets] Assertion failed [File={}:{}], [Function={}], [Condition={}], [Message={}]", file, line, func, condition, message);
 			}
+
 			if (auto app = ICoreApplication::GetInstance())
 			{
 				app->OnAssertFailure(file, line, func, condition, message);
