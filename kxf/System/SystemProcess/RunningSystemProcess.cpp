@@ -19,6 +19,33 @@
 
 namespace
 {
+	struct KXF_PEB_LDR_DATA
+	{
+		ULONG Length;
+		UCHAR Initialized;
+		PVOID SsHandle;
+		LIST_ENTRY InLoadOrderModuleList;
+		LIST_ENTRY InMemoryOrderModuleList;
+		LIST_ENTRY InInitializationOrderModuleList;
+		PVOID EntryInProgress;
+	};
+	struct KXF_LDR_MODULE
+	{
+		LIST_ENTRY              InLoadOrderModuleList;
+		LIST_ENTRY              InMemoryOrderModuleList;
+		LIST_ENTRY              InInitializationOrderModuleList;
+		PVOID                   BaseAddress;
+		PVOID                   EntryPoint;
+		ULONG                   SizeOfImage;
+		UNICODE_STRING          FullDllName;
+		UNICODE_STRING          BaseDllName;
+		ULONG                   Flags;
+		SHORT                   LoadCount;
+		SHORT                   TlsIndex;
+		LIST_ENTRY              HashTableEntry;
+		ULONG                   TimeDateStamp;
+	};
+
 	bool SafeTerminateProcess(HANDLE processHandle, uint32_t exitCode) noexcept
 	{
 		using namespace kxf;
@@ -374,6 +401,97 @@ namespace kxf
 			{
 				return static_cast<uint32_t>(reinterpret_cast<uintptr_t>(basicInfo.Reserved3));
 			}
+		}
+		return {};
+		#else
+		// TODO: Implement for Win32
+		throw std::logic_error(__FUNCTION__ ": the method or operation is not implemented on non-x64 platforms.");
+		#endif
+	}
+	CallbackResult<ErrorCode> RunningSystemProcess::EnumLoadedModules(CallbackFunction<LoadedModule> func, LoadedModuleOrder order) const
+	{
+		#if _WIN64
+		if (NativeAPI::NtDLL::NtQueryInformationProcess)
+		{
+			PROCESS_BASIC_INFORMATION basicInfo = {};
+			NativeAPI::ULONG written = 0;
+			NtStatus ntStatus = NativeAPI::NtDLL::NtQueryInformationProcess(m_Handle, PROCESSINFOCLASS::ProcessBasicInformation, &basicInfo, sizeof(basicInfo), &written);
+			if (!ntStatus || !basicInfo.PebBaseAddress)
+			{
+				return func.Finalize(ErrorCode(ntStatus));
+			}
+
+			PEB peb = {};
+			SIZE_T read = 0;
+			if (::ReadProcessMemory(m_Handle, basicInfo.PebBaseAddress, &peb, sizeof(peb), &read) && peb.Ldr)
+			{
+				KXF_PEB_LDR_DATA ldrData = {};
+				if (::ReadProcessMemory(m_Handle, peb.Ldr, &ldrData, sizeof(ldrData), &read))
+				{
+					auto NextPtr = [&](auto& list) -> LIST_ENTRY*
+					{
+						switch (order)
+						{
+							case LoadedModuleOrder::Default:
+							case LoadedModuleOrder::LoadOrder:
+							{
+								return list.InLoadOrderModuleList.Flink;
+							}
+							case LoadedModuleOrder::MemoryOrder:
+							{
+								return list.InMemoryOrderModuleList.Flink;
+							}
+							case LoadedModuleOrder::InitializationOrder:
+							{
+								return list.InInitializationOrderModuleList.Flink;
+							}
+						};
+						return nullptr;
+					};
+
+					if (auto ptr = NextPtr(ldrData))
+					{
+						BOOL result = FALSE;
+						KXF_LDR_MODULE ldrModule = {};
+						while (result = ::ReadProcessMemory(m_Handle, ptr, &ldrModule, sizeof(ldrModule), &read))
+						{
+							if (!ldrModule.BaseAddress)
+							{
+								break;
+							}
+
+							LoadedModule loadedModule =
+							{
+								.BaseAddress = ldrModule.BaseAddress,
+								.EntryPoint = ldrModule.EntryPoint,
+								.ImageSize = DataSize::FromBytes(ldrModule.SizeOfImage),
+								.FullName = StringView(ldrModule.FullDllName.Buffer, wcsnlen_s(ldrModule.FullDllName.Buffer, ldrModule.FullDllName.Length)),
+								.BaseName = StringView(ldrModule.BaseDllName.Buffer, wcsnlen_s(ldrModule.BaseDllName.Buffer, ldrModule.BaseDllName.Length)),
+								.Flags = ldrModule.Flags,
+								.RefCount = ldrModule.LoadCount,
+								.TLSIndex = ldrModule.TlsIndex
+							};
+
+							if (func.Invoke(std::move(loadedModule)).ShouldTerminate())
+							{
+								break;
+							}
+
+							ptr = NextPtr(ldrModule);
+							if (!ptr)
+							{
+								break;
+							}
+						}
+
+						if (result)
+						{
+							return func.Finalize(ErrorCode(Win32Error::Success()));
+						}
+					}
+				}
+			}
+			return func.Finalize(ErrorCode(Win32Error::GetLastError()));
 		}
 		return {};
 		#else

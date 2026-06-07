@@ -1,10 +1,37 @@
 #pragma once
 #include "ISystemProcess.h"
+#include "kxf/Core/ErrorCode.h"
+
+namespace kxf
+{
+	class SystemProcess;
+}
 
 namespace kxf
 {
 	class KXF_API RunningSystemProcess: public ISystemProcess
 	{
+		public:
+			enum class LoadedModuleOrder
+			{
+				Default = 0,
+				LoadOrder,
+				MemoryOrder,
+				InitializationOrder
+			};
+
+			struct LoadedModule 
+			{
+				void* BaseAddress = nullptr;
+				void* EntryPoint = nullptr;
+				DataSize ImageSize;
+				StringView FullName;
+				StringView BaseName;
+				FlagSet<uint32_t> Flags;
+				int32_t RefCount = -1;
+				int32_t TLSIndex = -1;
+			};
+
 		public:
 			static RunningSystemProcess GetCurrentProcess();
 			static RunningSystemProcess OpenCurrentProcess(FlagSet<SystemProcessAccess> access = SystemProcessAccess::Everything, bool inheritHandle = false);
@@ -89,6 +116,8 @@ namespace kxf
 			bool SafeTerminate(uint32_t exitCode);
 
 			SystemProcess GetParentProcess() const;
+			CallbackResult<ErrorCode> EnumLoadedModules(CallbackFunction<LoadedModule> func, LoadedModuleOrder order = LoadedModuleOrder::Default) const;
+
 		public:
 			explicit operator bool() const
 			{
