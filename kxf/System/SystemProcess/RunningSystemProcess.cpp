@@ -147,6 +147,21 @@ namespace kxf
 		return false;
 	}
 
+	FlagSet<uint64_t> RunningSystemProcess::GetAffinityMask() const
+	{
+		DWORD_PTR processAffinity = 0;
+		DWORD_PTR systemAffinity = 0;
+		if (::GetProcessAffinityMask(m_Handle, &processAffinity, &systemAffinity))
+		{
+			return processAffinity;
+		}
+		return {};
+	}
+	bool RunningSystemProcess::SetAffinityMask(FlagSet<uint64_t> affinity)
+	{
+		return ::SetProcessAffinityMask(m_Handle, affinity.ToInt());
+	}
+
 	bool RunningSystemProcess::IsRunning() const
 	{
 		DWORD exitCode = 0;

@@ -46,6 +46,15 @@ namespace kxf
 				return RunningSystemProcess(m_PID, SystemProcessAccess::SetInformation).SetPriority(priority);
 			}
 
+			FlagSet<uint64_t> GetAffinityMask() const override
+			{
+				return RunningSystemProcess(m_PID, SystemProcessAccess::QueryLimitedInformation).GetAffinityMask();
+			}
+			bool SetAffinityMask(FlagSet<uint64_t> affinity) override
+			{
+				return RunningSystemProcess(m_PID, SystemProcessAccess::SetInformation).SetAffinityMask(affinity);
+			}
+
 			bool IsRunning() const override
 			{
 				return RunningSystemProcess(m_PID, SystemProcessAccess::QueryLimitedInformation).IsRunning();
@@ -147,6 +156,7 @@ namespace kxf
 			FSPath m_ExecutablePath;
 			FSPath m_WorkingDirectory;
 			String m_Parameters;
+			FlagSet<uint64_t> m_AffinityMask;
 			uint32_t m_PID = std::numeric_limits<uint32_t>::max();
 			bool m_Is64Bit = false;
 
@@ -181,6 +191,16 @@ namespace kxf
 			bool SetPriority(SystemProcessPriority priority) override
 			{
 				m_Priority = priority;
+				return true;
+			}
+
+			FlagSet<uint64_t> GetAffinityMask() const override
+			{
+				return m_AffinityMask;
+			}
+			bool SetAffinityMask(FlagSet<uint64_t> affinity) override
+			{
+				m_AffinityMask = affinity;
 				return true;
 			}
 

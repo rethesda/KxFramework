@@ -41,6 +41,9 @@ namespace kxf
 			SystemProcessPriority GetPriority() const override;
 			bool SetPriority(SystemProcessPriority priority) override;
 
+			FlagSet<uint64_t> GetAffinityMask() const override;
+			bool SetAffinityMask(FlagSet<uint64_t> affinity) override;
+
 			bool IsRunning() const override;
 			std::optional<uint32_t> GetExitCode() const override;
 			bool Terminate(uint32_t exitCode) override;

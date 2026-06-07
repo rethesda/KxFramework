@@ -29,6 +29,9 @@ namespace kxf
 			virtual SystemProcessPriority GetPriority() const = 0;
 			virtual bool SetPriority(SystemProcessPriority priority) = 0;
 
+			virtual FlagSet<uint64_t> GetAffinityMask() const = 0;
+			virtual bool SetAffinityMask(FlagSet<uint64_t> affinity) = 0;
+
 			virtual bool IsRunning() const = 0;
 			virtual std::optional<uint32_t> GetExitCode() const = 0;
 			virtual bool Terminate(uint32_t exitCode) = 0;

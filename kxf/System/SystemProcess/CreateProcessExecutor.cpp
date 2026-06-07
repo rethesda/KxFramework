@@ -274,6 +274,11 @@ namespace kxf::System
 		if (m_IsCreated)
 		{
 			AttachHandle(m_ProcessInfo.hProcess);
+
+			if (auto affinity = info.GetAffinityMask(); !affinity.IsNull())
+			{
+				SetAffinityMask(affinity);
+			}
 			return true;
 		}
 		return false;
