@@ -72,11 +72,15 @@ namespace kxf
 
 	class ScopedLoggerFileTarget: public IScopedLoggerTarget
 	{
-		private:
+		public:
+			static String FormatTimestamp(DateTime timestamp, const TimeZoneOffset& tzOffset);
+
+		protected:
 			std::shared_ptr<IOutputStream> m_Stream;
 			Private::ScopedLoggerFlushControl m_FlushControl;
 
 		public:
+			ScopedLoggerFileTarget(std::shared_ptr<IOutputStream> stream);
 			ScopedLoggerFileTarget(ScopedLoggerTLS& tls, IFileSystem& fs, const FSPath& directory = {});
 
 		public:
@@ -91,9 +95,15 @@ namespace kxf
 			}
 	};
 
+	class ScopedLoggerThreadedFileTarget: public ScopedLoggerFileTarget
+	{
+		public:
+			ScopedLoggerThreadedFileTarget(ScopedLoggerTLS& tls, IFileSystem& fs, const FSPath& directory);
+	};
+
 	class ScopedLoggerSingleFileTarget: public IScopedLoggerTarget
 	{
-		private:
+		protected:
 			ReadWriteLock m_Lock;
 			std::shared_ptr<IOutputStream> m_Stream;
 			Private::ScopedLoggerFlushControl m_FlushControl;
@@ -121,7 +131,7 @@ namespace kxf
 
 	class ScopedLoggerAggregateTarget: public IScopedLoggerTarget
 	{
-		private:
+		protected:
 			template<class T, class TFunc>
 			static void ForEach(T&& container, TFunc&& func)
 			{
@@ -134,7 +144,7 @@ namespace kxf
 				}
 			}
 
-		public:
+		protected:
 			std::vector<std::shared_ptr<IScopedLoggerTarget>> m_LogTargets;
 
 		public:

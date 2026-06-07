@@ -33,3 +33,26 @@ namespace kxf
 		return m_AggregateTarget;
 	}
 }
+
+namespace kxf
+{
+	// IScopedLoggerContext
+	std::shared_ptr<IScopedLoggerTarget> ScopedLoggerThreadedContext::CreateLogTarget(ScopedLoggerTLS& tls)
+	{
+		if (!m_Directory)
+		{
+			auto& globalContext = tls.GetGlobalContext();
+			auto directoryTimestamp = globalContext.GetUnknownThreadContext().GetTimestamp();
+			auto tzOffset = globalContext.GetTimeOffset();
+
+			m_Directory = Format("{} {}-{} [{}]\\", m_BaseName,
+								 tls.GetProcess().GetExecutablePath().GetName(),
+								 tls.GetProcess().GetID(),
+								 ScopedLoggerFileTarget::FormatTimestamp(directoryTimestamp, tzOffset)
+			);
+			m_FileSystem->CreateDirectory(m_Directory, FSActionFlag::Recursive);
+		}
+
+		return std::make_shared<ScopedLoggerThreadedFileTarget>(tls, *m_FileSystem, m_Directory);
+	}
+}

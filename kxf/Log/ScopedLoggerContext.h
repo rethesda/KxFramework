@@ -67,3 +67,24 @@ namespace kxf
 			std::shared_ptr<IScopedLoggerTarget> CreateLogTarget(ScopedLoggerTLS& tls) override;
 	};
 }
+
+namespace kxf
+{
+	class ScopedLoggerThreadedContext: public IScopedLoggerContext
+	{
+		private:
+			std::shared_ptr<IFileSystem> m_FileSystem;
+			String m_BaseName;
+			FSPath m_Directory;
+
+		public:
+			ScopedLoggerThreadedContext(std::shared_ptr<IFileSystem> fileSystem, String baseName)
+				:m_FileSystem(std::move(fileSystem)), m_BaseName(std::move(baseName))
+			{
+			}
+
+		public:
+			// IScopedLoggerContext
+			std::shared_ptr<IScopedLoggerTarget> CreateLogTarget(ScopedLoggerTLS& tls) override;
+	};
+}
