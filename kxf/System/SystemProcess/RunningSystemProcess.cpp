@@ -4,6 +4,8 @@
 #include "kxf/System/SystemProcess.h"
 #include "kxf/System/SystemThread.h"
 #include "kxf/System/SystemWindow.h"
+#include "kxf/System/NtStatus.h"
+#include "kxf/System/Win32Error.h"
 #include "kxf/System/Private/System.h"
 #include "kxf/FileSystem/NativeFileSystem.h"
 #include "kxf/Utility/Common.h"
@@ -359,5 +361,24 @@ namespace kxf
 	bool RunningSystemProcess::SafeTerminate(uint32_t exitCode)
 	{
 		return SafeTerminateProcess(m_Handle, exitCode);
+	}
+
+	SystemProcess RunningSystemProcess::GetParentProcess() const
+	{
+		#ifdef _WIN64
+		if (NativeAPI::NtDLL::NtQueryInformationProcess)
+		{
+			PROCESS_BASIC_INFORMATION basicInfo = {};
+			NativeAPI::ULONG written = 0;
+			if (NtStatus(NativeAPI::NtDLL::NtQueryInformationProcess(m_Handle, PROCESSINFOCLASS::ProcessBasicInformation, &basicInfo, sizeof(basicInfo), &written)))
+			{
+				return static_cast<uint32_t>(reinterpret_cast<uintptr_t>(basicInfo.Reserved3));
+			}
+		}
+		return {};
+		#else
+		// TODO: Implement for Win32
+		throw std::logic_error(__FUNCTION__ ": the method or operation is not implemented on non-x64 platforms.");
+		#endif
 	}
 }

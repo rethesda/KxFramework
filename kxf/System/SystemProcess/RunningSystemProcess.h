@@ -88,6 +88,7 @@ namespace kxf
 			SystemThread GetMainThread() const;
 			bool SafeTerminate(uint32_t exitCode);
 
+			SystemProcess GetParentProcess() const;
 		public:
 			explicit operator bool() const
 			{
